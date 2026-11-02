@@ -26,7 +26,7 @@ export type UpiApp = {
 
 export const UPI_APPS: UpiApp[] = [
   { id: "gpay", name: "Google Pay", logo: "pm-upi_gpay.png", accounts: [{ bank: "hdfc", last4: "8745" }, { bank: "sbi", last4: "2231" }] },
-  { id: "phonepe", name: "PhonePe UPI", logo: "pm-upi_phonepe.png", filled: true, accounts: [{ bank: "icici", last4: "3162" }, { bank: "axis", last4: "5520" }] },
+  { id: "phonepe", name: "PhonePe UPI", logo: "pm-upi_phonepe.png", filled: true, accounts: [{ bank: "icici", last4: "3162" }, { bank: "axis", last4: "5520" }, { bank: "hdfc", last4: "8745" }] },
   { id: "paytm", name: "Paytm UPI", logo: "pm-upi_paytm.png", accounts: [{ bank: "sbi", last4: "2231" }] },
   { id: "amazon", name: "Amazon Pay", logo: "pm-upi_amazonpay_32.png", accounts: [{ bank: "axis", last4: "5520" }] },
   { id: "bhim", name: "BHIM", logo: "pm-upi_bhim.png", accounts: [{ bank: "sbi", last4: "2231" }] },
@@ -69,7 +69,11 @@ export const namesMatch = (bankName: string, panName = PROFILE_NAME) => {
   return panName.toLowerCase().split(/\s+/).every((w) => words.has(w));
 };
 
-// Net banking opens for larger payments only; under this the section is a note.
+// Payments are UPI only for now, for both SIP and one-time. Net banking (and eNACH) come later once scoped;
+// the section and its screens are kept, hidden behind this switch.
+export const NET_BANKING_ENABLED = false;
+
+// Net banking opens for larger payments only; under this the linked banks are listed but not pickable.
 export const NET_BANKING_MIN = 20000;
 
 export type PayMethod =

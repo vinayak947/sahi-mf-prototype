@@ -23,7 +23,6 @@ import {
   navDay,
   nextBusinessDay,
   nextSipDate,
-  stampDuty,
   tradeDay,
   navSeries,
   ordinal,
@@ -36,7 +35,6 @@ import {
   AmountField,
   applyKey,
   CategoryIcon,
-  Disclaimer,
   FundMark,
   Keypad,
   Notice,
@@ -55,6 +53,7 @@ import {
   Stars,
   useFundView,
 } from "./parts";
+import { DotField } from "./DotField";
 import { ReturnCalculator } from "./ReturnCalculator";
 import { accountLabel, mandateAccount, methodView } from "./payData";
 import { useMf, type ListSpec } from "./store";
@@ -135,11 +134,10 @@ const CAT_LABEL: Partial<Record<CategoryKey, string>> = {
   gold: "Gold & Silver",
 };
 
-export function ListScreen({ spec }: { spec: ListSpec }) {
-  const { pop } = useMf();
+// Filter chips, count and fund rows for a list spec. Shared by the list screen and the SIP tab's empty state.
+export function FundListBody({ spec }: { spec: ListSpec }) {
   const { basis, sort, setBasis, setSort } = useFundView();
   const [cat, setCat] = useState<CategoryKey | "all">(spec.cat ?? "all");
-  const [shared, setShared] = useState(false);
 
   const filtered = useMemo(() => {
     return funds
@@ -150,34 +148,8 @@ export function ListScreen({ spec }: { spec: ListSpec }) {
   }, [cat, spec.cats, spec.sipOnly, spec.equityOnly, spec.minStars]);
   const list = sortFunds(filtered, sort, basis);
 
-  async function share() {
-    const text = `${spec.title} on SAHI: ${spec.bucket?.promise ?? spec.caption ?? ""}`;
-    try {
-      if (navigator.share) await navigator.share({ title: spec.title, text });
-      else {
-        await navigator.clipboard.writeText(text);
-        setShared(true);
-        window.setTimeout(() => setShared(false), 1800);
-      }
-    } catch {
-      // the person closed the share sheet
-    }
-  }
-
   return (
-    <Screen
-      title={spec.title}
-      onBack={pop}
-      plainBack
-      right={
-        spec.bucket ? (
-          <button className="mf-share" onClick={share}>
-            {shared ? "Copied" : "Share"}
-          </button>
-        ) : undefined
-      }
-    >
-      {spec.bucket ? <BucketTop spec={spec} /> : spec.caption && <p className="mf-lede">{spec.caption}</p>}
+    <>
       <FilterRow cat={cat} onCat={setCat} sort={sort} onSort={setSort} chips={
           spec.bucket
             ? (spec.cats ?? []).length > 1
@@ -198,6 +170,42 @@ export function ListScreen({ spec }: { spec: ListSpec }) {
         ))}
       </ul>
       {list.length === 0 && <p className="mf-empty">No funds match this filter.</p>}
+    </>
+  );
+}
+
+export function ListScreen({ spec }: { spec: ListSpec }) {
+  const { pop } = useMf();
+  const [shared, setShared] = useState(false);
+
+  async function share() {
+    const text = `${spec.title} on SAHI: ${spec.bucket?.promise ?? spec.caption ?? ""}`;
+    try {
+      if (navigator.share) await navigator.share({ title: spec.title, text });
+      else {
+        await navigator.clipboard.writeText(text);
+        setShared(true);
+        window.setTimeout(() => setShared(false), 1800);
+      }
+    } catch {
+      // the person closed the share sheet
+    }
+  }
+
+  return (
+    <Screen
+      title={spec.title}
+      onBack={pop}
+      right={
+        spec.bucket ? (
+          <button className="mf-share" onClick={share}>
+            {shared ? "Copied" : "Share"}
+          </button>
+        ) : undefined
+      }
+    >
+      {spec.bucket ? <BucketTop spec={spec} /> : spec.caption && <p className="mf-lede">{spec.caption}</p>}
+      <FundListBody spec={spec} />
       {/* Returns note and SEBI disclaimer taken off the list screens for now (PRD: needed before launch). */}
     </Screen>
   );
@@ -343,7 +351,6 @@ export function FundScreen({ fundId }: { fundId: string }) {
   return (
     <Screen
       onBack={pop}
-      plainBack
       footer={
         fund.buy === "halted" ? (
           <button className="mf-btn solid wide" disabled>
@@ -499,7 +506,6 @@ export function FundScreen({ fundId }: { fundId: string }) {
         Fund data, ratings and risk measures are sourced from Value Research. This data is solely and
         exclusively owned by Value Research.
       </p>
-      <Disclaimer />
     </Screen>
   );
 }
@@ -533,7 +539,9 @@ function OneTimePad({ fundId, preset }: { fundId: string; preset?: number }) {
   // A later buy in a fund already held has its own (often lower) minimum.
   const min = holdings.some((h) => h.fundId === fundId) ? fund.minAdd : fund.minLump;
   const method = methodView(payMethod);
-  const [digits, setDigits] = useState(String(preset ?? Math.max(5000, min)));
+  // Opens on the fund's minimum (or the amount handed in), so it starts valid; errors show only after an edit.
+  const [digits, setDigits] = useState(String(preset ?? min));
+  const [typed, setTyped] = useState(false); // dots drift until the first amount change, then fade
   const [why, setWhy] = useState(false);
   const amount = Number(digits || 0);
   const problem = fund.buy ? "This fund isn\u2019t taking one-time investments" : amountProblem(amount, min, fund.multiple);
@@ -553,8 +561,8 @@ function OneTimePad({ fundId, preset }: { fundId: string; preset?: number }) {
   return (
     <Screen
       onBack={pop}
-      plainBack
       className="pad"
+      backdrop={<DotField active={!typed} />}
       heading={
         <div className="mf-fundline">
           <FundMark fund={fund} size={32} />
@@ -593,12 +601,17 @@ function OneTimePad({ fundId, preset }: { fundId: string; preset?: number }) {
           <i className="caret" />
         </div>
         {low && <small>{problem}</small>}
-        {!low && amount > 0 && <small className="mf-pad-note">Includes {inr(stampDuty(amount), 2)} stamp duty (0.005%)</small>}
       </div>
 
       <div className="mf-quick pad">
         {ONE_TIME_QUICK.map((q) => (
-          <button key={q} onClick={() => setDigits(String(Math.round((amount + q) * 100) / 100))}>
+          <button
+            key={q}
+            onClick={() => {
+              setTyped(true);
+              setDigits(String(Math.round((amount + q) * 100) / 100));
+            }}
+          >
             + {inr(q)}
           </button>
         ))}
@@ -608,7 +621,12 @@ function OneTimePad({ fundId, preset }: { fundId: string; preset?: number }) {
         <span>Expected NAV date {nav}</span>
         <Icon name="chevron-right" size={16} />
       </button>
-      <Keypad onKey={(k) => setDigits((d) => applyKey(d, k))} />
+      <Keypad
+        onKey={(k) => {
+          setTyped(true);
+          setDigits((d) => applyKey(d, k));
+        }}
+      />
 
       {why && (
         <Sheet title={`Expected NAV date ${nav}`} onClose={() => setWhy(false)}>
@@ -635,14 +653,13 @@ const SIP_QUICK = [1000, 5000, 10000];
 const UPI_AUTOPAY_MAX = 100000;
 
 function SipPad({ fundId }: { fundId: string }) {
-  const { pop, push, stack, payMethod, sips } = useMf();
+  const { pop, push, payMethod, sips } = useMf();
   const fund = fundById(fundId);
   const min = fund.minSip;
   const existing = sips.find((s) => s.fundId === fundId);
-  const [payFirst, setPayFirst] = useState(true);
-  // Came in through the "from ₹100" list (banner or collection): keep that promise and open on the fund's minimum.
-  const fromHundred = min <= 100 && stack.some((r) => r.name === "list" && r.spec.sipOnly);
-  const [digits, setDigits] = useState(String(fromHundred ? Math.max(100, min) : Math.max(5000, min)));
+  // Opens on the fund's minimum, so the pad starts valid and only shows an error once the user edits below it.
+  const [digits, setDigits] = useState(String(min));
+  const [typed, setTyped] = useState(false); // dots drift until the first amount change, then fade
   const [day, setDay] = useState(5);
   const [picking, setPicking] = useState(false);
   const [draft, setDraft] = useState(day);
@@ -662,14 +679,14 @@ function SipPad({ fundId }: { fundId: string }) {
   // Like the one-time pad: Invest goes straight to the UPI app to approve AutoPay (or, with
   // AutoPay already on, straight to starting the SIP).
   function go() {
-    if (!low) push({ name: "checkout", fundId, amount, day, payFirst });
+    if (!low) push({ name: "checkout", fundId, amount, day, payFirst: true }); // first instalment is always paid today
   }
 
   return (
     <Screen
       onBack={pop}
-      plainBack
       className="pad"
+      backdrop={<DotField active={!typed} />}
       heading={
         <div className="mf-fundline">
           <FundMark fund={fund} size={32} />
@@ -714,7 +731,13 @@ function SipPad({ fundId }: { fundId: string }) {
 
       <div className="mf-quick pad">
         {SIP_QUICK.map((q) => (
-          <button key={q} onClick={() => setDigits(String(Math.round((amount + q) * 100) / 100))}>
+          <button
+            key={q}
+            onClick={() => {
+              setTyped(true);
+              setDigits(String(Math.round((amount + q) * 100) / 100));
+            }}
+          >
             + {inr(q)}
           </button>
         ))}
@@ -733,20 +756,12 @@ function SipPad({ fundId }: { fundId: string }) {
         <Icon name="chevron-down-solid" size={16} />
       </button>
 
-      <label className="mf-toggle mf-pay-first">
-        <span>
-          <b>Pay the first instalment today</b>
-          <small>
-            {payFirst
-              ? `Starts investing now. Then every ${ordinal(day)}, from ${firstDebit(day)}.`
-              : `First debit on ${firstDebit(day)}.`}
-          </small>
-        </span>
-        <input type="checkbox" checked={payFirst} onChange={(event) => setPayFirst(event.target.checked)} />
-        <span className="switch-ui" />
-      </label>
-
-      <Keypad onKey={(k) => setDigits((d) => applyKey(d, k))} />
+      <Keypad
+        onKey={(k) => {
+          setTyped(true);
+          setDigits((d) => applyKey(d, k));
+        }}
+      />
 
       {picking && (
         <Sheet
@@ -813,19 +828,39 @@ export function HoldingScreen({ fundId }: { fundId: string }) {
     <Screen
       onBack={pop}
       title="Your investment"
+      right={
+        <button className="mf-head-link" onClick={() => push({ name: "redeem", fundId })}>
+          Redeem
+        </button>
+      }
       footer={
-        <div className="mf-actions">
-          <button className="mf-btn ghost" onClick={() => push({ name: "redeem", fundId })}>
-            Redeem
-          </button>
+        // Starting a SIP leads; with one already running, investing more is all that's left.
+        sip ? (
           <button
-            className="mf-btn solid"
+            className="mf-btn solid wide"
             disabled={!!fund.buy}
             onClick={() => push({ name: "amount", fundId, mode: "lump" })}
           >
             Invest more
           </button>
-        </div>
+        ) : (
+          <div className="mf-actions">
+            <button
+              className="mf-btn ghost"
+              disabled={!!fund.buy}
+              onClick={() => push({ name: "amount", fundId, mode: "lump" })}
+            >
+              Invest more
+            </button>
+            <button
+              className="mf-btn solid"
+              disabled={fund.buy === "halted"}
+              onClick={() => push({ name: "amount", fundId, mode: "sip" })}
+            >
+              Start a SIP
+            </button>
+          </div>
+        )
       }
     >
       <button className="mf-fundline link" onClick={() => push({ name: "fund", fundId })}>
@@ -869,9 +904,9 @@ export function HoldingScreen({ fundId }: { fundId: string }) {
         </Notice>
       )}
 
-      <section className="mf-section">
-        <h3>SIP</h3>
-        {sip ? (
+      {sip && (
+        <section className="mf-section">
+          <h3>SIP</h3>
           <div className="mf-card flat">
             <Row label="SIP" value={`${inr(sip.amount)} a month`} />
             <Row label="Date" value={`${ordinal(sip.day)} of every month`} />
@@ -879,16 +914,8 @@ export function HoldingScreen({ fundId }: { fundId: string }) {
               Manage SIP
             </button>
           </div>
-        ) : (
-          <button
-            className="mf-btn ghost wide"
-            disabled={fund.buy === "halted"}
-            onClick={() => push({ name: "amount", fundId, mode: "sip" })}
-          >
-            Start a SIP in this fund
-          </button>
-        )}
-      </section>
+        </section>
+      )}
 
       {mine.length > 0 && (
         <section className="mf-section">
@@ -911,7 +938,6 @@ export function HoldingScreen({ fundId }: { fundId: string }) {
           </ul>
         </section>
       )}
-      <Disclaimer />
     </Screen>
   );
 }
@@ -1188,7 +1214,6 @@ export function RedeemScreen({ fundId }: { fundId: string }) {
       </ol>
 
       {!all && <Keypad onKey={(k) => setDigits((d) => applyKey(d, k))} />}
-      <Disclaimer />
 
       {otp !== null && (
         <Sheet
@@ -1262,7 +1287,6 @@ export function OrderDetailScreen({ orderId }: { orderId: string }) {
         <Row label="NAV date" value={order.navDate} />
         <Row label="Amount" value={inr(order.amount)} />
       </div>
-      <Disclaimer />
     </Screen>
   );
 }

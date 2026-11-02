@@ -38,7 +38,17 @@ export function Block({
 }
 
 /* Touch and trackpad scroll sideways natively; a mouse wheel only goes up and down, so a mouse can also drag the row. */
-export function HScroll({ children }: { children: ReactNode }) {
+export function HScroll({
+  className,
+  role,
+  onScroll,
+  children,
+}: {
+  className?: string;
+  role?: string;
+  onScroll?: (el: HTMLDivElement) => void;
+  children: ReactNode;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const drag = useRef({ x: 0, left: 0, down: false, moved: false });
 
@@ -50,7 +60,9 @@ export function HScroll({ children }: { children: ReactNode }) {
   return (
     <div
       ref={ref}
-      className="hscroll"
+      className={className ? `hscroll ${className}` : "hscroll"}
+      role={role}
+      onScroll={() => ref.current && onScroll?.(ref.current)}
       onPointerDown={(e) => {
         if (e.pointerType !== "mouse" || e.button !== 0 || !ref.current) return;
         drag.current = { x: e.clientX, left: ref.current.scrollLeft, down: true, moved: false };

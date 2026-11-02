@@ -208,3 +208,20 @@ export function nextSipDate(day: number, now = istNow()): Date {
   const soon = (thisMonth.getTime() - today.getTime()) / 864e5 < SIP_LEAD_DAYS;
   return soon ? new Date(now.getFullYear(), now.getMonth() + 1, day) : thisMonth;
 }
+
+// Annualised return of dated cash flows (money in negative, money out positive), found by
+// bisection; null when there's no answer, e.g. everything bought today.
+export function xirr(flows: { date: Date; amount: number }[]): number | null {
+  const t0 = Math.min(...flows.map((f) => f.date.getTime()));
+  const value = (rate: number) =>
+    flows.reduce((sum, f) => sum + f.amount / Math.pow(1 + rate, (f.date.getTime() - t0) / (365 * 864e5)), 0);
+  let lo = -0.99;
+  let hi = 10;
+  if (value(lo) * value(hi) > 0) return null;
+  for (let i = 0; i < 100; i++) {
+    const mid = (lo + hi) / 2;
+    if (value(lo) * value(mid) <= 0) hi = mid;
+    else lo = mid;
+  }
+  return (lo + hi) / 2;
+}

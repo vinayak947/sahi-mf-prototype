@@ -4,6 +4,7 @@ import { asset } from "../assets";
 // drawn as CSS masks so they take the text colour of whatever they sit in.
 const icons = {
   "arrow-left": asset("ph-arrow-left.svg"),
+  back: asset("dls-chevron-left.svg"), // DLS chevron_left (DlsIcons U+E02A)
   backspace: asset("backspace.svg"),
   bank: asset("ph-bank.svg"),
   calendar: asset("calendar.svg"),

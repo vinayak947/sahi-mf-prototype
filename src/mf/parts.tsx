@@ -4,9 +4,6 @@ import { Icon, type IconName } from "../ui/Icon";
 import { riskLevels, type CategoryKey, type Fund, type Risk } from "./data";
 import { pct, rupeesInWords } from "./format";
 
-export const DISCLAIMER =
-  "Mutual fund investments are subject to market risks, read all scheme related documents carefully.";
-
 // AMC logos (official marks, square). Files sit in public/assets as amc-*.png.
 const AMC_LOGO: Record<string, string> = {
   Bandhan: "amc-bandhan.png",
@@ -204,7 +201,7 @@ export function Screen({
   children,
   tone,
   className,
-  plainBack = false,
+  backdrop,
 }: {
   title?: string;
   heading?: ReactNode; // custom header content in place of the title (order pads: the fund line)
@@ -214,13 +211,14 @@ export function Screen({
   children: ReactNode;
   tone?: "plain" | "tinted";
   className?: string;
-  plainBack?: boolean; // list pages: a bare chevron instead of the grey circle
+  backdrop?: ReactNode; // full-bleed layer behind the header and body (order pads: the dot field)
 }) {
   return (
     <div className={`mf-screen${tone === "tinted" ? " tinted" : ""}${className ? ` ${className}` : ""}`}>
-      <header className={`mf-head${plainBack ? " plain" : ""}`}>
-        <button className={`mf-back${plainBack ? " plain" : ""}`} onClick={onBack} aria-label="Back">
-          <Icon name={plainBack ? "chevron-left" : "arrow-left"} size={plainBack ? 24 : 20} />
+      {backdrop}
+      <header className="mf-head">
+        <button className="mf-back" onClick={onBack} aria-label="Back">
+          <Icon name="back" size={24} />
         </button>
         {heading ?? (title && <h1>{title}</h1>)}
         <span className="mf-head-right">{right}</span>
@@ -331,10 +329,6 @@ export function SheetLine({ icon, children }: { icon: IconName; children: ReactN
       <p>{children}</p>
     </div>
   );
-}
-
-export function Disclaimer() {
-  return <p className="mf-disclaimer">{DISCLAIMER}</p>;
 }
 
 // Prototype-only control, kept visibly separate from the product UI.

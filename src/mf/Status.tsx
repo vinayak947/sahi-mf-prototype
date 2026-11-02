@@ -4,7 +4,7 @@ import tickData from "../lottie/pay-tick.json";
 import { PlayLottie } from "./Checkout";
 import { fundById } from "./data";
 import { fmtDay, inr, ordinal } from "./format";
-import { Disclaimer, Sheet } from "./parts";
+import { Sheet } from "./parts";
 import { accountLabel, methodView } from "./payData";
 import { useMf, type Done, type Route } from "./store";
 
@@ -71,6 +71,7 @@ function StatusScreen({
   detailsTitle,
   details,
   footer,
+  onDetails,
 }: {
   tone: Tone;
   title: string;
@@ -78,6 +79,7 @@ function StatusScreen({
   detailsTitle: string;
   details: ReactNode;
   footer: ReactNode;
+  onDetails?: () => void; // opens a details page instead of the sheet
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -88,7 +90,11 @@ function StatusScreen({
           <h2>{title}</h2>
           <p>{text}</p>
         </div>
-        <button className="st-more" onClick={() => setOpen(true)} aria-haspopup="dialog">
+        <button
+          className="st-more"
+          onClick={onDetails ?? (() => setOpen(true))}
+          aria-haspopup={onDetails ? undefined : "dialog"}
+        >
           View details
           <Icon name="chevron-right" size={16} />
         </button>
@@ -124,12 +130,19 @@ function PaidWith() {
 // ---- Placed, or waiting on the bank ------------------------------------------------
 
 export function DoneScreen({ done }: { done: Done }) {
-  const { viewOrders, viewSips, closeAll } = useMf();
+  const { viewOrders, viewSips, closeAll, push, orders, sips } = useMf();
   const fund = fundById(done.fundId);
   const sip = done.kind === "SIP";
   const sell = done.kind === "Redeem";
   // A SIP with nothing paid yet has no order, so its details are on the SIP tab.
   const track = sip && !done.paidNow ? viewSips : viewOrders;
+  // "View details" opens the order's page; a SIP with no instalment paid opens the SIP's.
+  // A SIP still waiting on AutoPay has neither yet, so it keeps the sheet.
+  const onDetails = orders.some((o) => o.id === done.orderId)
+    ? () => push({ name: "orderdetail", orderId: done.orderId })
+    : sip && sips.some((s) => s.fundId === done.fundId)
+      ? () => push({ name: "sipdetail", fundId: done.fundId })
+      : undefined;
 
   if (done.pending)
     return (
@@ -142,6 +155,7 @@ export function DoneScreen({ done }: { done: Done }) {
             : `We haven't heard back from your bank about ${inr(done.amount)} for ${fund.name}. Please don't pay again.`
         }
         detailsTitle="Order details"
+        onDetails={onDetails}
         details={
           <>
             <Line label="Fund" value={fund.name} />
@@ -180,6 +194,7 @@ export function DoneScreen({ done }: { done: Done }) {
             ? `${inr(done.amount)} will be sold from ${fund.name}.`
             : `${inr(done.amount)} is on its way to ${fund.name}.`
       }
+      onDetails={onDetails}
       detailsTitle="Order details"
       details={
         <>
@@ -205,7 +220,6 @@ export function DoneScreen({ done }: { done: Done }) {
           <button className="st-link" onClick={track}>
             {sip && !done.paidNow ? "See in SIPs" : "See in Orders"}
           </button>
-          <Disclaimer />
         </>
       }
       footer={

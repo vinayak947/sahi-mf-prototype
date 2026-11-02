@@ -2,9 +2,9 @@ import { useState } from "react";
 import { Block } from "../ui/widgets";
 import { Icon } from "../ui/Icon";
 import { fundById } from "./data";
-import { inr, pct } from "./format";
-import { Disclaimer, FundMark } from "./parts";
-import { statusLabel } from "./screens";
+import { inr, pct, xirr } from "./format";
+import { FundMark } from "./parts";
+import { FundListBody, statusLabel } from "./screens";
 import { useMf } from "./store";
 
 // "Stocks | Mutual funds" switch used at the top of Orders and Portfolio.
@@ -109,7 +109,6 @@ function MfOrderTabs({
           })}
         </ul>
       )}
-      <Disclaimer />
     </>
   );
 }
@@ -153,11 +152,7 @@ function SipHoldingTabs({
   const [tab, setTab] = useState<"h" | "s">("h");
   return (
     <>
-      {hideSips ? (
-        <div className="block-head mf-pf-head">
-          <h2>Holdings ({holdings.length})</h2>
-        </div>
-      ) : (
+      {!hideSips && (
       <div className="tabs-row mf-subtabs">
         <div className="tabs-list">
           <button className={`tab-underlined${tab === "h" ? " active" : ""}`} onClick={() => setTab("h")}>
@@ -204,15 +199,11 @@ function SipHoldingTabs({
           })}
         </ul>
       )}
-      <Disclaimer />
     </>
   );
 }
 
-// Asset class from "Equity · Flexi Cap": the bar and the first filter level.
-const assetClass = (catLabel: string) => catLabel.split(" · ")[0];
 const subCategory = (catLabel: string) => catLabel.split(" · ")[1] ?? catLabel;
-const CLASS_TONE: Record<string, string> = { Equity: "eq", Debt: "debt", Commodities: "comm" };
 
 const SORTS = [
   { key: "returns", label: "Returns" },
@@ -224,95 +215,59 @@ type SortKey = (typeof SORTS)[number]["key"];
 // MF portfolio dashboard: totals, where the money sits, then every fund with what it has made.
 function HoldingsDashboard({ current, invested, gain }: { current: number; invested: number; gain: number }) {
   const { holdings, sips, push } = useMf();
-  const [filter, setFilter] = useState("All");
   const [sort, setSort] = useState<SortKey>("returns");
 
   const rows = holdings.map((h) => {
     const fund = fundById(h.fundId);
     const g = h.current - h.invested;
-    return { h, fund, g, gPct: (g / h.invested) * 100, cls: assetClass(fund.catLabel), sub: subCategory(fund.catLabel) };
+    return { h, fund, g, gPct: (g / h.invested) * 100, sub: subCategory(fund.catLabel) };
   });
 
-  // Allocation by asset class, biggest first.
-  const classes = Object.entries(
-    rows.reduce<Record<string, number>>((acc, r) => ({ ...acc, [r.cls]: (acc[r.cls] ?? 0) + r.h.current }), {}),
-  ).sort((a, b) => b[1] - a[1]);
+  // Each purchase is a cash outflow on its date (the amount split by units); today's value comes back in.
+  const flows = holdings.flatMap((h) =>
+    h.lots.map((l) => ({ date: new Date(l.date), amount: -(h.invested * l.units) / h.units })),
+  );
+  const rate = xirr([...flows, { date: new Date(), amount: current }]);
+  // Today's move: each allotted holding moves with its fund's NAV change on the day.
+  const day = holdings.reduce((sum, h) => {
+    if (h.pending) return sum;
+    const change = fundById(h.fundId).navChange;
+    return sum + h.current - h.current / (1 + change / 100);
+  }, 0);
 
-  const subs = [...new Set(rows.map((r) => r.sub))];
-  const filters = ["All", ...classes.map(([c]) => c), ...subs.filter((x) => !classes.some(([c]) => c === x))];
-  const shown = rows
-    .filter((r) => filter === "All" || r.cls === filter || r.sub === filter)
-    .sort((a, b) =>
-      sort === "returns" ? b.gPct - a.gPct : sort === "current" ? b.h.current - a.h.current : b.h.invested - a.h.invested,
-    );
-  const shownCurrent = shown.reduce((sum, r) => sum + r.h.current, 0);
-  const shownGain = shown.reduce((sum, r) => sum + r.g, 0);
+  const shown = rows.sort((a, b) =>
+    sort === "returns" ? b.gPct - a.gPct : sort === "current" ? b.h.current - a.h.current : b.h.invested - a.h.invested,
+  );
   const sortLabel = SORTS.find((x) => x.key === sort)!.label;
   const nextSort = () => setSort(SORTS[(SORTS.findIndex((x) => x.key === sort) + 1) % SORTS.length].key);
 
   return (
     <>
-      <div className="summary-card summary-card-lg">
-        <div className="summary-grid">
-          <span>
-            <small>Current value</small>
-            <strong>{inr(current)}</strong>
-          </span>
-          <span className="summary-right">
-            <small>Total returns</small>
-            <strong className={gain >= 0 ? "up" : "down"}>
-              {gain >= 0 ? "+" : ""}
-              {inr(gain)} <em>({pct((gain / invested) * 100, 2)})</em>
-            </strong>
-          </span>
+      <div className="mf-pf-card">
+        <small>Holdings</small>
+        <div className="mf-pf-total">
+          <strong>{inr(current)}</strong>
+          {rate !== null && <em className={rate >= 0 ? "up" : "down"}>XIRR {(rate * 100).toFixed(1)}%</em>}
         </div>
-        <div className="summary-grid">
-          <span>
-            <small>Invested amount</small>
-            <strong>{inr(invested)}</strong>
-          </span>
-          <span className="summary-right">
-            <small>Funds · SIPs</small>
-            <strong>
-              {holdings.length} · {sips.length}
-            </strong>
-          </span>
-        </div>
-        <div className="mf-split" aria-hidden="true">
-          {classes.map(([c, v]) => (
-            <i key={c} className={CLASS_TONE[c]} style={{ width: `${(v / current) * 100}%` }} />
-          ))}
-        </div>
-        <div className="mf-split-legend">
-          {classes.map(([c, v]) => (
-            <span key={c}>
-              <u className={CLASS_TONE[c]} /> {c} {Math.round((v / current) * 100)}%
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <div className="chip-row mf-pf-filters">
-        {filters.map((f) => (
-          <button key={f} className={`chip${filter === f ? " active" : ""}`} onClick={() => setFilter(f)}>
-            {f}
-          </button>
-        ))}
+        <dl className="mf-pf-stats">
+          <div>
+            <dt>Total Returns</dt>
+            <dd>{inr(gain)}</dd>
+          </div>
+          <div>
+            <dt>Invested</dt>
+            <dd>{inr(invested)}</dd>
+          </div>
+          <div>
+            <dt>1D returns</dt>
+            <dd>{inr(day)}</dd>
+          </div>
+        </dl>
       </div>
 
       <div className="mf-pf-bar">
         <span>
           {shown.length} {shown.length === 1 ? "fund" : "funds"}
-          {filter !== "All" && (
-            <>
-              {" "}
-              · {inr(shownCurrent)}{" "}
-              <em className={shownGain >= 0 ? "up" : "down"}>
-                ({shownGain >= 0 ? "+" : ""}
-                {inr(shownGain)})
-              </em>
-            </>
-          )}
         </span>
         <button className="text-link" onClick={nextSort}>
           Sort: {sortLabel} <Icon name="caret-up-down" size={14} />
@@ -344,12 +299,14 @@ function HoldingsDashboard({ current, invested, gain }: { current: number; inves
                     </small>
                   </span>
                 </span>
-                <span className="holding-bot mf-pf-bot">
-                  <small>
-                    Invested: <b>{inr(h.invested)}</b>
-                  </small>
-                  <small>{h.pending ? <b>{h.pending}</b> : <>Units: <b>{h.units.toFixed(3)}</b></>}</small>
-                </span>
+                {/* No invested / units line; only a fund still waiting on its units says when they land. */}
+                {h.pending && (
+                  <span className="holding-bot mf-pf-bot">
+                    <small>
+                      <b>{h.pending}</b>
+                    </small>
+                  </span>
+                )}
               </button>
             </li>
           );
@@ -461,27 +418,30 @@ export function SipPage() {
     .sort((a, b) => a.next.getTime() - b.next.getTime());
   const monthly = sips.reduce((sum, s) => sum + s.amount, 0);
   const dueSoon = upcoming.filter((s) => (s.next.getTime() - today.getTime()) / 864e5 <= 2);
-  const startList = () =>
-    push({
-      name: "list",
-      spec: { title: "SIP from ₹100", sipOnly: true, caption: "Funds you can start with ₹100 a month. Stop anytime." },
-    });
+  const fromHundred = { title: "SIP from ₹100", sipOnly: true, caption: "Funds you can start with ₹100 a month. Stop anytime." };
+  const startList = () => push({ name: "list", spec: fromHundred });
 
   return (
     <main className="page">
       <h1 className="page-title">SIPs</h1>
 
       {sips.length === 0 ? (
-        <div className="mf-empty-card tall">
-          <b>No SIPs yet</b>
-          <p>Invest a fixed amount every month from ₹100. You approve AutoPay once, then it runs on its own.</p>
-          <button className="mf-btn solid" onClick={startList}>
-            Start a SIP
-          </button>
+        // No SIP running (never invested, or one-time only): ₹0 a month, a way in, and the ₹100 funds right below.
+        <>
+          <div className="mf-sip-zero">
+            <small>Monthly SIP amount</small>
+            <strong>{inr(0)}</strong>
+            <button onClick={startList}>
+              Start a new SIP
+              <Icon name="chevron-right" size={20} />
+            </button>
+          </div>
+          <p className="mf-lede">{fromHundred.caption}</p>
+          <FundListBody spec={fromHundred} />
           <button className="proto-link" onClick={() => setSegment("holdings")}>
             Prototype · show with sample SIPs
           </button>
-        </div>
+        </>
       ) : (
         <>
           <div className="summary-card summary-card-lg">
@@ -527,12 +487,8 @@ export function SipPage() {
               );
             })}
           </ul>
-          <button className="mf-btn ghost wide mf-sip-cta" onClick={startList}>
-            Start a new SIP
-          </button>
         </>
       )}
-      <Disclaimer />
     </main>
   );
 }

@@ -80,9 +80,10 @@
 
 /* The layer mounts once per flow; moving between screens swaps the screen inside it.
    Its surface is there from the first frame, only the content slides in, so the page
-   behind never shows between steps. */
+   behind never shows between steps. Fill backwards only: a transform left on the body
+   would trap its bottom sheets inside it, under the footer. */
 .mf-layer > .mf-screen > * {
-  animation: mf-step 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: mf-step 220ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
 }
 
 @keyframes mf-step {
@@ -134,23 +135,44 @@
   white-space: nowrap;
 }
 
+/* Back: the bare DLS chevron, no plate; the tap target reaches past the glyph. */
 .mf-back {
+  position: relative;
   display: grid;
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   flex: none;
   margin-left: -4px;
   padding: 0;
   place-items: center;
   border: 0;
-  border-radius: 50%;
-  background: var(--transparent-L1);
+  color: var(--ink);
+  background: transparent;
+}
+
+.mf-back::before {
+  position: absolute;
+  inset: -10px;
+  content: "";
 }
 
 .mf-head-right {
   display: inline-flex;
   min-width: 32px;
   justify-content: flex-end;
+}
+
+/* A text action at the right of the header (Redeem on a holding). */
+.mf-head-link {
+  height: 32px;
+  padding: 0 4px;
+  border: 0;
+  color: var(--ink);
+  background: transparent;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .mf-body {
@@ -270,17 +292,11 @@
 }
 
 .mf-foot-note,
-.mf-source,
-.mf-disclaimer {
+.mf-source {
   margin: 16px 0 0;
   color: var(--ink-3);
   font-size: 11px;
   line-height: 15px;
-}
-
-.mf-disclaimer {
-  margin-top: 12px;
-  color: var(--ink-2);
 }
 
 .proto-link {
@@ -2287,21 +2303,13 @@ em.amo.st-failed {
   border-left: 2px solid var(--surface-L2, var(--surface));
 }
 
-.mf-pf-filters {
-  margin-top: 20px;
-}
-
 .mf-pf-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 16px;
+  margin-top: 20px;
   color: var(--ink-3);
   font-size: 12px;
-}
-
-.mf-pf-bar em {
-  font-style: normal;
 }
 
 .mf-pf-bar .text-link {
@@ -2465,17 +2473,9 @@ em.amo.st-failed {
   margin: 24px 0 0;
 }
 
-.mf-sip-cta {
-  margin-top: 16px;
-}
-
 /* breathing room between the search field and its results */
 .mf-search-input + .row-list {
   margin-top: 8px;
-}
-
-.mf-pf-head {
-  margin: 0 0 4px;
 }
 
 /* Category icon: a white disc on the grey card. */
@@ -2790,24 +2790,6 @@ em.amo.st-failed {
 }
 
 /* L2 list pages: bare chevron back button (Figma 60:1503, 60:1296) */
-.mf-head.plain {
-  gap: 11px;
-}
-
-.mf-back.plain {
-  position: relative;
-  width: 24px;
-  height: 24px;
-  margin-left: -4px;
-  background: transparent;
-}
-
-.mf-back.plain::before {
-  position: absolute;
-  inset: -10px;
-  content: "";
-}
-
 /* Dream pages: an intro on white (what this is, what it takes), then a titled list like the home widgets */
 .bucket-intro {
   display: flex;
@@ -3391,12 +3373,25 @@ em.amo.st-failed {
   border-top: 1px solid var(--line);
 }
 
-.pm-note {
-  padding: 28px 16px;
-  color: var(--text-primary);
+/* Net banking rows under the minimum: listed, not pickable. */
+.pm-row:disabled {
+  cursor: default;
+}
+
+.pm-row:disabled .pm-logo {
+  opacity: 0.5;
+}
+
+.pm-row:disabled b {
+  color: var(--text-tertiary);
+}
+
+.pm-row b small {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-tertiary);
   font-size: 12px;
   line-height: 16px;
-  text-align: center;
 }
 
 .pm-row {
@@ -3930,13 +3925,7 @@ em.amo.st-failed {
   }
 }
 
-/* Order rules: stamp duty line on the pad, first-instalment switch on the SIP pad, OTP field. */
-.mf-pad-amount .mf-pad-note {
-  color: var(--text-secondary);
-}
-.mf-toggle.mf-pay-first {
-  margin: 12px 16px 0;
-}
+/* Order rules: OTP field. */
 .mf-otp {
   width: 100%;
   margin-top: 16px;
@@ -3977,4 +3966,229 @@ em.amo.st-failed {
 }
 .pm-field .pm-lookup.ok {
   color: var(--positive-text);
+}
+
+/* Two or more alerts: a carousel of equal-height cards, the next one peeking in. */
+.mf-alerts.carousel {
+  flex-direction: row;
+  align-items: stretch;
+  margin-top: 12px;
+  scroll-snap-type: x mandatory;
+}
+
+.mf-alerts.carousel > * {
+  display: flex;
+  flex: 0 0 calc(100% - 40px);
+  scroll-snap-align: start;
+}
+
+.mf-alerts.carousel .mf-alert-main {
+  height: 100%;
+}
+
+.mf-alerts.carousel .mf-alert-actions {
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.mf-alert-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.mf-alert-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--surface-L4);
+  transition: width 0.2s, background-color 0.2s;
+}
+
+.mf-alert-dots i.on {
+  width: 16px;
+  background: var(--ink);
+}
+
+/* ---- Portfolio summary: value with XIRR, then returns, invested and today's move ------------------------------------- */
+
+.mf-pf-card {
+  padding: 24px;
+  border-radius: 24px;
+  background: var(--surface);
+}
+
+.mf-pf-card small,
+.mf-pf-stats dt {
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.mf-pf-total {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin-top: 8px;
+}
+
+.mf-pf-total strong {
+  font-family: "SAHI Season Display Mix:Medium", serif;
+  font-size: 32px;
+  font-weight: 580;
+  letter-spacing: -0.5px;
+  line-height: 36px;
+}
+
+.mf-pf-total em {
+  font-size: 14px;
+  font-style: normal;
+}
+
+.mf-pf-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 28px 0 0;
+}
+
+.mf-pf-stats dd {
+  margin: 6px 0 0;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ---- Order pad dot field: drifts behind the empty pad, fades once an amount is typed ----------------------------- */
+
+.mf-screen.pad {
+  position: relative;
+  isolation: isolate;
+}
+
+.mf-dotfield {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  /* soft top edge under the status bar, as on the web hero */
+  mask-image: linear-gradient(transparent 0, #000 96px);
+  transition: opacity 700ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.mf-dotfield.off {
+  opacity: 0;
+}
+
+/* The keypad sits on a plain surface, so the dots stop where it starts. */
+.mf-screen.pad .mf-keypad {
+  margin-inline: -16px;
+  padding-inline: 16px;
+  background: var(--surface-L1);
+}
+
+/* The NAV strip rides on top of the keypad: same plain surface, no gap, so the dots never show between them. */
+.mf-screen.pad .mf-strip {
+  background: var(--surface-L1);
+}
+
+.mf-screen.pad .mf-strip + .mf-keypad {
+  margin-top: 0;
+}
+
+/* The footer's rounded top corners would otherwise let a sliver of dots through below the keypad. */
+.mf-screen.pad .mf-foot {
+  position: relative;
+}
+
+.mf-screen.pad .mf-foot::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: -1;
+  height: 16px;
+  background: var(--surface-L1);
+}
+
+/* Registered-bank nudge on the payment screens and sheets: warm panel, brown text, no outline. */
+.pm .mf-notice.warn,
+.pm-sheet .mf-notice.warn {
+  width: 100%;
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  box-sizing: border-box;
+  color: var(--warning-text);
+  box-shadow: none;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: left;
+}
+
+.pm .mf-notice.warn .icon,
+.pm-sheet .mf-notice.warn .icon {
+  margin-top: 2px;
+  color: var(--warning-text);
+}
+
+/* "Registered" / "Not registered" under each account in the change-bank sheet. */
+.pm-account b small {
+  display: block;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.pm-account b small.ok {
+  color: var(--positive-text);
+}
+
+/* SIP tab with nothing running: ₹0 card with a "Start a new SIP" row (Figma SIPs, empty). */
+.mf-sip-zero {
+  display: flex;
+  flex-direction: column;
+  margin-top: 8px;
+  padding: 20px 16px 0;
+  border: 1px solid var(--border-L1);
+  border-radius: 16px;
+}
+
+.mf-sip-zero small {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.mf-sip-zero strong {
+  margin-top: 4px;
+  color: var(--text-primary);
+  font-family: "SAHI Season Display Mix:Medium", serif;
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 40px;
+}
+
+.mf-sip-zero button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  padding: 16px 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  color: var(--text-primary);
+  background: transparent;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 16px;
+  line-height: 20px;
+  text-align: left;
+}
+
+.mf-sip-zero + .mf-lede {
+  margin-top: 16px;
 }

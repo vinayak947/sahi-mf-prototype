@@ -8,6 +8,7 @@ import {
   BANKS,
   FEATURED_UPI,
   IFSC_RE,
+  NET_BANKING_ENABLED,
   NET_BANKING_MIN,
   PROFILE_NAME,
   UPI_APPS,
@@ -64,6 +65,38 @@ function PlusMark() {
     <span className="pm-logo plus">
       <Icon name="plus" size={20} />
     </span>
+  );
+}
+
+// ---- Registered-bank nudge ------------------------------------------------------------------
+// A payment from any account other than the investor's registered ones is rejected by the fund house
+// and refunded. Wherever a bank can be picked, changed or added, this says which account to use, and
+// gets specific when the current pick is one that will fail.
+
+const registeredList = (banks: Account[]) => banks.map(accountLabel).join(" or ");
+
+function RegisteredNudge({ app, account, inSheet = false }: { app?: UpiApp; account?: Account; inSheet?: boolean }) {
+  const { verifiedBanks, isVerified } = useMf();
+  const list = registeredList(verifiedBanks);
+  let text: ReactNode = <>Use your registered bank account {list} to avoid transaction failure</>;
+  if (app && account && !isVerified(account)) {
+    const better = app.accounts.filter(isVerified);
+    text = better.length ? (
+      <>
+        {accountLabel(account)} isn&rsquo;t your registered bank account, so this payment may fail.{" "}
+        {inSheet ? "Pick" : "Tap Change and pick"} {registeredList(better)}.
+      </>
+    ) : (
+      <>
+        {app.name} isn&rsquo;t linked to your registered bank account, so this payment may fail. Use an app linked
+        to {list}.
+      </>
+    );
+  }
+  return (
+    <Notice tone="warn" icon="warning-circle">
+      {text}
+    </Notice>
   );
 }
 
@@ -241,7 +274,10 @@ function useUpiPicker(fundId: string, amount: number, back: "paymode" | "upiapps
     </ProtoLink>
   );
 
-  return { rows, sheets, failLink, openIdSheet: () => setIdSheet(true), pay };
+  const pickedApp = picked ? upiApp(picked) : undefined;
+  const nudge = <RegisteredNudge app={pickedApp} account={pickedApp && accountFor(pickedApp)} />;
+
+  return { rows, sheets, failLink, nudge, openIdSheet: () => setIdSheet(true), pay };
 }
 
 // ---- Select a payment mode ----------------------------------------------------------------
@@ -255,7 +291,7 @@ export function PayModeScreen({ fundId, amount }: { fundId: string; amount: numb
   const banks = verifiedBanks;
 
   return (
-    <Screen onBack={pop} plainBack className="pm">
+    <Screen onBack={pop} className="pm">
       <h2 className="pm-title">Select a payment mode</h2>
 
       <div className="pm-section">
@@ -265,31 +301,39 @@ export function PayModeScreen({ fundId, amount }: { fundId: string; amount: numb
         </button>
       </div>
       {upi.rows(FEATURED_UPI, <AddUpiRow onClick={upi.openIdSheet} />)}
+      {upi.nudge}
 
-      <div className="pm-section">
-        <h3>Net Banking</h3>
-      </div>
-      {netOpen ? (
-        <div className="pm-card">
-          {banks.map((account) => (
-            <button
-              key={`${account.bank}-${account.last4}`}
-              className="pm-row"
-              onClick={() => upi.pay({ kind: "net", account })}
-            >
-              <Logo src={BANKS[account.bank].logo} />
-              <b>{accountLabel(account)}</b>
-              <Icon name="chevron-right" size={16} />
-            </button>
-          ))}
-          <button className="pm-row" onClick={() => push({ name: "addbank", fundId, amount })}>
-            <PlusMark />
-            <b>Add bank account</b>
-            <Icon name="chevron-right" size={16} />
-          </button>
-        </div>
-      ) : (
-        <div className="pm-card pm-note">Use Net Banking for {inr(NET_BANKING_MIN)}+ transactions</div>
+      {NET_BANKING_ENABLED && (
+        <>
+          <div className="pm-section">
+            <h3>Net Banking</h3>
+          </div>
+          {/* The investor's linked banks always show; under the minimum they're listed but can't be picked yet. */}
+          <div className="pm-card">
+            {banks.map((account) => (
+              <button
+                key={`${account.bank}-${account.last4}`}
+                className="pm-row"
+                disabled={!netOpen}
+                onClick={() => upi.pay({ kind: "net", account })}
+              >
+                <Logo src={BANKS[account.bank].logo} />
+                <b>
+                  {accountLabel(account)}
+                  {!netOpen && <small>For {inr(NET_BANKING_MIN)} and above</small>}
+                </b>
+                {netOpen && <Icon name="chevron-right" size={16} />}
+              </button>
+            ))}
+            {netOpen && (
+              <button className="pm-row" onClick={() => push({ name: "addbank", fundId, amount })}>
+                <PlusMark />
+                <b>Add bank account</b>
+                <Icon name="chevron-right" size={16} />
+              </button>
+            )}
+          </div>
+        </>
       )}
 
       {upi.failLink}
@@ -305,13 +349,14 @@ export function UpiAppsScreen({ fundId, amount }: { fundId: string; amount: numb
   const upi = useUpiPicker(fundId, amount, "upiapps");
 
   return (
-    <Screen onBack={pop} plainBack className="pm">
+    <Screen onBack={pop} className="pm">
       <h2 className="pm-title">Select UPI app</h2>
       <div className="pm-card">
         <AddUpiRow onClick={upi.openIdSheet} />
       </div>
       <div className="pm-gap" />
       {upi.rows(UPI_APPS)}
+      {upi.nudge}
       {upi.failLink}
       {upi.sheets}
     </Screen>
@@ -331,6 +376,7 @@ function AccountSheet({
   onPick: (account: Account) => void;
   onClose: () => void;
 }) {
+  const { isVerified } = useMf();
   const [choice, setChoice] = useState(current);
   return (
     <PaySheet
@@ -356,12 +402,18 @@ function AccountSheet({
               onClick={() => setChoice(account)}
             >
               <img src={asset(BANKS[account.bank].logo)} alt="" />
-              <b>{accountLabel(account)}</b>
+              <b>
+                {accountLabel(account)}
+                <small className={isVerified(account) ? "ok" : undefined}>
+                  {isVerified(account) ? "Registered" : "Not registered"}
+                </small>
+              </b>
               <span className="pm-radio" />
             </button>
           );
         })}
       </div>
+      <RegisteredNudge app={app} account={choice} inSheet />
     </PaySheet>
   );
 }
@@ -425,11 +477,13 @@ function AddUpiSheet({ amount, onPay, onClose }: { amount: number; onPay: (vpa: 
           </small>
         )}
       </label>
-      {found && mine && (
-        <p className="pm-hint">
-          Approve from {verifiedBanks.map(accountLabel).join(" or ")}. A payment from any other account is
-          rejected by the fund house and refunded.
-        </p>
+      {found && mine ? (
+        <Notice tone="warn" icon="warning-circle">
+          Approve from {registeredList(verifiedBanks)}. A payment from any other account is rejected by the fund
+          house and refunded.
+        </Notice>
+      ) : (
+        !(found && !mine) && <RegisteredNudge />
       )}
       <ProtoLink onClick={() => setSomeoneElse((v) => !v)}>
         {someoneElse ? "use a UPI ID in your name" : "simulate a UPI ID in someone else\u2019s name"}
@@ -486,7 +540,6 @@ export function VerifyBankScreen({
   return (
     <Screen
       onBack={pop}
-      plainBack
       className="pm"
       footer={
         phase === "ok" ? (
@@ -583,7 +636,6 @@ export function AddBankScreen({ fundId, amount }: { fundId: string; amount: numb
   return (
     <Screen
       onBack={pop}
-      plainBack
       className="pm"
       footer={
         <button className="mf-btn solid wide" disabled={!ok} onClick={go}>
