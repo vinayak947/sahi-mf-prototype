@@ -1,0 +1,157 @@
+/* Colour tokens, from the Figma file "Base Design System" (frame 291:3473, "Brand kit V2 — New 1 mapping").
+   Names are the CORE tokens in that frame (surface/L1 -> --surface-L1, text/primary -> --text-primary).
+   Values are the NEW · LIGHT and NEW · DARK columns, unchanged. Dark is opt-in: <html data-theme="dark"> or ?theme=dark.
+   Nothing outside this file should hold a colour value. */
+
+:root {
+  color-scheme: light;
+
+  /* surface */
+  --surface-L0: #e6e6e6;
+  --surface-L1: #ffffff;
+  --surface-L2: #f5f5f5;
+  --surface-L3: #dddddd;
+  --surface-L4: #d3d3d3;
+  --surface-raised: #ffffff;
+  --surface-recessed: #ededed;
+  --surface-inverse: #0f0f0f;
+  --fixed-white: #ffffff;
+
+  /* text */
+  --text-primary: #0f0f0f;
+  --text-secondary: #535353;
+  --text-tertiary: #727272;
+  --text-inverse: #ffffff;
+  --text-inverse-secondary: #a3a3a3;
+
+  /* border and neutral overlays */
+  --border-L1: rgb(15 15 15 / 12%);
+  --border-L2: rgb(15 15 15 / 12%);
+  --transparent-L1: rgb(15 15 15 / 7%);
+  --transparent-L2: rgb(15 15 15 / 12%);
+  --transparent-L3: rgb(15 15 15 / 16%);
+  --transparent-L4: rgb(15 15 15 / 30%);
+  --transparent-L5: rgb(15 15 15 / 70%);
+  --transparent-scrim: rgb(0 0 0 / 50%);
+
+  /* positive */
+  --positive-subtle: #dafeec;
+  --positive-surface: #116a40;
+  --positive-bold: #105737;
+  --positive-text: #08955a;
+  --positive-text-subtle: #17d077;
+  --positive-text-contrast: #105737;
+  --positive-text-inverse: #40e897;
+  --positive-border: #116a40;
+  --positive-on-fill: #ffffff;
+  --positive-transparent-L1: rgb(17 106 64 / 70%);
+  --positive-transparent-L2: rgb(17 106 64 / 30%);
+  --positive-transparent-L3: rgb(17 106 64 / 12%);
+
+  /* negative */
+  --negative-subtle: #fce5e4;
+  --negative-surface: #c4342e;
+  --negative-bold: #902824;
+  --negative-text: #c4342e;
+  --negative-text-subtle: #e35650;
+  --negative-text-contrast: #782724;
+  --negative-text-inverse: #ee807b;
+  --negative-border: #c4342e;
+  --negative-on-fill: #ffffff;
+  --negative-transparent-L1: rgb(196 52 46 / 60%);
+  --negative-transparent-L2: rgb(196 52 46 / 16%);
+  --negative-transparent-L3: rgb(196 52 46 / 8%);
+
+  /* accent */
+  --accent-default: #66033c;
+  --accent-surface: #66033c;
+  --accent-subtle: #feccf1;
+  --accent-text: #ef4fac;
+
+  /* warning */
+  --warning-surface: #945f00;
+  --warning-subtle: #ffe7cd;
+  --warning-text: #945f00;
+
+  /* shadow */
+  --shadow-raised: rgb(0 0 0 / 8%);
+  --shadow-overlay: rgb(0 0 0 / 14%);
+
+  /* Names the prototype already used, now pointing at tokens */
+  --ink: var(--text-primary);
+  --ink-2: var(--text-secondary);
+  --ink-3: var(--text-tertiary);
+  --line: var(--border-L1);
+  --line-strong: var(--surface-L4);
+  --surface: var(--surface-L2);
+  --purple: var(--accent-default);
+
+  /* Up and down figures use the design system's text tokens. */
+  --up: var(--positive-text);
+  --down: var(--negative-text);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --surface-L0: #000000;
+  --surface-L1: #171717;
+  --surface-L2: #1f1f1f;
+  --surface-L3: #272727;
+  --surface-L4: #404040;
+  --surface-raised: #1f1f1f;
+  --surface-recessed: #0f0f0f;
+  --surface-inverse: #ffffff;
+  --fixed-white: #ffffff;
+
+  --text-primary: #ffffff;
+  --text-secondary: #a3a3a3;
+  --text-tertiary: #727272;
+  --text-inverse: #0f0f0f;
+  --text-inverse-secondary: #535353;
+
+  --border-L1: rgb(255 255 255 / 12%);
+  --border-L2: rgb(255 255 255 / 14%);
+  --transparent-L1: rgb(255 255 255 / 8%);
+  --transparent-L2: rgb(255 255 255 / 14%);
+  --transparent-L3: rgb(255 255 255 / 24%);
+  --transparent-L4: rgb(255 255 255 / 40%);
+  --transparent-L5: rgb(255 255 255 / 70%);
+  --transparent-scrim: rgb(0 0 0 / 70%);
+
+  --positive-subtle: #02311d;
+  --positive-surface: #0e854d;
+  --positive-bold: #116a40;
+  --positive-text: #40e897;
+  --positive-text-subtle: #b7fbd9;
+  --positive-text-contrast: #dafeec;
+  --positive-text-inverse: #116a40;
+  --positive-border: #40e897;
+  --positive-transparent-L1: rgb(64 232 151 / 50%);
+  --positive-transparent-L2: rgb(64 232 151 / 30%);
+  --positive-transparent-L3: rgb(64 232 151 / 12%);
+
+  --negative-subtle: #41100e;
+  --negative-surface: #c4342e;
+  --negative-bold: #902824;
+  --negative-text: #ee807b;
+  --negative-text-subtle: #f6aeab;
+  --negative-text-contrast: #fad0ce;
+  --negative-text-inverse: #c4342e;
+  --negative-border: #ee807b;
+  --negative-transparent-L1: rgb(238 128 123 / 50%);
+  --negative-transparent-L2: rgb(238 128 123 / 30%);
+  --negative-transparent-L3: rgb(238 128 123 / 12%);
+
+  --accent-default: #a50f66;
+  --accent-surface: #a50f66;
+  --accent-subtle: #3d0920;
+  --accent-text: #fc6ad0;
+
+  --warning-surface: #ffb13d;
+  --warning-subtle: #321d00;
+  --warning-text: #dc9000;
+
+  --shadow-raised: rgb(15 15 15 / 0%);
+  --shadow-overlay: rgb(0 0 0 / 56%);
+}

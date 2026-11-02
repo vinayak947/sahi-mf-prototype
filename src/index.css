@@ -1,0 +1,1047 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "SAHI Sans:Medium";
+  src: url("/fonts/SAHI_Sans-Medium.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: "SAHI Sans:Regular";
+  src: url("/fonts/SAHI_Sans-Regular.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "SAHI Season Display Mix:Medium";
+  src: url("/fonts/SAHI_Season_Display_Mix-Medium.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 580;
+}
+
+:root {
+  --fly-ms: 700ms;
+  font-family: "SAHI Sans:Regular", Arial, sans-serif;
+  color: var(--text-primary);
+  background: var(--surface-L1);
+  font-synthesis: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100dvh;
+}
+
+button {
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.app-shell {
+  min-height: 100dvh;
+  padding: 0 0 96px;
+  background:
+    radial-gradient(ellipse 55% 100px at 50% -15px, var(--accent-subtle) 20%, transparent 85%),
+    linear-gradient(180deg, var(--accent-subtle) 0, var(--surface-L1) 205px);
+}
+
+.flow-open .app-shell {
+  background: var(--surface-L1);
+}
+
+/* Header: 56 (status bar) + 32 (buttons). Below it, the category-tab dock:
+   24 (gap) + 32 (tabs) + 12 (padding) + 10 (margin) = 78, 166px in all. */
+.app-header {
+  padding: 0 16px 0;
+}
+
+/* The tabs dock to the top of the screen while the logo row scrolls away.
+   top: 8px puts the pills 32px down, so the tilted icons that rise ~16px above
+   them keep a 16px gap from the top edge (the strip itself starts at 0). */
+/* Mutual funds home keeps the status-bar space above the header. */
+.app-header.mf-top {
+  padding-top: 56px;
+}
+
+.market-dock {
+  --dock-pad: 16px;
+  position: sticky;
+  z-index: 30;
+  top: 8px;
+  margin-bottom: 10px;
+  padding: 24px var(--dock-pad) 12px;
+}
+
+/* Docked, the strip keeps the header's soft pink-to-white fade, which is what
+   sets it apart from the black-and-white content scrolling underneath. It is
+   a layer so its opacity (not the gradient) can animate. */
+.market-dock::before {
+  position: absolute;
+  z-index: -1;
+  inset: -8px 0 0;
+  background: linear-gradient(180deg, var(--accent-subtle) 0%, var(--accent-subtle) 55%, var(--surface-L1) 100%);
+  /* a soft drop shadow lifts the docked strip off the content below */
+  box-shadow:
+    0 6px 16px -2px var(--shadow-overlay),
+    0 1px 0 var(--shadow-raised);
+  opacity: 0;
+  transition: opacity 200ms ease;
+  content: "";
+  pointer-events: none;
+}
+
+.market-dock.docked::before {
+  opacity: 1;
+}
+
+.home-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand-mark {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+
+/* The logo is a button (a demo switch for the settings button); the padding /
+   negative margin give it a comfortable tap target without moving the logo. */
+.brand-button {
+  display: block;
+  margin: -8px;
+  padding: 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.header-actions button {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  padding: 8px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--transparent-L1);
+  place-items: center;
+}
+
+.header-actions img {
+  width: 16px;
+  height: 16px;
+}
+
+/* Three fixed slots. Their widths are weighted to each tab's expanded width
+   (icon room + label + padding), so the row is identical whichever tab is
+   selected and simply scales with the screen. Selecting only changes the fill,
+   the label colour and where the label sits inside its own slot. */
+/* Row = the three tabs + the settings button. It is the container the
+   narrow-screen rules below respond to. */
+.market-bar {
+  display: flex;
+  max-width: 480px;
+  height: 32px;
+  align-items: center;
+  gap: 8px;
+  container-type: inline-size;
+}
+
+/* The tabs keep their own widths and the row scrolls sideways, so the last tab
+   can peek past the screen edge (the cue that there is more). The 28px of top
+   padding keeps the tab artwork, which rises above the pills, from being clipped. */
+.market-tabs {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  align-self: flex-end;
+  grid-template-columns: 97px 139px 102px 131px;
+  align-items: center;
+  gap: 8px;
+  padding-top: 28px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  pointer-events: none;
+  scrollbar-width: none;
+  transition: grid-template-columns 280ms cubic-bezier(0.3, 0, 0.2, 1);
+}
+
+.market-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+/* Without the settings button the row runs to the screen edge. */
+.market-bar.no-gear .market-tabs {
+  margin-right: calc(-1 * var(--dock-pad));
+  padding-right: var(--dock-pad);
+}
+
+.market-tabs button {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  width: 100%;
+  pointer-events: auto;
+  height: 32px;
+  align-items: stretch;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 40px;
+  background: var(--transparent-L1);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 12px;
+  line-height: 14.4px;
+  transition:
+    background-color 220ms ease,
+    color 220ms ease,
+    font-size 280ms ease,
+    opacity 240ms ease-out,
+    transform 320ms cubic-bezier(0.2, 0.9, 0.3, 1.15);
+}
+
+.market-tabs button.tab-fno {
+  --zone: 56px;
+}
+
+.market-tabs button.tab-commodities,
+.market-tabs button.tab-stocks,
+.market-tabs button.tab-mf {
+  --zone: 48px;
+}
+
+/* Settings: a 32px circle, same surface as the header action buttons. */
+.market-bar button.tab-settings {
+  position: relative;
+  display: flex;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  padding: 0;
+  border: 0;
+  background: var(--transparent-L1);
+  justify-content: center;
+  transition:
+    width 280ms cubic-bezier(0.3, 0, 0.2, 1),
+    margin 280ms cubic-bezier(0.3, 0, 0.2, 1),
+    background-color 220ms ease,
+    opacity 200ms ease-out,
+    transform 280ms cubic-bezier(0.3, 0, 0.2, 1);
+  align-items: center;
+  border-radius: 50%;
+}
+
+/* Hidden: fades and shrinks while its 32px (+ the 8px gap) is handed back to
+   the tabs, which glide wider. */
+.market-bar button.tab-settings.settings-off {
+  width: 0;
+  margin-left: -8px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.6);
+}
+
+.tab-settings img {
+  display: block;
+  width: 16px;
+  height: 16px;
+  margin: auto;
+}
+
+/* The label is the unit that is centred in the slot. Selected, it gains the
+   room for the icon on the left and 16px on the right (the Figma pill), so the
+   text glides across rather than the pill resizing. */
+.tab-label {
+  position: relative;
+  display: flex;
+  align-items: center;
+  /* Figma: label sits 1.5px below centre */
+  padding: 3px 0 0;
+  white-space: nowrap;
+  transition: padding 240ms cubic-bezier(0.3, 0, 0.2, 1);
+}
+
+.market-tabs button.active .tab-label {
+  padding-right: 16px;
+  padding-left: var(--zone);
+}
+
+/* Tabs are revealed with a transition (hidden -> shown), not a keyframe
+   animation, so a tab changing role (selected / not) can never replay it. */
+.market-bar button.tab-hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(5px) scale(0.9);
+}
+
+.market-tabs button.active {
+  color: var(--text-inverse);
+  background: var(--surface-inverse);
+}
+
+/* Very small phones: no room for the icon room, the labels and a settings
+   button, so the button steps aside. */
+@container (max-width: 299px) {
+  .market-bar button.tab-settings {
+    display: none;
+  }
+}
+
+.market-tabs button.active.awaiting-flight {
+  /* The black pill blooms out from the spot the icon will land on. It opens
+     over the last third of the flight (the icon is still ~100px away when it
+     starts) and is complete as the icon touches down, so the icon settles into
+     a tab that is already there. The anchor is that market's icon centre:
+     half the slot, minus half the expanded label, plus the icon's offset. */
+  --pill-ax: calc(50% - 69.5px + 28px);
+  animation: destination-pill-in calc(var(--fly-ms) * 0.35)
+    calc(var(--fly-ms) * 0.65) cubic-bezier(0.25, 0.6, 0.3, 1) both;
+}
+
+.market-tabs button.active.awaiting-flight.tab-fno {
+  --pill-ax: calc(50% - 48.5px + 29px);
+}
+
+.market-tabs button.active.awaiting-flight.tab-stocks {
+  --pill-ax: calc(50% - 51px + 24px);
+}
+
+.market-tabs button.active.awaiting-flight.tab-mf {
+  --pill-ax: calc(50% - 69px + 26px);
+}
+
+/* Active-tab artwork, per the Figma tab frames: a sharp icon over a blurred
+   copy of itself, both tilted -6deg. Sizes and offsets are per market. */
+.tab-art {
+  position: absolute;
+  z-index: 1;
+  top: var(--art-y);
+  left: var(--art-x);
+  width: var(--art-size);
+  height: var(--art-size);
+  pointer-events: none;
+  transform: rotate(-6deg);
+}
+
+.tab-art-fno {
+  --art-size: 48px;
+  --art-x: 5px;
+  --art-y: -11.5px;
+}
+
+.tab-art-commodities {
+  --art-size: 44px;
+  --art-x: 6px;
+  --art-y: -14px;
+}
+
+.tab-art-stocks {
+  --art-size: 44px;
+  --art-x: 2.18px;
+  --art-y: -16.29px;
+}
+
+.tab-art-mf {
+  --art-size: 44px;
+  --art-x: 4px;
+  --art-y: -14px;
+}
+
+/* "New" mark on the Mutual Funds tab until it has been opened once. */
+.tab-new {
+  position: absolute;
+  top: -7px;
+  right: -2px;
+  padding: 1px 5px;
+  border-radius: 100px;
+  color: var(--fixed-white);
+  background: var(--accent-default);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 9px;
+  font-style: normal;
+  line-height: 11px;
+  pointer-events: none;
+}
+
+.bottom-nav-icon .nav-mf {
+  display: block;
+  width: 24px;
+  height: 24px;
+}
+
+.tab-art img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  animation: active-market-icon-in 420ms ease-out both;
+}
+
+.tab-art.flight-target-hidden img {
+  opacity: 0;
+  animation: none;
+}
+
+.tab-art.flight-target-landed img {
+  animation: none;
+}
+
+.dashboard {
+  min-height: calc(100dvh - 166px);
+  padding: 24px 16px;
+  border-radius: 20px 20px 0 0;
+  background: var(--surface-L1);
+}
+
+.dashboard > section + section {
+  margin-top: 32px;
+}
+
+.dashboard h2 {
+  margin: 0 0 16px;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 14.4px;
+}
+
+.shortcut-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.shortcut {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.shortcut > span {
+  display: grid;
+  width: 70px;
+  max-width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--surface-L2);
+  place-items: center;
+}
+
+.shortcut img {
+  width: 24px;
+  height: 24px;
+}
+
+.up {
+  color: var(--up);
+}
+
+.down {
+  color: var(--negative-text);
+}
+
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.action-card {
+  position: relative;
+  height: 144px;
+  overflow: hidden;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 12px;
+  text-align: left;
+  background: var(--surface-L2);
+}
+
+.action-card span {
+  position: relative;
+  z-index: 1;
+  display: block;
+  max-width: 108px;
+  white-space: pre-line;
+  font-family: "SAHI Season Display Mix:Medium", serif;
+  font-size: 16px;
+  line-height: 20px;
+}
+
+.action-card b {
+  position: absolute;
+  z-index: 1;
+  top: 5px;
+  right: 16px;
+  font-size: 27px;
+  font-weight: 400;
+}
+
+.action-card img {
+  position: absolute;
+  right: -24px;
+  bottom: -38px;
+  width: 130px;
+  height: 130px;
+  object-fit: contain;
+}
+
+.signal-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 112px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--surface-L2);
+}
+
+.signal-card > div:first-child {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.signal-card > div > strong {
+  color: var(--accent-default);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+}
+
+.signal-card h2 {
+  margin: 4px 0 2px;
+  font-size: 14px;
+  line-height: 16.8px;
+}
+
+.signal-card p {
+  max-width: 190px;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 14.4px;
+}
+
+.signal-card > div > button {
+  height: 32px;
+  margin-top: 16px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 48px;
+  color: var(--text-inverse);
+  background: var(--surface-inverse);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 12px;
+}
+
+.signal-chart {
+  position: relative;
+  overflow: hidden;
+}
+
+.signal-chart img {
+  position: absolute;
+  top: 17px;
+  left: -186px;
+  width: 302px;
+  max-width: none;
+  height: 83px;
+}
+
+.signal-chart span {
+  position: absolute;
+  padding: 2px 8px;
+  border-radius: 18px;
+  font-size: 10px;
+}
+
+.bullish {
+  top: 9px;
+  right: 20px;
+  color: var(--up);
+  background: var(--positive-transparent-L3);
+}
+
+.bearish {
+  top: 68px;
+  left: 28px;
+  color: var(--negative-text);
+  background: var(--negative-transparent-L2);
+}
+
+.bottom-nav {
+  position: fixed;
+  z-index: 20;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: grid;
+  height: 80px;
+  grid-template-columns: repeat(5, 1fr);
+  padding: 2px 16px 12px;
+  border-radius: 16px 16px 0 0;
+  background: var(--surface-L2);
+  backdrop-filter: blur(12px);
+}
+
+.bottom-nav button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 10px;
+  line-height: 12px;
+}
+
+.bottom-nav-icon {
+  position: relative;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  place-items: center;
+}
+
+/* The Lottie canvas is 636 x 768; --s scales it, and --cx / --cy are the
+   artwork's own centre in canvas units. Putting that point on the middle of the
+   24px icon slot centres every icon, whatever its shape. */
+.nav-lottie {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(636px * var(--s));
+  height: calc(768px * var(--s));
+  pointer-events: none;
+  transform: translate(
+    calc(var(--cx) * var(--s) * -1px),
+    calc(var(--cy) * var(--s) * -1px)
+  );
+}
+
+.nav-lottie svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.bottom-nav-icon img {
+  display: block;
+}
+
+/* Trade: a larger ring so it carries the same weight as the 24px icons beside
+   it; the negative margin keeps the row height (and label baselines) unchanged. */
+.bottom-nav-icon.trade-icon {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  margin: -3px 0;
+  border: 1.5px solid var(--text-primary);
+  border-radius: 50%;
+  box-shadow: 0 1.5px 3px var(--shadow-raised);
+}
+
+.bottom-nav-icon.trade-icon img {
+  width: 18px;
+  height: 18px;
+}
+
+.bottom-nav .selected {
+  color: var(--text-primary);
+}
+
+.app-shell.is-transitioning .dashboard {
+  animation: dashboard-reveal 360ms 80ms ease-out both;
+}
+
+.app-shell.is-transitioning .bottom-nav {
+  animation: bottom-nav-reveal 320ms 120ms ease-out both;
+}
+
+.start-backdrop {
+  position: fixed;
+  z-index: 50;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  background: var(--transparent-scrim);
+  backdrop-filter: blur(2px);
+}
+
+.start-backdrop.dim {
+  pointer-events: none;
+  animation: backdrop-dim 220ms ease-out forwards;
+}
+
+.start-backdrop.fading {
+  animation: backdrop-out 260ms ease-in-out forwards;
+}
+
+.start-sheet {
+  position: relative;
+  width: 100%;
+  min-height: 367px;
+  padding: 31px 20px 60px;
+  border-radius: 16px 16px 0 0;
+  background: var(--surface-L1);
+  box-shadow: 0 -1px 3px var(--shadow-raised);
+  animation: sheet-in 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.start-sheet.closing {
+  animation: sheet-out 240ms ease-in forwards;
+}
+
+.close-sheet {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  padding: 3px;
+  border: 0;
+  background: transparent;
+  place-items: center;
+}
+
+.close-sheet img {
+  width: 18px;
+  height: 18px;
+}
+
+.start-sheet h1 {
+  margin: 0 0 44px;
+  text-align: center;
+  font-family: "SAHI Season Display Mix:Medium", serif;
+  font-size: 24px;
+  font-weight: 580;
+  line-height: 28px;
+  letter-spacing: -1px;
+}
+
+.start-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.start-options button {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+  line-height: 16.8px;
+}
+
+.start-options button > span {
+  display: grid;
+  width: 100%;
+  height: 112px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--surface-L2);
+  place-items: center;
+}
+
+.start-options img {
+  width: 68px;
+  height: 68px;
+  object-fit: contain;
+  transition: transform 180ms ease;
+}
+
+.start-options button:hover img {
+  transform: translateY(-3px) scale(1.04);
+}
+
+.start-sheet.closing h1,
+.start-sheet.closing .close-sheet {
+  animation: sheet-copy-out 180ms ease-out forwards;
+}
+
+.start-options button.option-dismissed {
+  animation: option-dismiss 220ms ease-out forwards;
+}
+
+.start-options button.option-selected {
+  animation: selected-option-settle 220ms ease-out forwards;
+}
+
+.start-options button.option-selected > span {
+  animation: selected-tile-out 340ms 40ms ease-out forwards;
+}
+
+.start-options button.option-selected img {
+  opacity: 0;
+}
+
+.flight-icon {
+  position: fixed;
+  z-index: 70;
+  object-fit: contain;
+  pointer-events: none;
+  transform-origin: center;
+  will-change: transform;
+}
+
+/* The flight itself (zoom to centre, hold, curve into the tab) runs from
+   App.tsx through the Web Animations API. */
+.hero-label {
+  position: fixed;
+  z-index: 65;
+  right: 0;
+  left: 0;
+  color: var(--fixed-white);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 20px;
+  line-height: 24px;
+  text-align: center;
+  pointer-events: none;
+  animation: hero-label-in 300ms 200ms ease-out both;
+}
+
+.hero-label.leaving {
+  animation: hero-label-out 160ms ease-in forwards;
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes sheet-out {
+  0% {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes backdrop-dim {
+  from {
+    background: var(--transparent-scrim);
+  }
+
+  to {
+    background: rgb(8 8 8 / 96%);
+  }
+}
+
+@keyframes backdrop-out {
+  from {
+    background: rgb(8 8 8 / 96%);
+    backdrop-filter: blur(2px);
+  }
+
+  to {
+    background: rgb(8 8 8 / 0%);
+    backdrop-filter: blur(0);
+  }
+}
+
+@keyframes hero-label-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hero-label-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes sheet-copy-out {
+  to {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes option-dismiss {
+  to {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
+  }
+}
+
+@keyframes selected-option-settle {
+  50% {
+    transform: scale(0.97);
+  }
+
+  to {
+    color: transparent;
+  }
+}
+
+@keyframes selected-tile-out {
+  60% {
+    background: color-mix(in srgb, var(--surface-L2) 55%, transparent);
+    transform: scale(0.96);
+  }
+
+  to {
+    background: color-mix(in srgb, var(--surface-L2) 0%, transparent);
+    transform: scale(0.9);
+  }
+}
+
+@keyframes destination-pill-in {
+  from {
+    clip-path: circle(0 at var(--pill-ax) 50%);
+  }
+
+  to {
+    clip-path: circle(130px at var(--pill-ax) 50%);
+  }
+}
+
+@keyframes dashboard-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bottom-nav-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes active-market-icon-in {
+  from {
+    opacity: 0;
+    transform: scale(0.45);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .market-tabs button,
+  .tab-label {
+    transition: none;
+  }
+
+  .start-backdrop,
+  .start-sheet,
+  .market-tabs button,
+  .tab-art img,
+  .tab-label,
+  .app-shell.is-transitioning .dashboard,
+  .app-shell.is-transitioning .bottom-nav,
+  .start-sheet.closing h1,
+  .start-sheet.closing .close-sheet,
+  .start-options button.option-dismissed,
+  .start-options button.option-selected,
+  .start-options button.option-selected > span {
+    animation: none;
+  }
+
+  .flight-icon {
+    display: none;
+  }
+}
+
+@media (min-width: 600px) {
+  .app-header,
+  .market-dock {
+    --dock-pad: 5vw;
+    padding-inline: var(--dock-pad);
+  }
+
+  .dashboard {
+    padding: 32px 5vw;
+  }
+
+  .start-sheet {
+    padding-inline: 8vw;
+  }
+}
+
+@media (max-width: 360px) {
+  .dashboard {
+    padding-inline: 12px;
+  }
+
+  .shortcut-grid {
+    gap: 8px;
+  }
+
+  .start-options {
+    gap: 10px;
+  }
+
+  .start-options button > span {
+    height: 104px;
+  }
+}
+
+
+/* Bitmap-style SVG chrome that is drawn in black: flip it in dark */
+:root[data-theme="dark"] .brand-mark,
+:root[data-theme="dark"] .header-actions img,
+:root[data-theme="dark"] .close-sheet img {
+  filter: invert(1);
+}
