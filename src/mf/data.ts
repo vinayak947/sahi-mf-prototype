@@ -684,6 +684,8 @@ export type MfOrder = {
   placedAt: string; // "28 Oct, 11:42 AM"
   navDate: string; // "28 Oct"
   note: string; // what happens next
+  units?: number; // redeem: units sold
+  creditBy?: string; // redeem: estimated date the money reaches the bank
 };
 
 export const sampleOrders: MfOrder[] = [

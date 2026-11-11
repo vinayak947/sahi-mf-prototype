@@ -114,7 +114,7 @@ type Store = {
   markSeen: () => void;
   placeLump: (fundId: string, amount: number, pending?: boolean) => Done;
   placeSip: (fundId: string, amount: number, day: number, payFirst: boolean, pending?: boolean) => Done;
-  placeRedeem: (fundId: string, units: number) => Done;
+  placeRedeem: (fundId: string, units: number, amount?: number) => Done;
   cancelSip: (fundId: string) => void;
   viewOrders: () => void;
   viewSips: () => void;
@@ -366,15 +366,17 @@ export function MfProvider({
 
   // Sells `units` from the oldest free lots (allotted and out of any lock-in; the screen works those out).
   const placeRedeem = useCallback(
-    (fundId: string, units: number): Done => {
+    (fundId: string, units: number, requested?: number): Done => {
       const fund = fundById(fundId);
       const now = istNow();
-      const trade = tradeDay(now);
+      const kind = cutoffKind(fund);
+      const trade = tradeDay(now, kind);
       const paid = addBusinessDays(trade, payoutDays(fund));
       const orderId = `o${++orderSeq}`;
       const holding = holdings.find((h) => h.fundId === fundId);
       const perUnit = holding ? holding.current / holding.units : fund.nav;
-      const amount = Math.floor(units * perUnit); // same rounding as the redeem screen
+      // The pad's own figure when it has one (an amount typed in rupees), else units at the last NAV.
+      const amount = requested ?? Math.floor(units * perUnit);
       addOrder({
         id: orderId,
         fundId,
@@ -383,6 +385,8 @@ export function MfProvider({
         status: "processing",
         placedAt: `${fmtDay(now)}, ${fmtTime(now)}`,
         navDate: fmtDay(trade),
+        units,
+        creditBy: fmtDay(paid),
         note: `${units.toFixed(3)} units are sold at the ${fmtDay(trade)} NAV. Money reaches HDFC Bank ••4417 by ${fmtDay(paid)}.`,
       });
       window.setTimeout(
@@ -415,7 +419,7 @@ export function MfProvider({
         units,
         navDate: fmtDay(trade),
         unitsBy: fmtDay(paid),
-        afterCutoff: afterCutoff(now),
+        afterCutoff: afterCutoff(now, kind),
         orderId,
       };
     },

@@ -17,6 +17,7 @@ import {
   afterCutoff,
   cutoffLabel,
   fmtDay,
+  fmtTime,
   inr,
   isBusinessDay,
   istNow,
@@ -32,7 +33,6 @@ import {
   type Range,
 } from "./format";
 import {
-  AmountField,
   applyKey,
   CategoryIcon,
   FundMark,
@@ -1088,17 +1088,53 @@ function exitLoadFor(fund: Fund, lots: { date: string; units: number }[], sellUn
   return Math.round(load * 100) / 100;
 }
 
+// ---- Redeem pad -----------------------------------------------------------------------
+// After the PM prototype (#redeem, #redsum, #rednav), benchmarked to Groww and Kotak:
+// one number to type (amount or units), Redeem all, then a short summary sheet.
+// Phase 1 shows no tax (STCG/LTCG) breakdown.
+
+type RedeemBy = "amount" | "units";
+type RedeemSheet = "by" | "value" | "summary" | "nav" | null;
+
+export const REDEEM_BANK = "HDFC Bank ••4417";
+
+// Units go to 3 decimal places, as in the folio.
+function applyUnitsKey(current: string, key: string): string {
+  if (key === "del") return current.slice(0, -1);
+  if (key === "." && current === "") return "0.";
+  const next = (current === "0" && key !== "." ? "" : current) + key;
+  return /^\d{0,7}(\.\d{0,3})?$/.test(next) ? next : current;
+}
+
+const floor3 = (u: number) => Math.floor(u * 1000 + 1e-6) / 1000;
+export const unitsText = (u: number) =>
+  u.toLocaleString("en-IN", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+
+// The latest NAV the fund house has published: today's after about 10 PM on a working day, else the working day before.
+function lastNavDay(now: Date): Date {
+  const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if (isBusinessDay(d) && now.getHours() >= 22) return d;
+  do d.setDate(d.getDate() - 1);
+  while (!isBusinessDay(d));
+  return d;
+}
+
 export function RedeemScreen({ fundId }: { fundId: string }) {
   const { pop, replace, holdings, placeRedeem } = useMf();
   const fund = fundById(fundId);
   const holding = holdings.find((h) => h.fundId === fundId);
-  const [all, setAll] = useState(true);
+  const [by, setBy] = useState<RedeemBy>("amount");
+  const [draftBy, setDraftBy] = useState<RedeemBy>("amount");
   const [digits, setDigits] = useState("");
-  const [otp, setOtp] = useState<string | null>(null);
+  const [typed, setTyped] = useState(false); // dots drift until the first edit, as on the invest pad
+  const [sheet, setSheet] = useState<RedeemSheet>(null);
+  const [navFromSummary, setNavFromSummary] = useState(false);
   if (!holding) return null;
 
   const now = istNow();
+  const kind = cutoffKind(fund);
   const perUnit = holding.current / holding.units;
+
   // Units that can be sold today: allotted, and for a tax saver, 3 years past their own purchase date.
   const unlockDate = (d: string) => {
     const t = new Date(d);
@@ -1106,133 +1142,288 @@ export function RedeemScreen({ fundId }: { fundId: string }) {
   };
   const isLocked = (d: string) => !!fund.lockIn && unlockDate(d) > now;
   const freeLots = holding.lots.filter((l) => l.allotted && !isLocked(l.date));
-  const waiting = holding.lots.filter((l) => !l.allotted).reduce((s, l) => s + l.units, 0);
   const lockedLots = holding.lots.filter((l) => l.allotted && isLocked(l.date));
+  const waiting = holding.lots.filter((l) => !l.allotted).reduce((s, l) => s + l.units, 0);
   const locked = lockedLots.reduce((s, l) => s + l.units, 0);
   const freeUnits = freeLots.reduce((s, l) => s + l.units, 0);
+  const maxUnits = floor3(freeUnits);
   const freeValue = Math.floor(freeUnits * perUnit);
-
-  const typed = Number(digits || 0);
-  const over = !all && typed > freeValue;
-  const units = all ? freeUnits : Math.min(typed, freeValue) / perUnit;
-  const requested = all ? freeValue : Math.min(typed, freeValue);
-  const exit = exitLoadFor(fund, freeLots, units, perUnit, now);
-  const gainShare = Math.max(0, (holding.current - holding.invested) / holding.current);
-  const gain = Math.round(requested * gainShare);
-  const heldDays = freeLots.length ? daysSince(freeLots[0].date, now) : 0;
-  const taxHint =
-    fund.cat === "debt" || fund.cat === "liquid"
-      ? "Gains are taxed at your income slab rate."
-      : fund.cat === "gold"
-        ? heldDays < 730
-          ? "Held under 24 months: gains are taxed at your income slab rate."
-          : `Long-term: 12.5% on your gain of about ${inr(gain)}.`
-        : heldDays < 365
-          ? `Short-term: 20% on your gain of about ${inr(gain)}, roughly ${inr(Math.round(gain * 0.2))}.`
-          : `Long-term: 12.5% on gains above ₹1.25 lakh in a financial year. Your gain here is about ${inr(gain)}.`;
-  const ok = requested > 0 && !over && units > 0;
-  const trade = tradeDay(now);
-  const paid = addBusinessDays(trade, payoutDays(fund));
+  const nothing = maxUnits <= 0;
   const firstLocked = lockedLots.length ? unlockDate(lockedLots[0].date) : null;
   const nextUnlock = firstLocked ? `${fmtDay(firstLocked)} ${firstLocked.getFullYear()}` : "";
+  const lockLabel = fund.lockIn?.replace(" years", "-year") ?? "";
+
+  // What's on the pad. "All" is whatever equals the full redeemable figure, typed or ticked.
+  const n = Number(digits || 0);
+  const all = !nothing && n > 0 && (by === "amount" ? n === freeValue : n === maxUnits);
+  const sellUnits = all ? freeUnits : by === "amount" ? n / perUnit : n;
+  const value = all ? freeValue : by === "amount" ? n : Math.floor(n * perUnit);
+  const problem =
+    nothing || n <= 0
+      ? null
+      : by === "amount"
+        ? n > freeValue
+          ? `You can redeem up to ${inr(freeValue)}`
+          : null
+        : n > maxUnits
+          ? `You can redeem up to ${unitsText(maxUnits)} units`
+          : value < 1
+            ? "That's worth less than ₹1. Enter more units."
+            : null;
+  const ok = !nothing && n > 0 && !problem;
+
+  const late = afterCutoff(now, kind);
+  const workday = isBusinessDay(now);
+  const trade = tradeDay(now, kind);
+  const nav = fmtDay(trade);
+  const credit = addBusinessDays(trade, payoutDays(fund));
+  const lastNav = fmtDay(lastNavDay(now));
+  const cutoff = cutoffLabel(kind);
+  const exit = ok ? exitLoadFor(fund, freeLots, sellUnits, perUnit, now) : 0;
+
+  const edit = (key: string) => {
+    setTyped(true);
+    setDigits((d) => (by === "units" ? applyUnitsKey(d, key) : applyKey(d, key)));
+  };
+  const toggleAll = () => {
+    setTyped(true);
+    setDigits(all ? "" : by === "amount" ? String(freeValue) : maxUnits.toFixed(3));
+  };
+  // Switching keeps the same redemption: the figure converts at the last NAV.
+  const switchTo = (next: RedeemBy) => {
+    if (next === by) return;
+    setBy(next);
+    if (all) setDigits(next === "amount" ? String(freeValue) : maxUnits.toFixed(3));
+    else if (n > 0) setDigits(next === "amount" ? String(Math.floor(n * perUnit)) : floor3(n / perUnit).toFixed(3));
+  };
+
+  const helper = !n
+    ? by === "amount"
+      ? "Enter an amount"
+      : "Enter units"
+    : by === "amount"
+      ? <>You are redeeming <b>{unitsText(sellUnits)} units</b></>
+      : <>Worth about <b>{inr(value)}</b></>;
 
   return (
     <Screen
       onBack={pop}
-      title="Redeem"
+      className="pad redeem"
+      backdrop={<DotField active={!typed} />}
+      heading={
+        <div className="mf-fundline">
+          <FundMark fund={fund} size={32} />
+          <span>
+            <b>{fund.name}</b>
+            <small>Direct · Growth</small>
+          </span>
+        </div>
+      }
+      right={
+        !nothing && (
+          <button
+            className="mf-redeem-by"
+            onClick={() => {
+              setDraftBy(by);
+              setSheet("by");
+            }}
+            aria-haspopup="dialog"
+            aria-label={`Redeem by ${by}. Change`}
+          >
+            {by === "amount" ? "Amount" : "Units"}
+            <Icon name="chevron-down" size={16} />
+          </button>
+        )
+      }
       footer={
-        <button className="mf-btn solid wide" disabled={!ok} onClick={() => setOtp("")}>
-          Redeem {inr(requested)}
+        <button className="mf-btn solid wide" disabled={!ok} onClick={() => setSheet("summary")}>
+          Continue
         </button>
       }
     >
-      <div className="mf-fundline">
-        <FundMark fund={fund} size={32} />
+      <button className="mf-redeem-value" onClick={() => setSheet("value")} aria-haspopup="dialog">
         <span>
-          <b>{fund.name}</b>
-          <small>
-            Current value {inr(holding.current)} · {holding.units.toFixed(3)} units
-          </small>
+          Redeemable value
+          <Icon name="info" size={14} />
         </span>
-      </div>
+        <b>{inr(freeValue)}</b>
+        {(locked > 0 || waiting > 0) && !nothing && (
+          <small>
+            {locked > 0
+              ? `${inr(Math.floor(locked * perUnit))} in lock-in till ${nextUnlock}`
+              : `${unitsText(waiting)} units still being allotted`}
+          </small>
+        )}
+      </button>
 
-      {(waiting > 0 || locked > 0) && (
+      {nothing ? (
         <Notice icon="clock">
-          <b>You can redeem {inr(freeValue)} today.</b>{" "}
-          {waiting > 0 && `${waiting.toFixed(3)} units are still being allotted. `}
-          {locked > 0 &&
-            `${locked.toFixed(3)} units are still in the ${fund.lockIn?.replace(" years", "-year")} lock-in. The next ones free up on ${nextUnlock}.`}
+          {locked > 0 ? (
+            <>
+              <b>Nothing to redeem yet.</b> All your units are in the {lockLabel} lock-in. The first ones free up on{" "}
+              {nextUnlock}.
+            </>
+          ) : (
+            <>
+              <b>Nothing to redeem yet.</b> Your units are still being allotted. You can redeem once they show in your
+              folio.
+            </>
+          )}
         </Notice>
-      )}
-
-      <div className="mf-seg wide" role="group" aria-label="Redeem">
-        <button className={all ? "on" : ""} onClick={() => setAll(true)}>
-          {waiting > 0 || locked > 0 ? "All available" : "All units"}
-        </button>
-        <button className={!all ? "on" : ""} onClick={() => setAll(false)}>
-          Part of it
-        </button>
-      </div>
-
-      {!all && (
+      ) : (
         <>
-          <AmountField value={digits} error={over} />
-          <p className={`mf-min${over ? " error" : ""}`}>
-            {over ? `You can redeem up to ${inr(freeValue)}` : `Up to ${inr(freeValue)}`}
-          </p>
+          <div className={`mf-pad-amount${problem ? " error" : ""}`}>
+            <p>{by === "amount" ? "Redemption amount" : "Units to redeem"}</p>
+            <div className="mf-pad-figure">
+              <b>
+                {by === "amount" && "₹"}
+                {digits ? <RollingAmount value={digits} /> : <em>0</em>}
+              </b>
+              <i className="caret" />
+            </div>
+            {problem ? <small>{problem}</small> : <small className="hint">{helper}</small>}
+          </div>
+
+          <label className={`mf-redeem-all${all ? " on" : ""}`}>
+            <input type="checkbox" checked={all} onChange={toggleAll} />
+            <span className="box" aria-hidden="true">
+              <Icon name="check" size={14} />
+            </span>
+            Redeem all · {by === "amount" ? inr(freeValue) : `${unitsText(maxUnits)} units`}
+          </label>
+
+          <button
+            className="mf-strip"
+            onClick={() => {
+              setNavFromSummary(false);
+              setSheet("nav");
+            }}
+            aria-haspopup="dialog"
+          >
+            <span>
+              Amount is approximate, at the {lastNav} NAV. Applicable NAV date {nav}.
+            </span>
+            <Icon name="chevron-right" size={16} />
+          </button>
+          <Keypad decimal onKey={edit} />
         </>
       )}
 
-      <div className="mf-card">
-        <Row label="Redemption value" value={`about ${inr(requested)}`} hint={`${units.toFixed(3)} units at the last NAV`} />
-        <Row
-          label="Exit load"
-          value={exit ? `- ${inr(exit, 2)}` : "None"}
-          hint={exit ? "On units bought recently" : undefined}
-        />
-        <Row label="You get" value={`about ${inr(requested - exit)}`} />
-        <Row label="Money goes to" value="HDFC Bank xxxxxx4417" />
-      </div>
-
-      <Notice icon="info">{taxHint}</Notice>
-
-      <ol className="mf-timeline">
-        <li className="on">
-          <b>Today</b>
-          <small>You place the order</small>
-        </li>
-        <li>
-          <b>{fmtDay(trade)}</b>
-          <small>Units are sold at that day&rsquo;s NAV (orders after 3 PM move to the next working day)</small>
-        </li>
-        <li>
-          <b>{fmtDay(paid)}</b>
-          <small>
-            Money reaches your bank, {payoutDays(fund)} working {payoutDays(fund) === 1 ? "day" : "days"} after the sale
-          </small>
-        </li>
-      </ol>
-
-      {!all && <Keypad onKey={(k) => setDigits((d) => applyKey(d, k))} />}
-
-      {otp !== null && (
+      {sheet === "by" && (
         <Sheet
-          title="Confirm with OTP"
-          action={`Redeem ${inr(requested)}`}
-          disabled={otp.length !== 6}
-          onAction={() => replace({ name: "done", done: placeRedeem(fundId, units) })}
-          onClose={() => setOtp(null)}
+          title="Redeem by"
+          action="Done"
+          onAction={() => {
+            switchTo(draftBy);
+            setSheet(null);
+          }}
+          onClose={() => setSheet(null)}
         >
-          <p className="mf-small">We sent a 6-digit code to +91 ••••• ••210 and your email. Prototype: any 6 digits work.</p>
-          <input
-            className="mf-text mf-otp"
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-            placeholder="Enter OTP"
-            aria-label="OTP"
-          />
+          <div className="mf-options" role="radiogroup" aria-label="Redeem by">
+            {(
+              [
+                ["amount", "Amount", "Enter how much money you want back"],
+                ["units", "Units", "Enter how many units to sell"],
+              ] as const
+            ).map(([key, title, sub]) => (
+              <label key={key} className={`mf-option${draftBy === key ? " on" : ""}`}>
+                <input type="radio" name="redeem-by" checked={draftBy === key} onChange={() => setDraftBy(key)} />
+                <span className="radio" />
+                <span>
+                  <b>{title}</b>
+                  <small>{sub}</small>
+                </span>
+              </label>
+            ))}
+          </div>
+        </Sheet>
+      )}
+
+      {sheet === "value" && (
+        <Sheet title="Redeemable value" onClose={() => setSheet(null)}>
+          <SheetLine icon="info">
+            What the units you can sell today are worth at the {lastNav} NAV: {unitsText(maxUnits)} units,{" "}
+            {inr(freeValue)}.
+          </SheetLine>
+          {locked > 0 && (
+            <SheetLine icon="clock">
+              {unitsText(locked)} units ({inr(Math.floor(locked * perUnit))}) are in the {lockLabel} lock-in. Each
+              purchase unlocks 3 years after it was made; the next on {nextUnlock}.
+            </SheetLine>
+          )}
+          {waiting > 0 && (
+            <SheetLine icon="clock">
+              {unitsText(waiting)} units are still being allotted. You can redeem them once they show in your folio.
+            </SheetLine>
+          )}
+        </Sheet>
+      )}
+
+      {sheet === "summary" && (
+        <Sheet
+          title="Summary"
+          action="Redeem"
+          className="redeem-sum"
+          onAction={() => replace({ name: "done", done: placeRedeem(fundId, sellUnits, value) })}
+          onClose={() => setSheet(null)}
+        >
+          <div className="mf-redeem-sum">
+            <div className="credit">
+              <small>Estimated credit date</small>
+              <strong>{fmtDay(credit)}</strong>
+              <span>To {REDEEM_BANK}</span>
+            </div>
+            <div className="rows">
+              <Row label="Units" value={unitsText(sellUnits)} />
+              <div className="mf-kv">
+                <span className="with-info">
+                  Applicable NAV date
+                  <button
+                    aria-label="Why this NAV date"
+                    onClick={() => {
+                      setNavFromSummary(true);
+                      setSheet("nav");
+                    }}
+                  >
+                    <Icon name="info" size={16} />
+                  </button>
+                </span>
+                <b>{nav}</b>
+              </div>
+              <Row
+                label={by === "amount" && !all ? "Amount requested" : "Approximate value"}
+                value={by === "amount" && !all ? inr(value, 2) : `about ${inr(value)}`}
+              />
+              {exit > 0 && <Row label="Exit load" hint="On units held for a short time" value={`about ${inr(exit, 2)}`} />}
+            </div>
+            <Notice tone="warn" icon="warning-circle">
+              The final amount may differ. It is calculated on the NAV of {nav}, which is not published yet.
+            </Notice>
+          </div>
+        </Sheet>
+      )}
+
+      {sheet === "nav" && (
+        <Sheet
+          title={late ? `Why is my NAV date ${nav} and not today?` : `Applicable NAV date ${nav}`}
+          onClose={() => setSheet(navFromSummary ? "summary" : null)}
+        >
+          <p className="mf-sheet-text">
+            {!workday
+              ? `Today isn't a working day for mutual funds, so the order gets the next working day's NAV, which is ${nav}.`
+              : late
+                ? `You're placing this order after the fund's cut-off time of ${cutoff}. Orders after the cut-off get the next working day's NAV, which is ${nav}.`
+                : `You're placing this order before the fund's cut-off time of ${cutoff}, so it gets today's NAV.`}
+          </p>
+          <div className="mf-redeem-navbox">
+            <Row label="You're placing the order" value={`${fmtDay(now)}, ${fmtTime(now)}`} />
+            <Row label="Fund's cut-off time" value={cutoff} />
+            <Row label="Applicable NAV date" value={<em>{nav}</em>} />
+          </div>
+          <p className="mf-sheet-text muted">
+            The NAV for {nav} is published at the end of that day, so the exact amount is known only after your units are
+            sold.
+          </p>
         </Sheet>
       )}
     </Screen>
@@ -1282,11 +1473,25 @@ export function OrderDetailScreen({ orderId }: { orderId: string }) {
           ))}
         </ol>
       )}
-      <div className="mf-card">
-        <Row label="Placed" value={order.placedAt} />
-        <Row label="NAV date" value={order.navDate} />
-        <Row label="Amount" value={inr(order.amount)} />
-      </div>
+      {order.kind === "Redeem" ? (
+        <div className="mf-card">
+          <Row label="Order type" value="Redemption" />
+          <Row label="Placed" value={order.placedAt} />
+          <Row label="Amount requested" value={inr(order.amount)} />
+          {order.units !== undefined && <Row label="Units" value={unitsText(order.units)} />}
+          <Row label="Applicable NAV date" value={order.navDate} />
+          {order.creditBy && <Row label="Estimated credit date" value={order.creditBy} hint={`To ${REDEEM_BANK}`} />}
+        </div>
+      ) : (
+        <div className="mf-card">
+          <Row label="Placed" value={order.placedAt} />
+          <Row label="NAV date" value={order.navDate} />
+          <Row label="Amount" value={inr(order.amount)} />
+        </div>
+      )}
+      {order.kind === "Redeem" && order.status !== "allotted" && order.status !== "failed" && (
+        <Notice icon="info">The final amount may differ. It is calculated on the NAV of {order.navDate}.</Notice>
+      )}
     </Screen>
   );
 }
