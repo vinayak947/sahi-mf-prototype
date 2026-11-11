@@ -1599,6 +1599,222 @@
   color: var(--text-primary);
 }
 
+/* ---- Redeem pad (PM prototype #redeem / #redsum / #rednav) ---------------------------------------------------
+   Same shell as the invest pad; only the redeemable value, Redeem all and the Amount / Units switch are new.
+   DLS mapping: value row = Key value tile, switch = Chip + Bottom sheet with Radio, Redeem all = Checkbox. */
+
+.mf-redeem-by {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 10px 0 12px;
+  border: 1px solid var(--border-L1);
+  border-radius: 16px;
+  color: var(--text-primary);
+  background: var(--surface-L1);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 14.4px;
+  transition: transform 160ms ease-out;
+}
+
+.mf-redeem-by:active,
+.mf-redeem-value:active {
+  transform: scale(0.97);
+}
+
+.mf-redeem-value {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 4px 12px;
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px 16px;
+  border: 1px solid var(--border-L1);
+  border-radius: 12px;
+  color: var(--text-primary);
+  background: var(--surface-L1);
+  text-align: left;
+  transition: transform 160ms ease-out;
+}
+
+.mf-redeem-value > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 14.4px;
+}
+
+.mf-redeem-value b {
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.mf-redeem-value small {
+  grid-column: 1 / -1;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  line-height: 14px;
+}
+
+.mf-screen.pad.redeem .mf-pad-amount {
+  margin-top: 48px;
+}
+
+.mf-pad-amount small.hint {
+  color: var(--text-secondary);
+}
+
+.mf-pad-amount small.hint b {
+  color: var(--text-primary);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-weight: 500;
+}
+
+.mf-redeem-all {
+  position: relative;
+  display: inline-flex;
+  align-self: center;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin-top: 20px;
+  padding: 0 14px 0 10px;
+  border: 1px solid var(--border-L1);
+  border-radius: 16px;
+  color: var(--text-primary);
+  background: var(--surface-L1);
+  font-size: 14px;
+  line-height: 16.8px;
+  cursor: pointer;
+  transition: transform 160ms ease-out;
+}
+
+.mf-redeem-all:active {
+  transform: scale(0.97);
+}
+
+.mf-redeem-all input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mf-redeem-all .box {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 4px;
+  color: transparent;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.mf-redeem-all.on .box {
+  border-color: var(--ink);
+  color: var(--surface-L1);
+  background: var(--ink);
+}
+
+.mf-redeem-all input:focus-visible + .box {
+  outline: 2px solid var(--accent-default);
+  outline-offset: 2px;
+}
+
+.mf-sheet-text {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.mf-sheet-text.muted {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 17px;
+}
+
+.mf-sheet.redeem-sum .mf-sheet-body {
+  gap: 0;
+}
+
+.mf-redeem-sum {
+  overflow: hidden;
+  border: 1px solid var(--border-L1);
+  border-radius: 16px;
+}
+
+.mf-redeem-sum .credit {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.mf-redeem-sum .credit small,
+.mf-redeem-sum .credit span {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 14.4px;
+}
+
+.mf-redeem-sum .credit strong {
+  color: var(--text-primary);
+  font-family: "SAHI Season Display Mix:Medium", serif;
+  font-size: 28px;
+  font-weight: 580;
+  line-height: 32px;
+}
+
+.mf-redeem-sum .rows {
+  padding: 4px 16px;
+}
+
+.mf-redeem-sum .mf-notice {
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.mf-kv .with-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.mf-kv .with-info button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin: -8px 0;
+  padding: 0;
+  border: 0;
+  color: var(--text-secondary);
+  background: transparent;
+}
+
+.mf-redeem-navbox {
+  padding: 0 16px;
+  border-radius: 12px;
+  background: var(--surface-L3);
+}
+
+.mf-redeem-navbox em {
+  color: var(--accent-text);
+  font-style: normal;
+}
+
 /* ---- Bottom sheet (Figma 28:6520) ------------------------------------------------------------------------- */
 
 .mf-sheet-layer {
