@@ -9,6 +9,8 @@ npm install
 npm run dev        # http://localhost:8443  (set PORT=xxxx to change)
 ```
 
+Publishing: every push to `main` builds and deploys to GitHub Pages (`.github/workflows/deploy.yml`). There is no `gh-pages` branch. `npm run deploy` re-runs the deploy for the current `main` without a new commit.
+
 Open it at phone width (browser device mode, 375 wide). The first screen is the "Where would you like to start?" sheet; pick Mutual Funds.
 
 ## Where things are
