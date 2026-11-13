@@ -13,9 +13,8 @@ import { CheckoutScreen } from "./Checkout";
 import { SipDetail2 } from "./SipDetail2";
 import { OrderStatusDetail } from "./OrderStatusDetail";
 import { BasketHoldingScreen } from "./BasketHoldings";
-import { DoneScreen, FailedScreen, SipCancelledScreen } from "./Status";
+import { BasketDoneScreen, DoneScreen, FailedScreen, SipCancelledScreen } from "./Status";
 import {
-  BasketDoneScreen,
   BasketScreen,
   BasketsScreen,
 } from "./Baskets";

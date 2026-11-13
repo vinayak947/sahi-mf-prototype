@@ -36,7 +36,6 @@ import {
   riskLabel,
   basketRisk,
   sipReturns,
-  splitAmount,
   splitQualification,
   type Basket,
   type CompareRange,
@@ -53,7 +52,7 @@ import {
   Stars,
 } from "./parts";
 import { ReturnCalculator } from "./ReturnCalculator";
-import { useMf, type Done } from "./store";
+import { useMf } from "./store";
 
 const prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -178,12 +177,6 @@ function Segmented<T extends string>({
       ))}
     </div>
   );
-}
-
-// Phosphor "share-02", drawn as a mask like the Icon component (not in its list).
-function ShareIcon({ size = 20 }: { size?: number }) {
-  const mask = `url("${asset("ph-share-02.svg")}")`;
-  return <span aria-hidden="true" className="icon" style={{ width: size, height: size, WebkitMaskImage: mask, maskImage: mask }} />;
 }
 
 // ---- Researchers ------------------------------------------------------------------------------
@@ -686,7 +679,7 @@ export function BasketScreen({ basketId }: { basketId: string }) {
       }
       right={
         <button className="bk-share" onClick={share} aria-label={copied ? "Copied" : "Share this basket"}>
-          {copied ? <small>Copied</small> : <ShareIcon size={20} />}
+          {copied ? <small>Copied</small> : <Icon name="share-network" size={20} />}
         </button>
       }
     >
@@ -985,63 +978,5 @@ export function BasketLine({ basket, note }: { basket: Basket; note: string }) {
         <small>{note}</small>
       </span>
     </div>
-  );
-}
-
-export function BasketDoneScreen({
-  basketId,
-  mode,
-  amount,
-  dones,
-}: {
-  basketId: string;
-  mode: "lump" | "sip";
-  amount: number;
-  dones: Done[];
-}) {
-  const { viewOrders, closeAll } = useMf();
-  const basket = basketById(basketId);
-  const sip = mode === "sip";
-  const parts = splitAmount(basket, amount);
-  return (
-    <Screen
-      onBack={closeAll}
-      title=""
-      footer={
-        <div className="mf-actions">
-          <button className="mf-btn ghost" onClick={viewOrders}>
-            View orders
-          </button>
-          <button className="mf-btn solid" onClick={closeAll}>
-            Done
-          </button>
-        </div>
-      }
-    >
-      <div className="mf-result ok">
-        <span className="ring">
-          <Icon name="check" size={32} />
-        </span>
-        <h2>{sip ? "SIP started" : "Orders placed"}</h2>
-        <p>
-          {sip
-            ? `Your first instalment of ${inr(amount)} is paid. It is split across ${basket.funds.length} funds.`
-            : `${inr(amount)} is on its way to ${basket.funds.length} funds in ${basket.name}.`}
-        </p>
-      </div>
-      <div className="mf-card">
-        <Row label="Basket" value={basket.name} />
-        <Row label={sip ? "SIP amount" : "Amount"} value={sip ? `${inr(amount)} a month` : inr(amount)} />
-        {basketFunds(basket).map(({ fund }, i) => (
-          <Row key={`${fund.id}-${i}`} label={fund.name} value={inr(parts[i])} />
-        ))}
-        <Row
-          label={sip ? "Next debit" : "Units by"}
-          value={sip ? (dones[0]?.firstDebit ?? "") : (dones[0]?.unitsBy ?? "")}
-          hint={sip ? undefined : "T+1"}
-        />
-      </div>
-      <p className="mf-small mf-source">{RISK_DISCLAIMER}</p>
-    </Screen>
   );
 }

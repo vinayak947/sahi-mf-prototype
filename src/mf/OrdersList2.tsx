@@ -4,6 +4,7 @@ import { inr } from "./format";
 import { FundMark, Sheet } from "./parts";
 import { kindLabel, statusClass, statusLabel } from "./screens";
 import { useMf } from "./store";
+import { DlsTab } from "../ui/widgets";
 import { uiStatus, type UiStatus } from "./orderStatus";
 
 type StatusTab = "all" | UiStatus;
@@ -63,15 +64,9 @@ export function OrdersList2({
       <div className="tabs-row mf-orders-bar">
         <div className="tabs-list" role="tablist" aria-label="Order status">
           {STATUS_TABS.map((t) => (
-            <button
-              className={`tab-underlined${tab === t.key ? " active" : ""}`}
-              key={t.key}
-              role="tab"
-              aria-selected={tab === t.key}
-              onClick={() => setTab(t.key)}
-            >
+            <DlsTab key={t.key} active={tab === t.key} onClick={() => setTab(t.key)}>
               {t.label}
-            </button>
+            </DlsTab>
           ))}
         </div>
       </div>

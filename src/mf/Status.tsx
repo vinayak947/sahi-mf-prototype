@@ -2,6 +2,7 @@ import { useState, type CSSProperties, type ReactNode } from "react";
 import { Icon } from "../ui/Icon";
 import tickData from "../lottie/pay-tick.json";
 import { PlayLottie } from "./Checkout";
+import { basketById, basketFunds, basketOfFundId, splitAmount } from "./baskets-data";
 import { fundById } from "./data";
 import { fmtDay, inr, ordinal } from "./format";
 import { Sheet } from "./parts";
@@ -64,7 +65,7 @@ function Hero({ tone }: { tone: Tone }) {
   );
 }
 
-function StatusScreen({
+export function StatusScreen({
   tone,
   title,
   text,
@@ -245,7 +246,7 @@ export function FailedScreen({
   back: Route;
 }) {
   const { replace, pop, payMethod } = useMf();
-  const fund = fundById(fundId);
+  const fund = basketOfFundId(fundId) ?? fundById(fundId);
   const pay = kind === "payment";
   // The account they chose on the pad, so the reason names the one they actually paid from.
   const wrongBank =
@@ -294,6 +295,71 @@ export function FailedScreen({
           </button>
           <button className="mf-btn solid" onClick={() => replace(back)}>
             Try again
+          </button>
+        </div>
+      }
+    />
+  );
+}
+
+// ---- A basket: one order form, one order per fund underneath -------------------------
+
+export function BasketDoneScreen({
+  basketId,
+  mode,
+  amount,
+  dones,
+}: {
+  basketId: string;
+  mode: "lump" | "sip";
+  amount: number;
+  dones: Done[];
+}) {
+  const { viewOrders, closeAll } = useMf();
+  const basket = basketById(basketId);
+  const sip = mode === "sip";
+  const parts = splitAmount(basket, amount);
+  const pending = dones[0]?.pending;
+  const funds = basket.funds.length;
+  return (
+    <StatusScreen
+      tone={pending ? "wait" : "ok"}
+      title={pending ? "Waiting for confirmation" : sip ? "SIP started" : "Orders placed"}
+      text={
+        pending
+          ? sip
+            ? `We haven't heard back from your bank about AutoPay for ${basket.name}. Your SIP starts once it confirms.`
+            : `We haven't heard back from your bank about ${inr(amount)} for ${basket.name}. Please don't pay again.`
+          : sip
+            ? `Your first instalment of ${inr(amount)} is paid. It is split across ${funds} funds.`
+            : `${inr(amount)} is on its way to ${funds} funds in ${basket.name}.`
+      }
+      detailsTitle="Order details"
+      details={
+        <>
+          <Line label="Basket" value={basket.name} />
+          <Line label={sip ? "SIP amount" : "Amount"} value={sip ? `${inr(amount)} a month` : inr(amount)} />
+          {basketFunds(basket).map(({ fund }, i) => (
+            <Line key={`${fund.id}-${i}`} label={fund.name} value={inr(parts[i])} />
+          ))}
+          <PaidWith />
+          {pending ? (
+            <Line label="Status" value="Waiting for your bank" />
+          ) : (
+            <Line label={sip ? "Next debit" : "Units by"} value={(sip ? dones[0]?.firstDebit : dones[0]?.unitsBy) ?? ""} />
+          )}
+          <button className="st-link" onClick={viewOrders}>
+            See in Orders
+          </button>
+        </>
+      }
+      footer={
+        <div className="mf-actions">
+          <button className="mf-btn ghost" onClick={viewOrders}>
+            View orders
+          </button>
+          <button className="mf-btn solid" onClick={closeAll}>
+            Done
           </button>
         </div>
       }

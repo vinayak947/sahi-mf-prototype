@@ -159,6 +159,7 @@
 .mf-head-right {
   display: inline-flex;
   min-width: 32px;
+  margin-left: auto;
   justify-content: flex-end;
 }
 
@@ -387,9 +388,17 @@
   visibility: hidden;
 }
 
+/* Loader screens centre their block on the whole screen, not on what is left under the header. */
+.mf-screen:has(> .mf-body > .mf-wait),
+.mf-screen:has(> .mf-body > .pay-checking) {
+  position: relative;
+}
+
 .pay-checking {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
   display: flex;
-  min-height: 60vh;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -1198,14 +1207,17 @@
   margin: 16px 0 8px;
 }
 
+/* DLS Chip (Size=medium). */
 .mf-quick button {
   height: 32px;
-  padding: 0 14px;
-  border: 1px solid var(--line-strong);
-  border-radius: 100px;
+  padding: 0 16px;
+  border: 1px solid var(--border-L1);
+  border-radius: 16px;
+  color: var(--text-secondary);
   background: transparent;
-  font-family: "SAHI Sans:Medium", sans-serif;
-  font-size: 12px;
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 14px;
+  line-height: 17px;
 }
 
 .mf-select {
@@ -1214,11 +1226,11 @@
   align-items: center;
   justify-content: space-between;
   margin-top: 8px;
-  padding: 12px 16px;
-  border: 0;
-  border-radius: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--border-L2);
+  border-radius: 12px;
   text-align: left;
-  background: var(--surface);
+  background: transparent;
 }
 
 .mf-select span {
@@ -1238,30 +1250,7 @@
   font-weight: 500;
 }
 
-/* SIP date sheet (Figma 28:7235): white surface, centred title, day grid. */
-.mf-sheet.sip-date {
-  padding-top: 24px;
-  background: var(--surface-L1);
-}
-
-.mf-sheet.sip-date h2 {
-  padding: 0 16px;
-  font-family: "SAHI Sans:Medium", sans-serif;
-  font-size: 20px;
-  font-weight: 500;
-  letter-spacing: 0;
-  line-height: 24px;
-  text-align: center;
-}
-
-.mf-sheet.sip-date .mf-sheet-body {
-  gap: 16px;
-  padding: 16px 16px 0;
-}
-
-.mf-sheet.sip-date .mf-sheet-foot {
-  padding: 16px 16px 24px;
-}
+/* SIP date sheet: the standard DLS bottom sheet, with the DLS Calendar day grid below. */
 
 .mf-days {
   display: flex;
@@ -1269,45 +1258,42 @@
   width: 100%;
 }
 
-/* Seven equal columns across the sheet, so the gaps grow with the device width.
-   A short row (29, 30) keeps the same column width and sits centred. */
+/* Calendar day, Presentation=picker, at a full radius (pill) by request; the DLS value is radius/large (16). Each day fills its seventh of the row (so on a wide
+   sheet it reads as a pill), 1px open-day margin, 14/17 Regular. Selected = surface/brand/L1 with white text.
+   Cells after the 28th stay disabled. This is a day-of-month grid, so it has no month selector or weekday row.
+   DLS Date picker body: 24px between the header and the grid. */
+.sip-date .mf-sheet-body {
+  padding-top: 24px;
+}
+
 .mf-days-row {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  justify-items: center;
-}
-
-.mf-days-row:not(:has(> :nth-child(7))) {
-  grid-template-columns: repeat(auto-fit, calc(100% / 7));
-  justify-content: center;
 }
 
 .mf-days button {
   display: grid;
-  width: 44px;
-  height: 44px;
+  width: calc(100% - 2px);
+  height: 48px;
+  margin: 1px;
   place-items: center;
   padding: 0;
   border: 0;
-  border-radius: 22px;
+  border-radius: 999px;
   color: var(--text-primary);
   background: transparent;
   font-family: "SAHI Sans:Regular", sans-serif;
-  font-size: 18px;
-  line-height: 21.6px;
+  font-size: 14px;
+  line-height: 17px;
 }
 
 .mf-days button.on {
-  color: var(--text-inverse);
-  background: var(--surface-inverse);
-  font-family: "SAHI Sans:Medium", sans-serif;
-  font-size: 16px;
-  line-height: 19.2px;
+  color: var(--fixed-white);
+  background: var(--accent-default);
 }
 
 .mf-days button:disabled {
   color: var(--text-tertiary);
-  opacity: 0.5;
   cursor: default;
 }
 
@@ -1821,7 +1807,6 @@
 .mf-sheet {
   position: relative;
   width: 100%;
-  max-width: 600px;
   padding-top: 24px;
   border-radius: 16px 16px 0 0;
   background: var(--surface-L2);
@@ -1972,10 +1957,10 @@
   align-items: center;
   gap: 8px;
   width: 214px;
-  height: 40px;
+  height: 48px;
   margin-top: 32px;
-  padding: 0 12px;
-  border: 1px solid var(--border-L1);
+  padding: 0 16px;
+  border: 1px solid var(--border-L2);
   border-radius: 12px;
   color: var(--text-primary);
   background: transparent;
@@ -2215,14 +2200,17 @@
 /* ---- Waiting, result ------------------------------------------------------------------------------------------- */
 
 .mf-wait {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
   display: flex;
-  flex: 1;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding-bottom: 80px;
+  padding: 0 24px;
   text-align: center;
+  pointer-events: none;
 }
 
 .mf-wait b {
@@ -2253,71 +2241,6 @@
   to {
     transform: rotate(360deg);
   }
-}
-
-.mf-result {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 24px 8px 8px;
-  text-align: center;
-}
-
-.mf-result .ring {
-  display: grid;
-  width: 72px;
-  height: 72px;
-  margin-bottom: 8px;
-  place-items: center;
-  border-radius: 50%;
-  color: var(--fixed-white);
-}
-
-.mf-result.ok .ring {
-  background: var(--positive-surface);
-  animation: mf-pop 360ms cubic-bezier(0.2, 1.3, 0.4, 1) both;
-}
-
-.mf-result.bad .ring {
-  background: var(--negative-surface);
-  animation: mf-pop 360ms cubic-bezier(0.2, 1.3, 0.4, 1) both;
-}
-
-@keyframes mf-pop {
-  from {
-    transform: scale(0.4);
-    opacity: 0;
-  }
-
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-.mf-result .mf-tick {
-  display: block;
-  width: 72px;
-  height: 72px;
-  margin-bottom: 8px;
-}
-
-.mf-result h2 {
-  margin: 0;
-  font-family: "SAHI Season Display Mix:Medium", serif;
-  font-size: 28px;
-  font-weight: 580;
-  letter-spacing: -0.7px;
-  line-height: 32px;
-}
-
-.mf-result p {
-  max-width: 280px;
-  margin: 0;
-  color: var(--ink-2);
-  font-size: 14px;
-  line-height: 20px;
 }
 
 .mf-reasons {
@@ -2481,7 +2404,6 @@ em.amo.st-failed {
 .mf-orders-bar .tabs-list {
   min-width: 0;
   flex: 1;
-  gap: 20px;
 }
 
 .mf-orders-filter {
@@ -2520,7 +2442,7 @@ em.amo.st-failed {
 /* ---- Portfolio overview --------------------------------------------------------------------------------------------- */
 
 .mf-subtabs {
-  margin-bottom: 0;
+  margin-bottom: 16px;
 }
 
 .mf-split {
@@ -2589,7 +2511,7 @@ em.amo.st-failed {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 20px;
+  margin-top: 12px;
   color: var(--ink-3);
   font-size: 12px;
 }
@@ -2720,7 +2642,6 @@ em.amo.st-failed {
   .mf-layer,
   .mf-layer > .mf-screen > *,
   .mf-spinner,
-  .mf-result .ring,
   .mf-amount-field .caret {
     animation: none;
   }
@@ -2928,9 +2849,7 @@ em.amo.st-failed {
   padding: 8px;
   border-radius: 16px;
   background: var(--surface-L1);
-  box-shadow:
-    0 16px 40px var(--shadow-overlay),
-    0 0 0 1px var(--line);
+  box-shadow: inset 0 0 0 1px var(--line);
 }
 
 .mf-menu button {
@@ -4065,7 +3984,7 @@ em.amo.st-failed {
   flex-direction: column;
   margin-top: -24px;
   padding: 32px 16px 0;
-  border-radius: 24px 24px 0 0;
+  border-radius: 16px 16px 0 0;
   background: var(--surface-L1);
   animation: st-rise 380ms cubic-bezier(0.2, 0.8, 0.2, 1) 120ms both;
 }
@@ -4389,7 +4308,7 @@ em.amo.st-failed {
 .pm .mf-notice.warn,
 .pm-sheet .mf-notice.warn {
   width: 100%;
-  margin-top: 16px;
+  margin: 16px 0 0;
   padding: 14px 16px;
   border-radius: 16px;
   box-sizing: border-box;
@@ -4537,7 +4456,7 @@ em.amo.st-failed {
   border: 1px solid var(--border-L1);
   border-radius: 16px;
   background: var(--surface-raised);
-  box-shadow: 0 8px 24px var(--shadow-overlay);
+  box-shadow: none;
   transform-origin: top right;
   animation: mf-pf-menu-in 160ms cubic-bezier(0.23, 1, 0.32, 1) both;
 }
@@ -4744,14 +4663,13 @@ button.mf-days-next:active {
   max-width: none;
 }
 
-/* Clear-amount button: hangs off the right of the figure so the number stays centred. 44px target, 22px glyph. */
+/* Clear-amount button: part of the centred figure group. Its slot is always reserved (only opacity changes), so the group never shifts when it appears. 44px target, 22px glyph. */
 .mf-pad-clear {
-  position: absolute;
-  top: 50%;
-  left: 100%;
   display: grid;
+  flex: none;
   width: 44px;
   height: 44px;
+  margin-left: 4px;
   place-items: center;
   padding: 0;
   border: 0;
@@ -4760,7 +4678,7 @@ button.mf-days-next:active {
   font-size: 0;
   opacity: 0;
   pointer-events: none;
-  transform: translateY(-50%) scale(0.9);
+  transform: scale(0.9);
   transition:
     opacity 160ms cubic-bezier(0.23, 1, 0.32, 1),
     transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
@@ -4769,11 +4687,11 @@ button.mf-days-next:active {
 .mf-pad-clear.show {
   opacity: 1;
   pointer-events: auto;
-  transform: translateY(-50%) scale(1);
+  transform: scale(1);
 }
 
 .mf-pad-clear.show:active {
-  transform: translateY(-50%) scale(0.92);
+  transform: scale(0.92);
 }
 
 /* Long amounts in words wrap inside the screen instead of running off both edges. */
@@ -4798,4 +4716,317 @@ button.mf-days-next:active {
 .mf-pad-figure[data-digits="8"] .caret,
 .mf-pad-figure[data-digits="9"] .caret {
   height: 34px;
+}
+
+/* =====================================================================================================
+   SAHI DLS alignment. Every value below is read from SAHI Components · DLS (colours from SAHI Base ·
+   DLS semantic tokens in tokens.css). Keep new work on these components; do not restyle them per screen.
+   ===================================================================================================== */
+
+/* App bar (Leading=back, Align=start): 56px, 48px icon button, 24/32 Medium title. */
+.mf-head {
+  min-height: 56px;
+  gap: 0;
+  padding: 0 4px 0 4px;
+  box-sizing: border-box;
+}
+
+.mf-head h1 {
+  font-size: 24px;
+  line-height: 32px;
+}
+
+.mf-back {
+  width: 48px;
+  height: 48px;
+  margin: 0;
+  border-radius: 50%;
+}
+
+.mf-back::before {
+  content: none;
+}
+
+/* Bottom bar (Context=screen): 12px / 16px padding, border/L1 top border, 24px safe area. */
+.mf-foot {
+  padding: 12px 16px 36px;
+  border-top: 1px solid var(--border-L1);
+}
+
+/* Button: large 48 / medium 32; 18px side padding; 14/17 Medium; secondary = 1px icon/primary outline;
+   disabled = the whole control at 32%. */
+.mf-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 18px;
+  border: 1px solid var(--text-primary);
+  font-size: 14px;
+  line-height: 17px;
+}
+
+.mf-btn.solid {
+  border-color: transparent;
+}
+
+.mf-btn:disabled {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+  background: transparent;
+  opacity: 0.32;
+}
+
+.mf-btn.solid:disabled {
+  border-color: transparent;
+  color: var(--text-inverse);
+  background: var(--surface-inverse);
+}
+
+.mf-btn.sm {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 14px;
+}
+
+/* Notice strip: 12px / 16px padding, 8px gap, 16px glyph, 12/14 label. Full width inside a screen or sheet;
+   inline notices (inside cards) keep a 12px radius. Tones: neutral surface/L2, attentive, negative. */
+.mf-notice {
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  color: var(--text-secondary);
+  background: var(--surface-L2);
+  box-shadow: none;
+  font-size: 12px;
+  line-height: 14px;
+}
+
+.mf-notice .icon {
+  width: 16px;
+  height: 16px;
+  margin-top: -1px;
+  color: var(--text-secondary);
+}
+
+.mf-body > .mf-notice,
+.mf-sheet-body > .mf-notice {
+  margin-right: -16px;
+  margin-left: -16px;
+  border-radius: 0;
+}
+
+.mf-notice.warn {
+  color: var(--warning-text);
+  background: var(--warning-subtle);
+  box-shadow: none;
+}
+
+.mf-notice.warn .icon {
+  color: var(--warning-text);
+}
+
+.mf-notice.error {
+  color: var(--negative-text);
+  background: var(--negative-subtle);
+  box-shadow: none;
+  font-family: "SAHI Sans:Medium", sans-serif;
+}
+
+/* Bottom sheet: surface/L1, 16px padding, 18/22 Medium title, 16px between content blocks. */
+.mf-sheet {
+  padding-top: 16px;
+  background: var(--surface-L1);
+}
+
+.mf-sheet h2 {
+  padding: 0 16px;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 22px;
+}
+
+.mf-sheet-body {
+  gap: 16px;
+  padding: 16px 16px 0;
+}
+
+.mf-sheet-foot {
+  padding: 16px 16px 28px;
+}
+
+/* Menu: 4px padding, small items 33px (8 / 12 padding, 12px radius, 14/17 Regular), selected = 8% ink fill. */
+.mf-menu {
+  padding: 4px;
+  gap: 0;
+}
+
+.mf-menu button {
+  height: auto;
+  min-height: 33px;
+  padding: 8px 12px;
+  font-family: "SAHI Sans:Regular", sans-serif;
+  line-height: 17px;
+}
+
+.mf-menu button.on {
+  background: var(--transparent-L1);
+  font-family: "SAHI Sans:Regular", sans-serif;
+}
+
+/* Key value tile (Style=detail, Size=large): 16px vertical padding, 14/17, value in Regular. */
+.mf-kv {
+  align-items: center;
+  padding: 16px 0;
+  font-size: 14px;
+  line-height: 17px;
+}
+
+.mf-kv > span small {
+  font-size: 12px;
+  line-height: 14px;
+}
+
+.mf-kv > b {
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-weight: 400;
+}
+
+/* Badge (Style=tonal, Size=small, Shape=pill): 24px, 4 / 8 padding, 12/14 Regular. Tones by status. */
+.amo {
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--text-secondary);
+  background: var(--transparent-L1);
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 12px;
+  line-height: 14px;
+}
+
+em.amo.st-scheduled,
+em.amo.st-inprogress,
+em.amo.st-paymentdone {
+  border: 0;
+  background: var(--warning-subtle);
+}
+
+em.amo.st-completed {
+  border: 0;
+  background: var(--positive-subtle);
+}
+
+em.amo.st-failed {
+  border: 0;
+  background: var(--negative-subtle);
+}
+
+/* Radio (Size=small): 20px, 1.5px icon ring, 10px dot when selected. */
+.pm-radio {
+  border: 1.5px solid var(--text-secondary);
+  background: transparent;
+}
+
+[aria-checked="true"] > .pm-radio {
+  border: 1.5px solid var(--text-primary);
+  background: radial-gradient(circle, var(--text-primary) 0 5px, transparent 5.5px);
+}
+
+/* Switch (Size=small): 39 x 24, off = 1px icon/secondary outline with a 15px thumb, on = brand fill with an 18px white thumb. */
+.mf-toggle .switch-ui {
+  width: 39px;
+  height: 24px;
+  box-sizing: border-box;
+  border: 1px solid var(--text-secondary);
+  border-radius: 12px;
+  background: transparent;
+  transition: background-color 180ms ease, border-color 180ms ease;
+}
+
+.mf-toggle .switch-ui::after {
+  top: 3.5px;
+  left: 3.5px;
+  width: 15px;
+  height: 15px;
+  background: var(--text-secondary);
+  box-shadow: none;
+  transition: transform 180ms ease, width 180ms ease, height 180ms ease, top 180ms ease, left 180ms ease;
+}
+
+.mf-toggle input:checked ~ .switch-ui {
+  border-color: var(--accent-default);
+  background: var(--accent-default);
+}
+
+.mf-toggle input:checked ~ .switch-ui::after {
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background: var(--fixed-white);
+  transform: translateX(15px);
+}
+
+/* Text field (Size=large): 48px, 12px radius, 14 / 16 padding, 14/17 value, brand outline when focused. */
+.mf-text {
+  height: 48px;
+  padding: 0 16px;
+  font-size: 14px;
+  line-height: 17px;
+}
+
+.mf-text:focus {
+  border-width: 1.5px;
+  border-color: var(--accent-default);
+}
+
+/* Segment switcher (Type=subtle, Track=standard, Size=medium): the same control as .bk-seg. */
+.mf-ranges {
+  gap: 2px;
+  margin-top: 12px;
+  padding: 2px;
+  border-radius: 100px;
+  background: var(--surface-L3);
+}
+
+.mf-ranges button {
+  min-width: 0;
+  height: 29px;
+  flex: 1;
+  padding: 0 8px;
+  color: var(--text-secondary);
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 14px;
+  line-height: 17px;
+}
+
+.mf-ranges button.on {
+  color: var(--text-primary);
+  background: var(--surface-L1);
+  font-family: "SAHI Sans:Medium", sans-serif;
+}
+
+.rc-switch {
+  gap: 2px;
+  padding: 2px;
+  border: 0;
+  background: var(--surface-L3);
+}
+
+.rc-switch button {
+  height: 29px;
+  color: var(--text-secondary);
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 14px;
+  line-height: 17px;
+}
+
+.rc-switch button.on {
+  color: var(--text-primary);
+  background: var(--surface-L1);
+  font-family: "SAHI Sans:Medium", sans-serif;
 }

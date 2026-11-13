@@ -178,6 +178,43 @@ export function HoldingsSummary() {
   );
 }
 
+// SAHI Components · DLS "Tab" (Size=regular): 46px tall, 16px label, 2px indicator under the selected tab.
+// The label is drawn twice in one grid cell (the hidden copy in Medium) so selecting a tab never shifts its neighbours.
+export function DlsTab({
+  active,
+  onClick,
+  children,
+  trailing,
+  role = "tab",
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: ReactNode;
+  trailing?: ReactNode;
+  role?: string;
+  label?: string;
+}) {
+  return (
+    <button
+      type="button"
+      className={`tab-underlined${active ? " active" : ""}`}
+      role={role}
+      aria-selected={role === "tab" ? active : undefined}
+      aria-label={label}
+      onClick={onClick}
+    >
+      <span className="tab-label">
+        <span className="tab-reserve" aria-hidden="true">
+          {children}
+        </span>
+        <span className="tab-text">{children}</span>
+      </span>
+      {trailing}
+    </button>
+  );
+}
+
 export function Tabs({
   items,
   active = 0,
@@ -189,16 +226,18 @@ export function Tabs({
 }) {
   return (
     <div className="tabs-row">
-      <div className="tabs-list">
+      <div className="tabs-list" role="tablist">
         {items.map((item, index) => (
-          <button
-            className={`tab-underlined${index === active ? " active" : ""}`}
+          <DlsTab
             key={item.label}
+            active={index === active}
+            onClick={() => {}}
+            trailing={
+              item.info ? <Icon name="info" size={16} /> : item.menu ? <Icon name="dots-three-vertical" size={16} /> : undefined
+            }
           >
             {item.label}
-            {item.info && <Icon name="info" size={16} />}
-            {item.menu && <Icon name="dots-three-vertical" size={16} />}
-          </button>
+          </DlsTab>
         ))}
       </div>
       {trailing}

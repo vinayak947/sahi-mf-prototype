@@ -371,7 +371,7 @@ export function Keypad({ onKey, decimal = false }: { onKey: (key: string) => voi
           onClick={() => onKey(key)}
           aria-label={key === "del" ? "Delete" : key === "." ? "Decimal point" : key}
         >
-          {key === "del" ? decimal ? <Icon name="backspace" size={20} /> : "⌫" : key}
+          {key === "del" ? <Icon name="backspace" size={24} /> : key}
         </button>
       ))}
     </div>

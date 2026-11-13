@@ -276,24 +276,50 @@
   display: none;
 }
 
-.chip {
+/* SAHI Components · DLS "Chip" (Size=medium): 32px, 16px radius, 1px border/L1, Body/S label. Selected: border/L2,
+   Medium, text/primary. */
+.chip,
+.dls-chip {
   display: inline-flex;
   height: 32px;
   flex: none;
   align-items: center;
+  gap: 8px;
   padding: 0 16px;
-  border: 1px solid var(--line-strong);
-  border-radius: 100px;
-  color: var(--ink-2);
+  border: 1px solid var(--border-L1);
+  border-radius: 16px;
+  color: var(--text-secondary);
   background: transparent;
-  font-size: 12px;
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 14px;
+  line-height: 17px;
   white-space: nowrap;
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.chip:active,
+.dls-chip:active {
+  transform: scale(0.97);
+}
+
+/* Icon=trailing: 12px on the icon side. */
+.dls-chip {
+  padding-right: 12px;
 }
 
 .chip.active {
-  border: 1.5px solid var(--ink);
-  color: var(--ink);
+  border: 1px solid var(--border-L2);
+  color: var(--text-primary);
   font-family: "SAHI Sans:Medium", sans-serif;
+}
+
+/* SAHI Components · DLS "Divider": 1px border/L1. */
+.dls-divider {
+  height: 1px;
+  margin: 20px -16px 0;
+  padding: 0;
+  border: 0;
+  background: var(--border-L1);
 }
 
 .live-dot {
@@ -495,17 +521,20 @@
 
 /* ---- Tabs, lists, scanners --------------------------------------------- */
 
+/* SAHI Components · DLS "Tab bar" + "Tab" (Size=regular, Divider=true): tabs 46px tall, 24px apart, a 2px
+   indicator under the selected one and a 1px border/L1 divider under the bar. */
 .tabs-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin: 0 -16px;
   padding: 0 16px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--border-L1);
 }
 
 .tabs-list {
   display: flex;
+  min-width: 0;
   gap: 24px;
   overflow-x: auto;
   scrollbar-width: none;
@@ -518,30 +547,47 @@
 .tab-underlined {
   position: relative;
   display: flex;
-  height: 44px;
+  height: 46px;
   flex: none;
   align-items: center;
-  gap: 6px;
-  padding: 0;
+  gap: 8px;
+  padding: 0 0 2px;
   border: 0;
-  color: var(--ink-3);
+  color: var(--text-secondary);
   background: transparent;
-  font-family: "SAHI Sans:Medium", sans-serif;
-  font-size: 14px;
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 16px;
+  line-height: 20px;
   white-space: nowrap;
 }
 
+.tab-underlined .tab-label {
+  display: inline-grid;
+}
+
+.tab-underlined .tab-label > * {
+  grid-area: 1 / 1;
+}
+
+.tab-reserve {
+  visibility: hidden;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-weight: 500;
+}
+
 .tab-underlined.active {
-  color: var(--ink);
+  color: var(--text-primary);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-weight: 500;
 }
 
 .tab-underlined.active::after {
   position: absolute;
   right: 0;
-  bottom: -1px;
+  bottom: 0;
   left: 0;
   height: 2px;
-  background: var(--surface-inverse);
+  background: var(--text-primary);
   content: "";
 }
 
@@ -587,7 +633,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 0;
+  padding: 16px 0;
   border: 0;
   text-align: left;
   background: transparent;
@@ -597,11 +643,11 @@
 .row-side b {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-family: "SAHI Sans:Medium", sans-serif;
   font-size: 14px;
   font-weight: 500;
-  line-height: 16.8px;
+  line-height: 17px;
 }
 
 .row-side b {
@@ -611,9 +657,9 @@
 .row-main small,
 .row-side small {
   display: block;
-  margin-top: 4px;
+  margin-top: 2px;
   font-size: 12px;
-  line-height: 14.4px;
+  line-height: 14px;
 }
 
 .row-main small {
@@ -843,7 +889,7 @@
   margin-right: -16px;
   border-radius: 100px 0 0 100px;
   background: var(--surface);
-  box-shadow: 0 2px 8px var(--shadow-raised);
+  box-shadow: inset 0 0 0 1px var(--line);
 }
 
 .view-toggle {
@@ -873,7 +919,7 @@
 .float-bar {
   position: fixed;
   z-index: 15;
-  bottom: 96px;
+  bottom: 107px;
   left: 50%;
   display: flex;
   align-items: center;
@@ -881,9 +927,7 @@
   padding: 8px 12px;
   border-radius: 100px;
   background: var(--surface-L1);
-  box-shadow:
-    0 2px 8px var(--shadow-raised),
-    0 0 0 1px var(--line);
+  box-shadow: inset 0 0 0 1px var(--line);
   transform: translateX(-50%);
 }
 
@@ -1007,7 +1051,7 @@
 
 .summary-card-lg {
   margin-top: 16px;
-  box-shadow: 0 2px 8px var(--shadow-raised);
+  box-shadow: none;
 }
 
 .portfolio-controls {
@@ -1028,23 +1072,25 @@
   font-size: 14px;
 }
 
+/* DLS Switch (Size=small, Value=off): 39 x 24, 1px icon/secondary outline, 15px thumb. */
 .switch {
   position: relative;
-  width: 40px;
+  width: 39px;
   height: 24px;
-  border: 1px solid var(--line);
-  border-radius: 100px;
-  background: var(--surface);
+  box-sizing: border-box;
+  border: 1px solid var(--text-secondary);
+  border-radius: 12px;
+  background: transparent;
 }
 
 .switch i {
   position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 16px;
-  height: 16px;
+  top: 3.5px;
+  left: 3.5px;
+  width: 15px;
+  height: 15px;
   border-radius: 50%;
-  background: var(--line-strong);
+  background: var(--text-secondary);
 }
 
 .holding-row {
@@ -1066,13 +1112,15 @@
   gap: 12px;
 }
 
+/* DLS List tile (Size=large): 14/17 title, 12/14 subtitle, 14/17 value. */
 .holding-top > b {
   display: flex;
   align-items: center;
   gap: 8px;
   font-family: "SAHI Sans:Medium", sans-serif;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
+  line-height: 17px;
 }
 
 .tag-chip {
@@ -1101,6 +1149,7 @@
 .holding-bot small {
   color: var(--ink-2);
   font-size: 12px;
+  line-height: 14px;
 }
 
 .holding-bot b {

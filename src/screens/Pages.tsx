@@ -91,7 +91,7 @@ export function WatchlistPage() {
         </li>
       </ul>
 
-      <FloatingSearch label="Search & Add" icon="magnifying-glass-plus" />
+      <FloatingSearch label="Search & Add" icon="magnifying-glass" />
     </main>
   );
 }

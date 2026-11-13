@@ -1,54 +1,63 @@
 import { asset } from "../assets";
+import { DLS_PATHS, type DlsIconKey } from "./dlsIcons";
 
-// Phosphor icons (Design.md: Regular weight; fills only for selected states),
-// drawn as CSS masks so they take the text colour of whatever they sit in.
-const icons = {
-  "arrow-left": asset("ph-arrow-left.svg"),
-  back: asset("dls-chevron-left.svg"), // DLS chevron_left (DlsIcons U+E02A)
-  backspace: asset("backspace.svg"),
-  bank: asset("ph-bank.svg"),
-  calendar: asset("calendar.svg"),
-  "nav-clock": asset("nav-clock.svg"),
-  check: asset("ph-check.svg"),
-  "check-circle": asset("ph-check-circle.svg"),
-  clock: asset("ph-clock.svg"),
-  "caret-left": asset("ph-caret-left.svg"),
-  "chevron-left": asset("chevron-left.svg"),
-  "chevron-right": asset("chevron-right.svg"),
-  "chevron-down": asset("chevron-down.svg"),
-  "chevron-down-solid": asset("chevron-down-solid.svg"),
-  "shield-check": asset("ph-shield-check.svg"),
-  "warning-circle": asset("ph-warning-circle.svg"),
-  x: asset("ph-x.svg"),
-  "x-circle": asset("ph-x-circle.svg"),
-  "bookmark-simple-fill": asset("ph-bookmark-simple-fill.svg"),
-  "briefcase-fill": asset("ph-briefcase-fill.svg"),
-  "caret-down": asset("ph-caret-down.svg"),
-  "caret-left-right": asset("ph-caret-left-right.svg"),
-  "caret-right": asset("ph-caret-right.svg"),
-  "caret-up-down": asset("ph-caret-up-down.svg"),
-  "chart-line": asset("ph-chart-line.svg"),
-  columns: asset("ph-columns.svg"),
-  copy: asset("ph-copy.svg"),
-  "dots-three-vertical": asset("ph-dots-three-vertical.svg"),
-  "file-text-fill": asset("ph-file-text-fill.svg"),
-  "funnel-simple": asset("ph-funnel-simple.svg"),
-  info: asset("ph-info.svg"),
-  lightning: asset("ph-lightning.svg"),
-  link: asset("ph-link.svg"),
-  "list-bullets": asset("ph-list-bullets.svg"),
-  "magnifying-glass": asset("ph-magnifying-glass.svg"),
-  "magnifying-glass-plus": asset("ph-magnifying-glass-plus.svg"),
-  plus: asset("ph-plus.svg"),
-  "share-network": asset("ph-share-network.svg"),
-  sparkle: asset("ph-sparkle.svg"),
-  "sparkle-fill": asset("ph-sparkle-fill.svg"),
-  "trend-down": asset("ph-trend-down.svg"),
-  "trend-up": asset("ph-trend-up.svg"),
-  "wave-sine": asset("ph-wave-sine.svg"),
-};
+// DlsIcons only (SAHI Components · DLS → Icons). Each glyph is a filled path on a 24 grid, drawn as a CSS
+// mask so it takes the text colour of whatever it sits in. The old Phosphor line icons are gone: they were
+// a stroke weight the DLS does not use, which is why 3-dots and filter looked hairline.
+// Call sites keep their names; each name points at the DLS glyph that replaces it.
+const DLS_BY_NAME = {
+  "caret-right": "chevron_right",
+  "chevron-right": "chevron_right",
+  "chevron-down": "chevron_down",
+  "chevron-down-solid": "chevron_down",
+  "caret-down": "chevron_down",
+  "caret-up-down": "chevrons_up_down",
+  "caret-left-right": "chevrons_left_right",
+  "dots-three-vertical": "more_vertical",
+  "funnel-simple": "filter_lines",
+  "magnifying-glass": "search",
+  "list-bullets": "left_to_right_list_bullet",
+  "share-network": "share03",
+  "sparkle-fill": "sparkles",
+  "file-text-fill": "file_text",
+  "check-circle": "circle_check",
+  "warning-circle": "alert_circle",
+  "x-circle": "circle_x",
+  "nav-clock": "clock",
+  "trend-down": "trending_down",
+  "wave-sine": "pulse",
+  lightning: "flash",
+  columns: "layout_two_column",
+  "chart-line": "chart_line",
+  info: "info",
+  check: "check",
+  calendar: "calendar",
+  clock: "clock",
+  plus: "plus",
+  x: "x",
+  link: "link",
+  copy: "copy",
+  backspace: "backspace",
+  "shield-check": "shield_check",
+} as const satisfies Record<string, DlsIconKey>;
 
-export type IconName = keyof typeof icons;
+// The DLS chevron_left glyph, shipped earlier as an asset (DlsIcons U+E02A).
+const BACK = asset("dls-chevron-left.svg");
+
+export type IconName = keyof typeof DLS_BY_NAME | "back";
+
+const cache = new Map<string, string>();
+
+function maskFor(name: IconName): string {
+  if (name === "back") return `url("${BACK}")`;
+  let uri = cache.get(name);
+  if (!uri) {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="${DLS_PATHS[DLS_BY_NAME[name]]}"/></svg>`;
+    uri = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+    cache.set(name, uri);
+  }
+  return uri;
+}
 
 export function Icon({
   name,
@@ -59,7 +68,7 @@ export function Icon({
   size?: number;
   className?: string;
 }) {
-  const mask = `url("${icons[name]}")`;
+  const mask = maskFor(name);
   return (
     <span
       aria-hidden="true"

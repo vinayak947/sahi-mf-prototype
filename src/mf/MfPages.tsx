@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Block } from "../ui/widgets";
+import { Block, DlsTab } from "../ui/widgets";
 import { Icon } from "../ui/Icon";
 import { fundById } from "./data";
 import { blendSeries, fmtDay, inr, pct, xirr, type Range } from "./format";
@@ -72,15 +72,9 @@ export function MfPortfolio({ hideSips = false, showBaskets = true }: { hideSips
       <div className="tabs-row mf-subtabs">
         <div className="tabs-list" role="tablist" aria-label="What you hold">
           {(["funds", "baskets"] as const).map((k) => (
-            <button
-              key={k}
-              className={`tab-underlined${kind === k ? " active" : ""}`}
-              role="tab"
-              aria-selected={kind === k}
-              onClick={() => setKind(k)}
-            >
+            <DlsTab key={k} active={kind === k} onClick={() => setKind(k)}>
               {k === "funds" ? "Mutual funds" : "Baskets"}
-            </button>
+            </DlsTab>
           ))}
         </div>
       </div>
@@ -214,14 +208,14 @@ function SipHoldingTabs({
     <>
       {!hideSips && (
       <div className="tabs-row mf-subtabs">
-        <div className="tabs-list">
-          <button className={`tab-underlined${tab === "h" ? " active" : ""}`} onClick={() => setTab("h")}>
+        <div className="tabs-list" role="tablist" aria-label="Holdings and SIPs">
+          <DlsTab active={tab === "h"} onClick={() => setTab("h")}>
             Holdings ({holdings.length})
-          </button>
+          </DlsTab>
           {!hideSips && (
-            <button className={`tab-underlined${tab === "s" ? " active" : ""}`} onClick={() => setTab("s")}>
+            <DlsTab active={tab === "s"} onClick={() => setTab("s")}>
               SIPs ({sips.length})
-            </button>
+            </DlsTab>
           )}
         </div>
       </div>
@@ -335,12 +329,15 @@ function HoldingsDashboard({ current, invested, gain }: { current: number; inves
         </dl>
       </div>
 
+      <hr className="dls-divider" />
+
       <div className="mf-pf-bar">
         <span>
           {shown.length} {shown.length === 1 ? "fund" : "funds"}
         </span>
-        <button className="text-link" onClick={nextSort}>
-          Sort: {sortLabel} <Icon name="caret-up-down" size={14} />
+        <button className="dls-chip" onClick={nextSort} aria-label={`Sort by ${sortLabel}. Change sort`}>
+          Sort: {sortLabel}
+          <Icon name="caret-down" size={16} />
         </button>
       </div>
 

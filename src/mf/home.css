@@ -21,6 +21,13 @@
   background: transparent;
 }
 
+/* Holding funds: no banner, so the feed opens on the same white rounded sheet as the F&O dashboard. */
+.dashboard.mf-home-next.on-sheet {
+  padding-top: 24px;
+  border-radius: 20px 20px 0 0;
+  background: var(--surface-L1);
+}
+
 /* ---- Banner ----------------------------------------------------------------------- */
 .mf-home-next .mf-banner {
   position: relative;

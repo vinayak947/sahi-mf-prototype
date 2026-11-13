@@ -47,7 +47,7 @@ button {
 
 .app-shell {
   min-height: 100dvh;
-  padding: 0 0 96px;
+  padding: 0 0 107px;
   background:
     radial-gradient(ellipse 55% 100px at 50% -15px, var(--accent-subtle) 20%, transparent 85%),
     linear-gradient(180deg, var(--accent-subtle) 0, var(--surface-L1) 205px);
@@ -88,10 +88,8 @@ button {
   z-index: -1;
   inset: -8px 0 0;
   background: linear-gradient(180deg, var(--accent-subtle) 0%, var(--accent-subtle) 55%, var(--surface-L1) 100%);
-  /* a soft drop shadow lifts the docked strip off the content below */
-  box-shadow:
-    0 6px 16px -2px var(--shadow-overlay),
-    0 1px 0 var(--shadow-raised);
+  /* a 1px line separates the docked strip from the content below */
+  box-shadow: 0 1px 0 var(--line);
   opacity: 0;
   transition: opacity 200ms ease;
   content: "";
@@ -594,6 +592,8 @@ button {
   background: var(--negative-transparent-L2);
 }
 
+/* SAHI App · DLS "App shell · Bottom navigation bar": surface/L1, 67px items (6px padding, 40px icon slot,
+   12/14 label) plus a 24px safe area. Selected = filled glyph, Medium label, text/primary. */
 .bottom-nav {
   position: fixed;
   z-index: 20;
@@ -601,26 +601,24 @@ button {
   bottom: 0;
   left: 0;
   display: grid;
-  height: 80px;
+  height: 91px;
   grid-template-columns: repeat(5, 1fr);
-  padding: 2px 16px 12px;
-  border-radius: 16px 16px 0 0;
-  background: var(--surface-L2);
-  backdrop-filter: blur(12px);
+  padding: 0 0 24px;
+  background: var(--surface-L1);
 }
 
 .bottom-nav button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 12px 0;
+  gap: 0;
+  padding: 6px 0;
   border: 0;
   background: transparent;
   color: var(--text-secondary);
   font-family: "SAHI Sans:Regular", sans-serif;
-  font-size: 10px;
-  line-height: 12px;
+  font-size: 12px;
+  line-height: 14px;
 }
 
 .bottom-nav-icon {
@@ -629,6 +627,7 @@ button {
   width: 24px;
   height: 24px;
   flex: 0 0 24px;
+  margin: 8px 0;
   place-items: center;
 }
 
@@ -654,6 +653,11 @@ button {
   height: 100%;
 }
 
+/* The Lottie nav icons are drawn in black; in dark mode they follow the text colour like the other icons. */
+:root[data-theme="dark"] .nav-lottie svg {
+  filter: invert(1);
+}
+
 .bottom-nav-icon img {
   display: block;
 }
@@ -664,10 +668,10 @@ button {
   width: 30px;
   height: 30px;
   flex: 0 0 30px;
-  margin: -3px 0;
+  margin: 5px 0;
   border: 1.5px solid var(--text-primary);
   border-radius: 50%;
-  box-shadow: 0 1.5px 3px var(--shadow-raised);
+  box-shadow: none;
 }
 
 .bottom-nav-icon.trade-icon img {
@@ -677,6 +681,7 @@ button {
 
 .bottom-nav .selected {
   color: var(--text-primary);
+  font-family: "SAHI Sans:Medium", sans-serif;
 }
 
 .app-shell.is-transitioning .dashboard {
@@ -713,7 +718,7 @@ button {
   padding: 31px 20px 60px;
   border-radius: 16px 16px 0 0;
   background: var(--surface-L1);
-  box-shadow: 0 -1px 3px var(--shadow-raised);
+  box-shadow: none;
   animation: sheet-in 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 

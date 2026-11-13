@@ -564,7 +564,7 @@ function Signoff() {
 export function MfHomeNext() {
   const { holdings } = useMf();
   return (
-    <main className="dashboard home-feed mf-home mf-home-next">
+    <main className={`dashboard home-feed mf-home mf-home-next${holdings.length > 0 ? " on-sheet" : ""}`}>
       {holdings.length > 0 ? <Alerts /> : <Banner />}
       <BasketsSection />
       <TopPerforming />
