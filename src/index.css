@@ -33,10 +33,60 @@
   box-sizing: border-box;
 }
 
+/* One phone, as in the Stock Scalper prototype: on phones (460px and narrower) it fills the screen;
+   wider, it is a 412px device (Pixel 7) centred on the recessed page. The phone scrolls, not the
+   window, and its transform makes it the frame every position: fixed layer (bottom nav, flows,
+   sheets) sits in. --app-h is its height: use it wherever a screen would use 100dvh. */
+html,
+body,
+#root {
+  height: 100%;
+}
+
 body {
   margin: 0;
   min-width: 320px;
-  min-height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: var(--surface-L1);
+}
+
+.device {
+  --app-h: 100dvh;
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  background: var(--surface-L1);
+  transform: translateZ(0);
+}
+
+.device-scroll {
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.flow-open .device-scroll {
+  overflow: hidden;
+}
+
+@media (min-width: 461px) {
+  body {
+    display: grid;
+    place-items: center;
+    padding: 24px 16px;
+    background: var(--surface-recessed);
+  }
+
+  .device {
+    --app-h: min(892px, calc(100dvh - 48px));
+    width: 412px;
+    height: var(--app-h);
+    border-radius: 28px;
+    box-shadow:
+      0 0 0 1px var(--border-L1),
+      0 24px 48px var(--shadow-overlay);
+  }
 }
 
 button {
@@ -46,7 +96,7 @@ button {
 }
 
 .app-shell {
-  min-height: 100dvh;
+  min-height: var(--app-h);
   padding: 0 0 107px;
   background:
     radial-gradient(ellipse 55% 100px at 50% -15px, var(--accent-subtle) 20%, transparent 85%),
@@ -404,7 +454,7 @@ button {
 }
 
 .dashboard {
-  min-height: calc(100dvh - 166px);
+  min-height: calc(var(--app-h) - 166px);
   padding: 24px 16px;
   border-radius: 20px 20px 0 0;
   background: var(--surface-L1);
@@ -1006,22 +1056,6 @@ button {
 
   .flight-icon {
     display: none;
-  }
-}
-
-@media (min-width: 600px) {
-  .app-header,
-  .market-dock {
-    --dock-pad: 5vw;
-    padding-inline: var(--dock-pad);
-  }
-
-  .dashboard {
-    padding: 32px 5vw;
-  }
-
-  .start-sheet {
-    padding-inline: 8vw;
   }
 }
 

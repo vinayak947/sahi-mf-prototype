@@ -12,6 +12,7 @@ import {
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
+import { device } from "../ui/device";
 import { asset } from "../assets";
 import { Icon } from "../ui/Icon";
 import { Block, HScroll } from "../ui/widgets";
@@ -401,7 +402,7 @@ function ResearcherSheet({
         </div>
       </div>
     </div>,
-    document.body,
+    device(),
   );
 }
 

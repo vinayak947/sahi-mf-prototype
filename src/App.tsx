@@ -25,6 +25,7 @@ import { MfFlow } from "./mf/MfFlow";
 import { MfHome } from "./mf/MfHome";
 import { SipPage } from "./mf/MfPages";
 import { MfProvider, useMf } from "./mf/store";
+import { deviceSize, scrollToTop, scroller, toDevice } from "./ui/device";
 
 type Market = "fno" | "commodities" | "stocks" | "mf";
 // open  : sheet is showing
@@ -54,8 +55,8 @@ function getHero(start: DOMRect) {
   const size = start.width * ZOOM_SCALE;
   return {
     size,
-    cx: window.innerWidth / 2,
-    cy: window.innerHeight / 2 - 28,
+    cx: deviceSize().width / 2,
+    cy: deviceSize().height / 2 - 28,
   };
 }
 
@@ -84,8 +85,7 @@ function zoomKeyframes(start: DOMRect): Keyframe[] {
 // back left into the tab. Sampled so the browser can run it on the compositor.
 function flyKeyframes(start: DOMRect, target: FlightTarget): Keyframe[] {
   const hero = getHero(start);
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
+  const { width: vw, height: vh } = deviceSize();
   const reach = Math.min(vw, 480);
   const startCx = start.left + start.width / 2;
   const startCy = start.top + start.height / 2;
@@ -241,10 +241,12 @@ function Header({
   const [devOpen, setDevOpen] = useState(false);
   const [docked, setDocked] = useState(false);
   useEffect(() => {
-    const update = () => setDocked(window.scrollY >= 80);
+    const el = scroller();
+    if (!el) return;
+    const update = () => setDocked(el.scrollTop >= 80);
     update();
-    window.addEventListener("scroll", update, { passive: true });
-    return () => window.removeEventListener("scroll", update);
+    el.addEventListener("scroll", update, { passive: true });
+    return () => el.removeEventListener("scroll", update);
   }, []);
 
   return (
@@ -531,7 +533,7 @@ function StartSheet({
               key={market}
               onClick={(event) => {
                 const image = event.currentTarget.querySelector("img");
-                if (image) onChoose(market, image.getBoundingClientRect());
+                if (image) onChoose(market, toDevice(image.getBoundingClientRect()));
               }}
             >
               <span>
@@ -552,7 +554,7 @@ export default function App() {
     <MfProvider
       onOpenPage={(next) => {
         setPage(next);
-        window.scrollTo({ top: 0 });
+        scrollToTop();
       }}
     >
       <Shell page={page} setPage={setPage} />
@@ -617,7 +619,7 @@ function Shell({ page, setPage }: { page: Page; setPage: (page: Page) => void })
     }
 
     // Bounding rect gives the tilted centre; offsetWidth is the untilted size.
-    const rect = activeIconRef.current.getBoundingClientRect();
+    const rect = toDevice(activeIconRef.current.getBoundingClientRect());
     const target: FlightTarget = {
       cx: rect.left + rect.width / 2,
       cy: rect.top + rect.height / 2,
@@ -719,18 +721,16 @@ function Shell({ page, setPage }: { page: Page; setPage: (page: Page) => void })
   const hero = iconFlight ? getHero(iconFlight.start) : null;
 
   useEffect(() => {
-    document.body.style.overflow = stack.length ? "hidden" : "";
-    // iOS Safari tints the status bar from the page under the flow, so drop the pink while one is open.
+    // The phone stops scrolling under a flow (.flow-open .device-scroll). iOS Safari tints the status bar from the page under the flow, so drop the pink while one is open.
     document.documentElement.classList.toggle("flow-open", stack.length > 0);
     return () => {
-      document.body.style.overflow = "";
       document.documentElement.classList.remove("flow-open");
     };
   }, [stack.length]);
 
   function goToPage(nextPage: Page) {
     setPage(nextPage);
-    window.scrollTo({ top: 0 });
+    scrollToTop();
   }
 
   return (

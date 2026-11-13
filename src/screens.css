@@ -849,7 +849,7 @@
 }
 
 .page {
-  min-height: 100dvh;
+  min-height: var(--app-h);
   padding: 0 16px 120px;
   background: var(--surface-L1);
 }

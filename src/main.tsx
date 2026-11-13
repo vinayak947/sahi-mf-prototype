@@ -28,6 +28,11 @@ new MutationObserver(syncStatusBar).observe(document.documentElement, { attribut
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <App />
+    {/* One phone: a framed 412px device on wide screens, the whole screen on phones (see .device in index.css). */}
+    <div className="device">
+      <div className="device-scroll">
+        <App />
+      </div>
+    </div>
   </React.StrictMode>,
 )
