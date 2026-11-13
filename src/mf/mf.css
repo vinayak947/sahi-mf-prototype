@@ -82,14 +82,42 @@
    Its surface is there from the first frame, only the content slides in, so the page
    behind never shows between steps. Fill backwards only: a transform left on the body
    would trap its bottom sheets inside it, under the footer. */
+.mf-layer {
+  --step-x: 16px;
+  --step-dur: 220ms;
+}
+
+/* Opening: the layer itself slides in, so the content does not slide a second time. Back: the previous screen
+   comes in from the left. The values are read when a screen mounts, so changing them later replays nothing. */
+.mf-layer.open {
+  --step-dur: 0s;
+}
+
+.mf-layer.pop {
+  --step-x: -16px;
+}
+
 .mf-layer > .mf-screen > * {
-  animation: mf-step 220ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  animation: mf-step var(--step-dur) cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
 }
 
 @keyframes mf-step {
   from {
     opacity: 0;
-    transform: translateX(16px);
+    transform: translateX(var(--step-x));
+  }
+}
+
+/* Leaving the flow: the reverse of opening, faster, and the layer takes no taps meanwhile. */
+.mf-layer.leaving {
+  pointer-events: none;
+  animation: mf-out 200ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+@keyframes mf-out {
+  to {
+    opacity: 0;
+    transform: translateX(28px);
   }
 }
 

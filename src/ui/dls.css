@@ -208,10 +208,12 @@
   gap: 4px;
 }
 
+/* Timeline note: 12/14.4 secondary text, then the 24 icon button 4 away. The text hugs its content so the
+   action sits right beside it (the Figma frame fills the row, which parks the icon at the far edge). */
 .dls-tl-note p {
   min-width: 0;
   margin: 0;
-  flex: 1;
+  flex: 0 1 auto;
   color: var(--text-secondary);
   font-family: "SAHI Sans:Regular", sans-serif;
   font-size: 12px;
@@ -401,7 +403,14 @@ button.dls-kv {
   margin-top: 8px;
 }
 
-/* The order sheet rises over the page behind it, so its layer does not slide in from the side. */
-.mf-layer:has(.dls-sheet-layer) {
+/* The order sheet rises over the page behind it, so its layer does not slide in from the side. Set from MfFlow
+   for the whole life of the layer, never toggled while it is open. */
+.mf-layer.sheet-first {
   animation: none;
 }
+
+/* A screen kept mounted under a bottom sheet is only a backdrop: it does not replay its entrance and takes no taps. */
+.mf-layer:has(.dls-sheet-layer) > .mf-screen {
+  pointer-events: none;
+}
+
