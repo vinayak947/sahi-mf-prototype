@@ -18,6 +18,14 @@ try {
   /* storage can be blocked; the page stays light */
 }
 
+// The browser's status bar takes the page colour (--surface-L1), in whichever theme is on.
+const syncStatusBar = () => {
+  const c = getComputedStyle(document.documentElement).getPropertyValue('--surface-L1').trim()
+  if (c) document.querySelector('meta[name="theme-color"]')?.setAttribute('content', c)
+}
+syncStatusBar()
+new MutationObserver(syncStatusBar).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <App />
