@@ -1035,23 +1035,6 @@
   margin-top: 12px;
 }
 
-.mf-ranges button {
-  min-width: 44px;
-  height: 28px;
-  padding: 0 12px;
-  border: 0;
-  border-radius: 100px;
-  color: var(--ink-3);
-  background: transparent;
-  font-family: "SAHI Sans:Medium", sans-serif;
-  font-size: 12px;
-}
-
-.mf-ranges button.on {
-  color: var(--ink);
-  background: var(--surface);
-}
-
 .mf-chart-note {
   display: block;
   margin-top: 8px;
@@ -4611,7 +4594,7 @@ button.mf-days-next:active {
 }
 
 .mf-sheet.sip-why .mf-sheet-body {
-  gap: 20px;
+  gap: 28px;
   padding-top: 20px;
   max-height: calc(100dvh - 220px);
   overflow-y: auto;
@@ -4621,7 +4604,7 @@ button.mf-days-next:active {
   display: flex;
   flex-direction: column;
   margin: 0;
-  padding: 16px;
+  padding: 20px 16px;
   list-style: none;
   border: 1px solid var(--border-L1);
   border-radius: 16px;
@@ -4632,7 +4615,7 @@ button.mf-days-next:active {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 0 0 16px 24px;
+  padding: 0 0 24px 24px;
 }
 
 .sip-why-list li:last-child {
@@ -4689,7 +4672,7 @@ button.mf-days-next:active {
 .sip-why-notes {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 24px;
 }
 
 .sip-why-notes .mf-sheet-line p {
@@ -5020,30 +5003,33 @@ em.amo.st-failed {
   border-color: var(--accent-default);
 }
 
-/* Segment switcher (Type=subtle, Track=standard, Size=medium): the same control as .bk-seg. */
+/* Timeline: plain labels, the selected one sits in a filled pill (no track). */
 .mf-ranges {
-  gap: 2px;
+  justify-content: space-between;
+  gap: 0;
   margin-top: 12px;
-  padding: 2px;
-  border-radius: 100px;
-  background: var(--surface-L3);
+  padding: 0;
+  background: none;
 }
 
 .mf-ranges button {
-  min-width: 0;
-  height: 29px;
-  flex: 1;
-  padding: 0 8px;
+  width: 52px;
+  height: 28px;
+  flex: none;
+  padding: 0;
+  border: 0;
+  border-radius: 100px;
   color: var(--text-secondary);
-  font-family: "SAHI Sans:Regular", sans-serif;
+  background: transparent;
+  font-family: "SAHI Sans:Medium", sans-serif;
   font-size: 14px;
   line-height: 17px;
+  transition: background-color 160ms cubic-bezier(0.23, 1, 0.32, 1), color 160ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .mf-ranges button.on {
   color: var(--text-primary);
-  background: var(--surface-L1);
-  font-family: "SAHI Sans:Medium", sans-serif;
+  background: var(--surface-L3);
 }
 
 .rc-switch {
@@ -5065,4 +5051,48 @@ em.amo.st-failed {
   color: var(--text-primary);
   background: var(--surface-L1);
   font-family: "SAHI Sans:Medium", sans-serif;
+}
+
+
+/* Switching between the monthly SIP and one-time pads: nothing remounts. The label and the pay-with row cross-fade in
+   place (160-200ms, strong ease-out), the SIP date row eases in, and the blocks that change position glide there with
+   a FLIP in AmountPad. Entrances only: the rows that leave simply go, and the rest glides into the space. */
+.mf-pad-label p.swap {
+  animation: mf-pad-swap 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.mf-paywith.swap {
+  animation: mf-pad-swap 200ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.mf-sip-date.swap {
+  animation: mf-pad-enter 220ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@keyframes mf-pad-swap {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+@keyframes mf-pad-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mf-pad-label p.swap,
+  .mf-paywith.swap,
+  .mf-sip-date.swap {
+    animation: mf-pad-fade 160ms ease both;
+  }
+
+  @keyframes mf-pad-fade {
+    from {
+      opacity: 0;
+    }
+  }
 }

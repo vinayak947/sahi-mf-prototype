@@ -92,7 +92,7 @@ export function OrderStatusDetail({ orderId }: { orderId: string }) {
 
   return (
     <DlsBottomSheet title="Order details" onClose={pop}>
-      <div className="dls-sheet-head">
+      <div className="dls-sheet-head with-badge">
         <h2>{fund.name}</h2>
         <p>
           {kindLabel(order.kind)} • {fund.catLabel.replace(" · ", " • ")}

@@ -17,7 +17,6 @@ import { basketOfFundId } from "./baskets-data";
 import {
   addBusinessDays,
   afterCutoff,
-  closedBecause,
   cutoffLabel,
   fmtDay,
   fmtWeekday,
@@ -402,7 +401,7 @@ export function RangeChart({
       </div>
       <div className="mf-ranges" role="tablist" aria-label="Chart range">
         {ranges.map((r) => (
-          <button key={r} className={r === range ? "on" : ""} onClick={() => setRange(r)}>
+          <button key={r} className={r === range ? "on" : ""} role="tab" aria-selected={r === range} onClick={() => setRange(r)}>
             {r}
           </button>
         ))}
@@ -600,8 +599,11 @@ const SIP_DAY_ROWS = [1, 8, 15, 22, 29].map((start) =>
   Array.from({ length: start === 29 ? 2 : 7 }, (_, i) => start + i),
 );
 
+// One screen for both pads. The mode lives here, not in the route, so switching between the monthly SIP and
+// one-time pads never remounts the page: the heading, dot field, amount figure and keypad stay put, and only what
+// differs between the two changes (the label, the pay-with row, the SIP-only rows).
 export function AmountScreen({ fundId, mode, preset }: { fundId: string; mode: "lump" | "sip"; preset?: number }) {
-  return mode === "lump" ? <OneTimePad fundId={fundId} preset={preset} /> : <SipPad fundId={fundId} preset={preset} />;
+  return <AmountPad fundId={fundId} initialMode={mode} preset={preset} />;
 }
 
 // Round cross beside the amount: wipes the whole figure in one tap (the keypad's backspace takes one digit).
@@ -639,125 +641,39 @@ function amountProblem(amount: number, min: number, multiple?: number, max?: num
 
 // Up-down chevron beside the pad's label: flips between the monthly SIP and one-time pads, carrying the typed amount across.
 // Blocked when the fund doesn't take the other kind of order.
-function PadModeSwitch({ fundId, oneTime, amount, blocked }: { fundId: string; oneTime: boolean; amount: number; blocked: boolean }) {
-  const { replace } = useMf();
+function PadModeSwitch({ oneTime, onSwitch, blocked }: { oneTime: boolean; onSwitch: () => void; blocked: boolean }) {
   return (
     <button
       type="button"
       className="mf-pad-mode"
       disabled={blocked}
       aria-label={oneTime ? "Switch to monthly SIP" : "Switch to one-time investment"}
-      onClick={() => replace({ name: "amount", fundId, mode: oneTime ? "sip" : "lump", preset: amount > 0 ? amount : undefined })}
+      onClick={onSwitch}
     >
       <Icon name="caret-up-down" size={16} />
     </button>
   );
 }
 
-// One-time order pad, Figma "2 · One-time order pad" (7Jrg7bnhHGo1mitr3hJ2z2, node 25:2310).
-const ONE_TIME_QUICK = [1000, 5000, 10000];
-
-function OneTimePad({ fundId, preset }: { fundId: string; preset?: number }) {
-  const { pop, push, payMethod, holdings } = useMf();
-  const fund = fundById(fundId);
-  // A later buy in a fund already held has its own (often lower) minimum.
-  const min = holdings.some((h) => h.fundId === fundId) ? fund.minAdd : fund.minLump;
-  const method = methodView(payMethod);
-  // Opens on the fund's minimum (or the amount handed in), so it starts valid; errors show only after an edit.
-  const [digits, setDigits] = useState(String(preset ?? min));
-  const [typed, setTyped] = useState(false); // dots drift until the first amount change, then fade
-  const amount = Number(digits || 0);
-  const problem = fund.buy ? "This fund isn\u2019t taking one-time investments" : amountProblem(amount, min, fund.multiple);
-  const low = problem !== null;
-
-  // The method is already on screen, so Invest goes straight to the UPI app (or bank).
-  function go() {
-    if (!low) push({ name: "checkout", fundId, amount });
-  }
-
-  return (
-    <Screen
-      onBack={pop}
-      className="pad"
-      backdrop={<DotField active={!typed} />}
-      heading={
-        <PadHeading fund={fund} />
-      }
-      footer={
-        <>
-          <div className="mf-paywith">
-            <button
-              onClick={() => !low && push({ name: "paymode", fundId, amount })}
-              disabled={low}
-              aria-label="Change payment method"
-            >
-              <span className={`mf-paywith-logo${method.filled ? " filled" : ""}`}>
-                <img src={asset(method.logo)} alt="" />
-              </span>
-              {method.title}
-              <Icon name="chevron-down" size={16} />
-            </button>
-            <span>{method.sub}</span>
-          </div>
-          <button className="mf-btn solid wide" disabled={low} onClick={go}>
-            Invest
-          </button>
-        </>
-      }
-    >
-      <div className={`mf-pad-amount${low && amount > 0 ? " error" : ""}`}>
-        <div className="mf-pad-label">
-          <p>One time amount</p>
-          <PadModeSwitch fundId={fundId} oneTime amount={amount} blocked={fund.buy === "halted"} />
-        </div>
-        <div className="mf-pad-figure" data-digits={digits.split(".")[0].length}>
-          <b>
-            <span className="rupee">₹</span>
-            {digits ? <RollingAmount value={digits} /> : <em>0</em>}
-          </b>
-          <i className="caret" />
-          <ClearAmount show={digits !== ""} onClear={() => { setTyped(true); setDigits(""); }} />
-        </div>
-        <span className="mf-pad-words">{rupeesInWords(amount)}</span>
-        {low && <small>{problem}</small>}
-      </div>
-
-      <div className="mf-quick pad">
-        {ONE_TIME_QUICK.map((q) => (
-          <button
-            key={q}
-            onClick={() => {
-              setTyped(true);
-              setDigits(String(Math.round((amount + q) * 100) / 100));
-            }}
-          >
-            + {inr(q)}
-          </button>
-        ))}
-      </div>
-
-      <Keypad
-        onKey={(k) => {
-          setTyped(true);
-          setDigits((d) => applyKey(d, k));
-        }}
-      />
-    </Screen>
-  );
-}
-
-// SIP order pad, Figma "2 · One-time order pad" SIP variant (7Jrg7bnhHGo1mitr3hJ2z2, node 25:4412).
-const SIP_QUICK = [1000, 5000, 10000];
+// Order pads, Figma "2 · One-time order pad" (7Jrg7bnhHGo1mitr3hJ2z2): one-time node 25:2310, SIP node 25:4412.
+const PAD_QUICK = [1000, 5000, 10000];
 
 // UPI AutoPay runs without a PIN per debit up to ₹1 lakh for mutual funds; above that needs eNACH (not in the prototype).
 const UPI_AUTOPAY_MAX = 100000;
 
-function SipPad({ fundId, preset }: { fundId: string; preset?: number }) {
-  const { pop, push, payMethod, sips } = useMf();
+const FLIP_MS = 240;
+
+function AmountPad({ fundId, initialMode, preset }: { fundId: string; initialMode: "lump" | "sip"; preset?: number }) {
+  const { pop, push, payMethod, holdings } = useMf();
   const fund = fundById(fundId);
-  const min = fund.minSip;
-  const existing = sips.find((s) => s.fundId === fundId);
-  // Opens on the fund's minimum (or the amount carried over from the one-time pad), so the pad starts valid.
+  const [mode, setMode] = useState(initialMode);
+  const [switched, setSwitched] = useState(false); // true after the first flip, so the first paint does not animate twice
+  const sip = mode === "sip";
+
+  // Each pad starts valid: on the fund's own minimum for that kind of order (a later buy in a held fund has its own).
+  const minLump = holdings.some((h) => h.fundId === fundId) ? fund.minAdd : fund.minLump;
+  const minFor = (m: "lump" | "sip") => (m === "sip" ? fund.minSip : minLump);
+  const min = minFor(mode);
   const [digits, setDigits] = useState(String(preset ?? min));
   const [typed, setTyped] = useState(false); // dots drift until the first amount change, then fade
   const [day, setDay] = useState(5);
@@ -765,22 +681,65 @@ function SipPad({ fundId, preset }: { fundId: string; preset?: number }) {
   const [explain, setExplain] = useState(false); // the "how SIP dates work" sheet over the date sheet
   const [draft, setDraft] = useState(day);
   const amount = Number(digits || 0);
-  const max = Math.min(fund.maxSip ?? Infinity, UPI_AUTOPAY_MAX);
-  const problem =
-    fund.buy === "halted"
-      ? "This fund isn\u2019t taking new SIPs"
-      : existing
-        ? `You already have a ${inr(existing.amount)} SIP here`
-        : amount > UPI_AUTOPAY_MAX && max === UPI_AUTOPAY_MAX
-          ? `UPI AutoPay allows up to ${inr(UPI_AUTOPAY_MAX)} a month`
-          : amountProblem(amount, min, fund.multiple, max, " a month");
-  const low = problem !== null;
-  const account = mandateAccount(payMethod);
 
-  // Like the one-time pad: Invest goes straight to the UPI app to approve AutoPay (or, with
-  // AutoPay already on, straight to starting the SIP).
+  const method = methodView(payMethod);
+  const account = mandateAccount(payMethod);
+  const max = Math.min(fund.maxSip ?? Infinity, UPI_AUTOPAY_MAX);
+  const problem = sip
+    ? fund.buy === "halted"
+      ? "This fund isn’t taking new SIPs"
+      : amount > UPI_AUTOPAY_MAX && max === UPI_AUTOPAY_MAX
+        ? `UPI AutoPay allows up to ${inr(UPI_AUTOPAY_MAX)} a month`
+        : amountProblem(amount, min, fund.multiple, max, " a month")
+    : fund.buy
+      ? "This fund isn’t taking one-time investments"
+      : amountProblem(amount, min, fund.multiple);
+  const low = problem !== null;
+
+  // FLIP: remember where the blocks that can move sit, flip the mode, then glide each one from its old spot to its new
+  // one. The keypad and footer do not move, so they are not touched.
+  const amountRef = useRef<HTMLDivElement>(null);
+  const quickRef = useRef<HTMLDivElement>(null);
+  const before = useRef<{ amount: number; quick: number } | null>(null);
+
+  function switchMode() {
+    const next = sip ? "lump" : "sip";
+    before.current = {
+      amount: amountRef.current?.getBoundingClientRect().top ?? 0,
+      quick: quickRef.current?.getBoundingClientRect().top ?? 0,
+    };
+    setSwitched(true);
+    setMode(next);
+    // Carry what was typed across; an emptied pad opens on the new pad's minimum.
+    if (amount <= 0) setDigits(String(minFor(next)));
+  }
+
+  useLayoutEffect(() => {
+    const from = before.current;
+    before.current = null;
+    if (!from || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const pairs: [HTMLElement | null, number][] = [
+      [amountRef.current, from.amount],
+      [quickRef.current, from.quick],
+    ];
+    for (const [el, top] of pairs) {
+      if (!el) continue;
+      const dy = top - el.getBoundingClientRect().top;
+      if (Math.abs(dy) < 0.5) continue;
+      el.animate([{ transform: `translateY(${dy}px)` }, { transform: "none" }], {
+        duration: FLIP_MS,
+        easing: "cubic-bezier(0.23, 1, 0.32, 1)",
+      });
+    }
+  }, [mode]);
+
+  const swap = switched ? " swap" : "";
+
+  // Invest goes straight to the UPI app (or bank); a SIP always pays the first instalment today, then AutoPay.
   function go() {
-    if (!low) push({ name: "checkout", fundId, amount, day, payFirst: true }); // first instalment is always paid today
+    if (low) return;
+    if (sip) push({ name: "checkout", fundId, amount, day, payFirst: true });
+    else push({ name: "checkout", fundId, amount });
   }
 
   return (
@@ -788,20 +747,37 @@ function SipPad({ fundId, preset }: { fundId: string; preset?: number }) {
       onBack={pop}
       className="pad"
       backdrop={<DotField active={!typed} />}
-      heading={
-        <PadHeading fund={fund} />
-      }
+      heading={<PadHeading fund={fund} />}
       footer={
         <>
-          <div className="mf-paywith">
-            <span className="mf-paywith-mode">
-              <span className="mf-paywith-logo mandate">
-                <img src={asset("mandate-hdfc.png")} alt="" />
-              </span>
-              Pay via Mandate
-              <Icon name="chevron-down" size={16} />
-            </span>
-            <span>{accountLabel(account)}</span>
+          <div className={`mf-paywith${swap}`} key={mode}>
+            {sip ? (
+              <>
+                <span className="mf-paywith-mode">
+                  <span className="mf-paywith-logo mandate">
+                    <img src={asset("mandate-hdfc.png")} alt="" />
+                  </span>
+                  Pay via Mandate
+                  <Icon name="chevron-down" size={16} />
+                </span>
+                <span>{accountLabel(account)}</span>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => !low && push({ name: "paymode", fundId, amount })}
+                  disabled={low}
+                  aria-label="Change payment method"
+                >
+                  <span className={`mf-paywith-logo${method.filled ? " filled" : ""}`}>
+                    <img src={asset(method.logo)} alt="" />
+                  </span>
+                  {method.title}
+                  <Icon name="chevron-down" size={16} />
+                </button>
+                <span>{method.sub}</span>
+              </>
+            )}
           </div>
           <button className="mf-btn solid wide" disabled={low} onClick={go}>
             Invest
@@ -809,10 +785,16 @@ function SipPad({ fundId, preset }: { fundId: string; preset?: number }) {
         </>
       }
     >
-      <div className={`mf-pad-amount${low && amount > 0 ? " error" : ""}`}>
+      <div ref={amountRef} className={`mf-pad-amount${low && amount > 0 ? " error" : ""}`}>
         <div className="mf-pad-label">
-          <p>Monthly SIP amount</p>
-          <PadModeSwitch fundId={fundId} oneTime={false} amount={amount} blocked={fund.buy !== undefined} />
+          <p key={mode} className={swap.trim()}>
+            {sip ? "Monthly SIP amount" : "One time amount"}
+          </p>
+          <PadModeSwitch
+            oneTime={!sip}
+            onSwitch={switchMode}
+            blocked={sip ? fund.buy !== undefined : fund.buy === "halted"}
+          />
         </div>
         <div className="mf-pad-figure" data-digits={digits.split(".")[0].length}>
           <b>
@@ -825,15 +807,8 @@ function SipPad({ fundId, preset }: { fundId: string; preset?: number }) {
         <span className="mf-pad-words">{rupeesInWords(amount)}</span>
         {low && <small>{problem}</small>}
       </div>
-      {existing && (
-        <Notice icon="info">
-          To change it, open <button className="text-link" onClick={() => push({ name: "sipdetail", fundId })}>your SIP</button>.
-          A second SIP in the same fund isn&rsquo;t supported yet.
-        </Notice>
-      )}
-
-      <div className="mf-quick pad">
-        {SIP_QUICK.map((q) => (
+      <div ref={quickRef} className="mf-quick pad">
+        {PAD_QUICK.map((q) => (
           <button
             key={q}
             onClick={() => {
@@ -846,18 +821,20 @@ function SipPad({ fundId, preset }: { fundId: string; preset?: number }) {
         ))}
       </div>
 
-      <button
-        className="mf-sip-date"
-        onClick={() => {
-          setDraft(day);
-          setPicking(true);
-        }}
-        aria-haspopup="dialog"
-      >
-        <Icon name="calendar" size={20} />
-        <span className="mf-sip-date-label">Monthly SIP on {ordinal(day)}</span>
-        <Icon name="chevron-down-solid" size={16} />
-      </button>
+      {sip && (
+        <button
+          className={`mf-sip-date${swap}`}
+          onClick={() => {
+            setDraft(day);
+            setPicking(true);
+          }}
+          aria-haspopup="dialog"
+        >
+          <Icon name="calendar" size={20} />
+          <span className="mf-sip-date-label">Monthly SIP on {ordinal(day)}</span>
+          <Icon name="chevron-down-solid" size={16} />
+        </button>
+      )}
 
       <Keypad
         onKey={(k) => {
@@ -866,7 +843,7 @@ function SipPad({ fundId, preset }: { fundId: string; preset?: number }) {
         }}
       />
 
-      {picking && (
+      {sip && picking && (
         <Sheet
           title="Choose SIP instalment date"
           action="Update"
@@ -901,7 +878,7 @@ function SipPad({ fundId, preset }: { fundId: string; preset?: number }) {
           </button>
         </Sheet>
       )}
-      {picking && explain && <SipDatesInfo day={draft} amount={amount} onClose={() => setExplain(false)} />}
+      {sip && picking && explain && <SipDatesInfo day={draft} amount={amount} onClose={() => setExplain(false)} />}
     </Screen>
   );
 }
@@ -916,7 +893,6 @@ function SipDatesInfo({ day, amount, onClose }: { day: number; amount: number; o
   const thisMonth = new Date(now.getFullYear(), now.getMonth(), day);
   const daysAway = Math.round((thisMonth.getTime() - today.getTime()) / 864e5);
   const tooClose = daysAway >= 0 && daysAway < SIP_LEAD_DAYS; // this month's date is still ahead, but under the AutoPay notice
-  const shiftedRow = rows.find((r) => r.shifted);
   const nth = ["2nd", "3rd", "4th"];
   const monthName = rows[0].due.toLocaleString("en-IN", { month: "long" });
   return (
@@ -931,24 +907,21 @@ function SipDatesInfo({ day, amount, onClose }: { day: number; amount: number; o
             <b>{fmtWeekday(r.debit)}</b>
             <small>
               {nth[i]} instalment
-              {r.shifted && <> · {fmtDay(r.due)} is {closedBecause(r.due)}, so it moves to the next working day</>}
+              {r.shifted && <> · moved from {fmtDay(r.due)}</>}
             </small>
           </li>
         ))}
       </ol>
       <div className="sip-why-notes">
         <SheetLine icon="calendar">
-          After today, {inr(amount)} is debited every month on the {ordinal(day)}. Your SIP date stays the {ordinal(day)} even
-          when one month&rsquo;s debit moves.
+          After today, {inr(amount)} is debited on the {ordinal(day)} of every month.
         </SheetLine>
         <SheetLine icon="info">
-          If the {ordinal(day)} is a weekend or a market holiday, that month&rsquo;s debit happens on the next working day.
-          {!shiftedRow && " None of your next three fall on one."}
+          If the {ordinal(day)} is a weekend or market holiday, that month&rsquo;s debit moves to the next working day.
         </SheetLine>
         {tooClose && (
           <SheetLine icon="info">
-            UPI AutoPay needs 24 hours&rsquo; notice before a debit. The {ordinal(day)} is too close for this month, so your
-            next instalment is in {monthName}.
+            UPI AutoPay needs 24 hours&rsquo; notice. The {ordinal(day)} is too close, so your next debit is in {monthName}.
           </SheetLine>
         )}
         <SheetLine icon="nav-clock">Units are allotted 2 to 3 working days after each debit.</SheetLine>

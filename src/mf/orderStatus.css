@@ -161,14 +161,15 @@ em.amo.st-initiated {
 /* Bottom sheet body copy: 14/16.8 Regular, secondary. */
 .os-bullets {
   margin: 0;
-  padding: 0 0 0 18px;
+  padding: 0;
+  list-style: none;
   color: var(--text-secondary);
   font-size: 14px;
-  line-height: 16.8px;
+  line-height: 20px;
 }
 
 .os-bullets li + li {
-  margin-top: 12px;
+  margin-top: 16px;
 }
 
 /* The Notice strip's own top margin would double the 16 between blocks. */

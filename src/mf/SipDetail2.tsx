@@ -4,7 +4,8 @@ import { fundById } from "./data";
 import { inr, nextSipDate, ordinal } from "./format";
 import { FundMark, Screen, Sheet } from "./parts";
 import { accountLabel, mandateAccount } from "./payData";
-import { CANCEL_REASONS, isOpen, statusClass, statusLabel } from "./screens";
+import { StatusBadge } from "./OrderStatusDetail";
+import { CANCEL_REASONS, isOpen } from "./screens";
 import { useMf } from "./store";
 
 const MONTHS = [
@@ -135,11 +136,11 @@ export function SipDetail2({ fundId }: { fundId: string }) {
               <li key={o.id}>
                 <button className="sd-row" onClick={() => push({ name: "orderdetail", orderId: o.id })}>
                   <span className="sd-left">
-                    <em className={`amo ${statusClass(o)}`}>{statusLabel(o)}</em>
+                    <b>{inr(o.amount, 2)}</b>
                     <small>{fmtFull(o.on)}</small>
                   </span>
                   <span className="sd-right">
-                    <b>{inr(o.amount, 2)}</b>
+                    <StatusBadge order={o} />
                     {o.allotment ? (
                       <small>
                         NAV {inr(o.allotment.nav, 2)} · {o.allotment.units.toFixed(3)} units
