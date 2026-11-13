@@ -5,7 +5,7 @@ import { PlayLottie } from "./Checkout";
 import { basketById, basketFunds, basketOfFundId, splitAmount } from "./baskets-data";
 import { fundById } from "./data";
 import { fmtDay, inr, ordinal } from "./format";
-import { Sheet } from "./parts";
+import { DlsBottomSheet, DlsCard, DlsKvStacked } from "../ui/dls";
 import { accountLabel, methodView } from "./payData";
 import { useMf, type Done, type Route } from "./store";
 
@@ -102,9 +102,12 @@ export function StatusScreen({
         <footer className="st-foot">{footer}</footer>
       </div>
       {open && (
-        <Sheet title={detailsTitle} action="Close" onClose={() => setOpen(false)}>
+        <DlsBottomSheet title={detailsTitle} onClose={() => setOpen(false)}>
+          <div className="dls-sheet-head">
+            <h2>{detailsTitle}</h2>
+          </div>
           <div className="st-detail">{details}</div>
-        </Sheet>
+        </DlsBottomSheet>
       )}
     </div>
   );
@@ -112,13 +115,7 @@ export function StatusScreen({
 
 function Line({ label, hint, value }: { label: string; hint?: string; value: ReactNode }) {
   return (
-    <div className="st-kv">
-      <span>
-        {label}
-        {hint && <small>{hint}</small>}
-      </span>
-      <b>{value}</b>
-    </div>
+    <DlsKvStacked label={hint ? `${label} · ${hint}` : label} value={value} />
   );
 }
 
@@ -159,10 +156,12 @@ export function DoneScreen({ done }: { done: Done }) {
         onDetails={onDetails}
         details={
           <>
+            <DlsCard>
             <Line label="Fund" value={fund.name} />
             <Line label={sip ? "SIP amount" : "Amount"} value={sip ? `${inr(done.amount)} a month` : inr(done.amount)} />
             <PaidWith />
             <Line label="Status" value="Waiting for your bank" />
+            </DlsCard>
             <p className="st-note">
               We&rsquo;ll update this order as soon as the bank confirms. If the payment fails, any money debited goes
               back to your account in 3 to 5 working days.
@@ -199,6 +198,7 @@ export function DoneScreen({ done }: { done: Done }) {
       detailsTitle="Order details"
       details={
         <>
+          <DlsCard>
           <Line label="Fund" value={fund.name} />
           <Line label={sip ? "SIP amount" : "Amount"} value={sip ? `${inr(done.amount)} a month` : inr(done.amount)} />
           {!sell && <PaidWith />}
@@ -215,6 +215,7 @@ export function DoneScreen({ done }: { done: Done }) {
             hint={sell ? "After the sale" : undefined}
             value={sell ? done.unitsBy : sip && !done.paidNow ? "After your first debit" : done.unitsBy}
           />
+          </DlsCard>
           {done.afterCutoff && !sip && (
             <p className="st-note">This was after the day&rsquo;s cut-off, so the price is set at the {done.navDate} NAV.</p>
           )}
@@ -265,10 +266,12 @@ export function FailedScreen({
       detailsTitle="What happened"
       details={
         <>
+          <DlsCard>
           <Line label="Fund" value={fund.name} />
           <Line label={pay ? "Amount" : "SIP amount"} value={pay ? inr(amount) : `${inr(amount)} a month`} />
           <PaidWith />
           <Line label="Status" value={pay ? "Payment failed" : "AutoPay rejected"} />
+          </DlsCard>
           <p className="st-note strong">Common reasons</p>
           <ul className="st-reasons">
             {pay ? (
@@ -315,8 +318,11 @@ export function BasketDoneScreen({
   amount: number;
   dones: Done[];
 }) {
-  const { viewOrders, closeAll } = useMf();
+  const { viewOrders, closeAll, push, orders } = useMf();
   const basket = basketById(basketId);
+  // "View details" opens the same Order details sheet as everywhere else, for the basket's first order.
+  const first = dones.find((d) => orders.some((o) => o.id === d.orderId));
+  const onDetails = first ? () => push({ name: "orderdetail", orderId: first.orderId }) : undefined;
   const sip = mode === "sip";
   const parts = splitAmount(basket, amount);
   const pending = dones[0]?.pending;
@@ -334,9 +340,11 @@ export function BasketDoneScreen({
             ? `Your first instalment of ${inr(amount)} is paid. It is split across ${funds} funds.`
             : `${inr(amount)} is on its way to ${funds} funds in ${basket.name}.`
       }
+      onDetails={onDetails}
       detailsTitle="Order details"
       details={
         <>
+          <DlsCard>
           <Line label="Basket" value={basket.name} />
           <Line label={sip ? "SIP amount" : "Amount"} value={sip ? `${inr(amount)} a month` : inr(amount)} />
           {basketFunds(basket).map(({ fund }, i) => (
@@ -348,6 +356,7 @@ export function BasketDoneScreen({
           ) : (
             <Line label={sip ? "Next debit" : "Units by"} value={(sip ? dones[0]?.firstDebit : dones[0]?.unitsBy) ?? ""} />
           )}
+          </DlsCard>
           <button className="st-link" onClick={viewOrders}>
             See in Orders
           </button>
@@ -396,11 +405,13 @@ export function SipCancelledScreen({
       detailsTitle="SIP details"
       details={
         <>
+          <DlsCard>
           <Line label="Fund" value={fund.name} />
           <Line label="SIP amount" value={`${inr(amount)} a month`} />
           <Line label="SIP date" value={`${ordinal(day)} of every month`} />
           <Line label="Cancelled on" value={fmtDay(new Date())} />
           <Line label="Reason" value={reason} />
+          </DlsCard>
           <p className="st-note">Your units stay invested. You can start a new SIP in this fund anytime.</p>
         </>
       }
