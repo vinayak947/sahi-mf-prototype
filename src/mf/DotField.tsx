@@ -11,8 +11,8 @@ const SPEED = 0.035; // drift; well under the web's 0.08 so it never pulls the e
 const GAMMA = 1.6;
 const BIAS = 0.02;
 const INK = [0.902, 0.11, 0.604]; // #E61C9A
-const ALPHA_LO = 0.01;
-const ALPHA_HI = 0.02;
+const ALPHA_LO = 0.03;
+const ALPHA_HI = 0.04;
 const FPS = 24;
 const FADE_MS = 700; // keep in step with .mf-dotfield's opacity transition
 
@@ -87,7 +87,8 @@ void main(){
   float dist = length(fract(pix / uCell) - 0.5);
   float aa = fwidth(dist) + 1e-4;
   float mark = 1.0 - smoothstep(g * 0.5 - aa, g * 0.5 + aa, dist);
-  fragColor = vec4(uInk, mix(${ALPHA_LO.toFixed(3)}, ${ALPHA_HI.toFixed(3)}, g) * mark);
+  float a = mix(${ALPHA_LO.toFixed(3)}, ${ALPHA_HI.toFixed(3)}, g) * mark;
+  fragColor = vec4(uInk * a, a); // premultiplied: iOS Safari ignores premultipliedAlpha:false and would draw solid pink
 }`;
 
 export function DotField({ active }: { active: boolean }) {
@@ -105,7 +106,7 @@ export function DotField({ active }: { active: boolean }) {
 
   useEffect(() => {
     const canvas = ref.current;
-    const gl = canvas?.getContext("webgl2", { alpha: true, premultipliedAlpha: false, antialias: false });
+    const gl = canvas?.getContext("webgl2", { alpha: true, premultipliedAlpha: true, antialias: false });
     if (!canvas || !gl) return;
 
     const compile = (type: number, src: string) => {
@@ -137,8 +138,7 @@ export function DotField({ active }: { active: boolean }) {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     gl.uniform1f(gl.getUniformLocation(prog, "uCell"), CELL_CSS * dpr);
     gl.uniform3f(gl.getUniformLocation(prog, "uInk"), INK[0], INK[1], INK[2]);
-    // One draw per frame, so no blending: the canvas is non-premultiplied and takes (ink, alpha) as is.
-    // Blending onto the transparent clear would square the alpha and dim the ink to grey.
+    // One draw per frame, so no blending: the canvas is premultiplied and takes (ink * alpha, alpha) as is.
     gl.clearColor(0, 0, 0, 0);
 
     // Start somewhere other than t=0 so each visit opens on a different pattern.
