@@ -10,7 +10,9 @@ import {
   type BadgeTone,
   type TimelineItem,
 } from "../ui/dls";
+import { basketById, basketFunds, splitAmount } from "./baskets-data";
 import { fundById, type MfOrder } from "./data";
+import { inr } from "./format";
 import { kindLabel, statusLabel } from "./screens";
 import { FundMark, Notice, Screen, Sheet } from "./parts";
 import { useMf } from "./store";
@@ -66,7 +68,13 @@ function timelineItems(
   });
 }
 
-export function OrderStatusDetail({ orderId }: { orderId: string }) {
+export function OrderStatusDetail({
+  orderId,
+  basket: group,
+}: {
+  orderId: string;
+  basket?: { id: string; amount: number; orderIds: string[] };
+}) {
   const { pop, push, orders, sips } = useMf();
   const order = orders.find((o) => o.id === orderId);
   if (!order) return null;
@@ -74,6 +82,7 @@ export function OrderStatusDetail({ orderId }: { orderId: string }) {
   const sipDay = order.sipDay ?? sips.find((s) => s.fundId === order.fundId)?.day ?? 5;
   const ctx = { order, fund, sipDay };
   const redeem = order.kind === "Redeem";
+  const basket = group ? basketById(group.id) : undefined;
 
   if (redeem && order.status !== "failed") return <RedeemPage ctx={ctx} onBack={pop} />;
 
@@ -93,9 +102,11 @@ export function OrderStatusDetail({ orderId }: { orderId: string }) {
   return (
     <DlsBottomSheet title="Order details" onClose={pop}>
       <div className="dls-sheet-head with-badge">
-        <h2>{fund.name}</h2>
+        <h2>{basket ? basket.name : fund.name}</h2>
         <p>
-          {kindLabel(order.kind)} • {fund.catLabel.replace(" · ", " • ")}
+          {basket
+            ? `${kindLabel(order.kind)} • Basket • ${basket.funds.length} funds`
+            : `${kindLabel(order.kind)} • ${fund.catLabel.replace(" · ", " • ")}`}
         </p>
         <StatusBadge order={order} />
       </div>
@@ -104,16 +115,29 @@ export function OrderStatusDetail({ orderId }: { orderId: string }) {
 
       <DlsCard>
         {view.facts.map((f) => (
-          <DlsKvStacked key={f.label} label={f.label} value={f.value} tone={f.hi ? "positive" : undefined} />
+          <DlsKvStacked
+            key={f.label}
+            label={f.label}
+            value={basket && f.label === "Amount" ? `${inr(group!.amount, 2)}${sip ? " / month" : ""}` : f.value}
+            tone={f.hi ? "positive" : undefined}
+          />
         ))}
         {sip && !redeem && (
           <DlsKvStacked
             label="SIP Regn No."
             value={sipRegnNo(order)}
-            onTap={() => push({ name: "sipdetail", fundId: fund.id })}
+            onTap={basket ? undefined : () => push({ name: "sipdetail", fundId: fund.id })}
           />
         )}
       </DlsCard>
+
+      {basket && (
+        <DlsCard>
+          {basketFunds(basket).map(({ fund: f }, i) => (
+            <DlsKvDetail key={`${f.id}-${i}`} label={f.name} value={inr(splitAmount(basket, group!.amount)[i], 2)} />
+          ))}
+        </DlsCard>
+      )}
 
       <Timeline steps={view.steps} order={order} defaultOpen={uiStatus(order) !== "completed"} />
 

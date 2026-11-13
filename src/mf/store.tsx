@@ -97,7 +97,7 @@ export type Route =
   | { name: "sipdetail"; fundId: string }
   | { name: "sipcancelled"; fundId: string; amount: number; day: number; reason: string; inProgress: number }
   | { name: "redeem"; fundId: string }
-  | { name: "orderdetail"; orderId: string }
+  | { name: "orderdetail"; orderId: string; basket?: { id: string; amount: number; orderIds: string[] } } // basket: one sheet for every fund order placed together
   // Researcher backed baskets (Order 2.0 home); see Baskets.tsx
   | { name: "baskets" }
   | { name: "basketholding"; basketId: string }

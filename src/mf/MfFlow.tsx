@@ -71,7 +71,7 @@ function renderRoute(route: Route) {
     case "redeem":
       return <RedeemScreen fundId={route.fundId} />;
     case "orderdetail":
-      return <OrderStatusDetail orderId={route.orderId} />;
+      return <OrderStatusDetail orderId={route.orderId} basket={route.basket} />;
     case "basketholding":
       return <BasketHoldingScreen basketId={route.basketId} />;
     case "baskets":

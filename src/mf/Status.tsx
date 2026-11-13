@@ -320,9 +320,16 @@ export function BasketDoneScreen({
 }) {
   const { viewOrders, closeAll, push, orders } = useMf();
   const basket = basketById(basketId);
-  // "View details" opens the same Order details sheet as everywhere else, for the basket's first order.
+  // "View details" opens the same Order details sheet as everywhere else, with the basket as its header and a row per fund.
   const first = dones.find((d) => orders.some((o) => o.id === d.orderId));
-  const onDetails = first ? () => push({ name: "orderdetail", orderId: first.orderId }) : undefined;
+  const onDetails = first
+    ? () =>
+        push({
+          name: "orderdetail",
+          orderId: first.orderId,
+          basket: { id: basketId, amount, orderIds: dones.map((d) => d.orderId) },
+        })
+    : undefined;
   const sip = mode === "sip";
   const parts = splitAmount(basket, amount);
   const pending = dones[0]?.pending;
