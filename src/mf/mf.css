@@ -2362,10 +2362,12 @@ em.amo.st-allotted {
   background: var(--positive-subtle);
 }
 
-/* Status pills: Scheduled, In progress and Payment done amber; Completed green; Failed red. */
-.st-scheduled,
-.st-inprogress,
-.st-paymentdone {
+/* Status pills: Initiated neutral (the DLS has no blue); In progress amber; Completed green; Failed red. */
+.st-initiated {
+  color: var(--text-secondary);
+}
+
+.st-inprogress {
   color: var(--warning-text);
 }
 
@@ -2377,9 +2379,12 @@ em.amo.st-allotted {
   color: var(--negative-text);
 }
 
-em.amo.st-scheduled,
-em.amo.st-inprogress,
-em.amo.st-paymentdone {
+em.amo.st-initiated {
+  border-color: var(--surface-L2);
+  background: var(--surface-L2);
+}
+
+em.amo.st-inprogress {
   border-color: var(--warning-subtle);
   background: var(--warning-subtle);
 }
@@ -4908,9 +4913,12 @@ button.mf-days-next:active {
   line-height: 14px;
 }
 
-em.amo.st-scheduled,
-em.amo.st-inprogress,
-em.amo.st-paymentdone {
+em.amo.st-initiated {
+  border: 0;
+  background: var(--surface-L2);
+}
+
+em.amo.st-inprogress {
   border: 0;
   background: var(--warning-subtle);
 }

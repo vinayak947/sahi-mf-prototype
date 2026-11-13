@@ -68,8 +68,9 @@ function digits(seed: string, n: number, prefix = ""): string {
 }
 export const sahiOrderId = (o: MfOrder) => digits(o.id, 18, "26");
 export const exchangeOrderId = (o: MfOrder) => digits(`x${o.id}`, 7, "8");
+export const sipRegnNo = (o: MfOrder) => digits(`r${o.id}`, 9, "5");
 
-export const BANK = "HDFC Bank **4417";
+export const BANK = "HDFC Bank ••4417";
 const WEEKEND = "Weekends (Saturdays and Sundays) and public holidays are non-working days.";
 
 // ---- View model -------------------------------------------------------------------------------------------------

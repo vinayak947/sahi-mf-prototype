@@ -337,7 +337,7 @@ function HoldingsDashboard({ current, invested, gain }: { current: number; inves
         </span>
         <button className="dls-chip" onClick={nextSort} aria-label={`Sort by ${sortLabel}. Change sort`}>
           Sort: {sortLabel}
-          <Icon name="caret-down" size={16} />
+          <Icon name="caret-up-down" size={16} />
         </button>
       </div>
 

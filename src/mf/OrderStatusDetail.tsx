@@ -1,9 +1,18 @@
 import { useState } from "react";
 import { Icon } from "../ui/Icon";
+import {
+  DlsBadge,
+  DlsBottomSheet,
+  DlsCard,
+  DlsKvDetail,
+  DlsKvStacked,
+  DlsTimeline,
+  type BadgeTone,
+  type TimelineItem,
+} from "../ui/dls";
 import { fundById, type MfOrder } from "./data";
-import { kindLabel, statusClass, statusLabel } from "./screens";
-import { FundMark, Screen, Sheet } from "./parts";
-import { inr } from "./format";
+import { kindLabel, statusLabel } from "./screens";
+import { FundMark, Notice, Screen, Sheet } from "./parts";
 import { useMf } from "./store";
 import {
   BANK,
@@ -12,12 +21,51 @@ import {
   redeemFailedView,
   redeemView,
   sahiOrderId,
+  sipRegnNo,
   uiStatus,
   type DetailView,
   type StepView,
+  type UiStatus,
 } from "./orderStatus";
 
-// Order 2.0 order detail: Initiated / In progress / Completed / Failed for SIP, one-time and redemption.
+// Order detail, built from DLS components only (Bottom sheet, Key value tile, Card, Badge, Timeline, Notice
+// strip, Button). Initiated / In progress / Completed / Failed for SIP, one-time and redemption.
+
+export const STATUS_TONE: Record<UiStatus, BadgeTone> = {
+  initiated: "neutral",
+  inprogress: "attentive",
+  completed: "positive",
+  failed: "negative",
+};
+
+export function StatusBadge({ order }: { order: MfOrder }) {
+  return <DlsBadge label={statusLabel(order)} tone={STATUS_TONE[uiStatus(order)]} />;
+}
+
+// Map the step list onto DLS timeline statuses. The step the user is waiting on is In progress and pulses; later
+// steps are Not started.
+function timelineItems(
+  steps: StepView[],
+  order: MfOrder,
+  opts: { onInfo?: (s: StepView) => void; timeAsNote?: boolean } = {},
+): TimelineItem[] {
+  const ui = uiStatus(order);
+  const waiting = ui === "initiated" || ui === "inprogress" ? steps.findIndex((s) => s.state === "todo") : -1;
+  return steps.map((s, i) => {
+    const notes: NonNullable<TimelineItem["notes"]> = [];
+    if (s.time && opts.timeAsNote) notes.push({ text: s.time });
+    if (s.showId) notes.push({ text: `SAHI Order ID: ${sahiOrderId(order)}`, copyText: sahiOrderId(order) });
+    if (s.sub) notes.push({ text: s.sub, onInfo: s.info && opts.onInfo ? () => opts.onInfo!(s) : undefined });
+    return {
+      status: s.state === "done" ? "completed" : s.state === "fail" ? "failed" : i === waiting ? "inProgress" : "notStarted",
+      title: s.label,
+      trailingText: opts.timeAsNote ? undefined : s.time,
+      pulsing: i === waiting,
+      notes,
+    };
+  });
+}
+
 export function OrderStatusDetail({ orderId }: { orderId: string }) {
   const { pop, push, orders, sips } = useMf();
   const order = orders.find((o) => o.id === orderId);
@@ -26,11 +74,11 @@ export function OrderStatusDetail({ orderId }: { orderId: string }) {
   const sipDay = order.sipDay ?? sips.find((s) => s.fundId === order.fundId)?.day ?? 5;
   const ctx = { order, fund, sipDay };
   const redeem = order.kind === "Redeem";
-  const failed = order.status === "failed";
 
-  if (redeem && !failed) return <RedeemPage ctx={ctx} onBack={pop} />;
+  if (redeem && order.status !== "failed") return <RedeemPage ctx={ctx} onBack={pop} />;
 
   const view = redeem ? redeemFailedView(ctx) : purchaseView(ctx);
+  const sip = order.kind === "SIP";
   const act = (a: NonNullable<DetailView["action"]>) =>
     a === "viewSip"
       ? push({ name: "sipdetail", fundId: fund.id })
@@ -38,131 +86,77 @@ export function OrderStatusDetail({ orderId }: { orderId: string }) {
         ? push({ name: "amount", fundId: fund.id, mode: "lump" })
         : redeem
           ? push({ name: "redeem", fundId: fund.id })
-          : push({ name: "amount", fundId: fund.id, mode: order.kind === "SIP" ? "sip" : "lump" });
+          : push({ name: "amount", fundId: fund.id, mode: sip ? "sip" : "lump" });
   const label = { viewSip: "View SIP", investMore: "Invest more", retry: "Retry" } as const;
+  const noticeTone = { info: "info", ok: "info", err: "error" } as const;
 
   return (
-    <Screen
-      onBack={pop}
-      title="Order details"
-      footer={
-        view.action ? (
-          <div className="os-actions">
-            <button className="mf-btn solid wide" onClick={() => act(view.action!)}>
-              {label[view.action]}
-            </button>
-          </div>
-        ) : undefined
-      }
-    >
-      <div className="os-head">
+    <DlsBottomSheet title="Order details" onClose={pop}>
+      <div className="dls-sheet-head">
         <h2>{fund.name}</h2>
-        <p className="sub">
-          {kindLabel(order.kind)} • Direct • NAV {inr(view.nav, 2)}
+        <p>
+          {kindLabel(order.kind)} • {fund.catLabel.replace(" · ", " • ")}
         </p>
-        <em className={`amo ${statusClass(order)}`}>{statusLabel(order)}</em>
+        <StatusBadge order={order} />
       </div>
 
-      {view.banner && <Banner tone={view.banner.tone} text={view.banner.text} />}
+      {view.banner && <Notice tone={noticeTone[view.banner.tone]}>{view.banner.text}</Notice>}
 
-      <div className="os-card" role="list">
+      <DlsCard>
         {view.facts.map((f) => (
-          <div key={f.label} role="listitem" className={`os-frow${f.hi ? " hi" : ""}`}>
-            <span>{f.label}</span>
-            <b>{f.value}</b>
-          </div>
+          <DlsKvStacked key={f.label} label={f.label} value={f.value} tone={f.hi ? "positive" : undefined} />
         ))}
-      </div>
+        {sip && !redeem && (
+          <DlsKvStacked
+            label="SIP Regn No."
+            value={sipRegnNo(order)}
+            onTap={() => push({ name: "sipdetail", fundId: fund.id })}
+          />
+        )}
+      </DlsCard>
 
-      <Timeline steps={view.steps} order={order} defaultOpen={uiStatus(order) !== "completed"} title="Order details" />
-    </Screen>
+      <Timeline steps={view.steps} order={order} defaultOpen={uiStatus(order) !== "completed"} />
+
+      {view.action && (
+        <button className="mf-btn solid wide" onClick={() => act(view.action!)}>
+          {label[view.action]}
+        </button>
+      )}
+    </DlsBottomSheet>
   );
 }
 
-function Banner({ tone, text }: { tone: "info" | "ok" | "err"; text: string }) {
-  return (
-    <div className={`os-banner ${tone}`} role={tone === "err" ? "alert" : undefined}>
-      <Icon name={tone === "ok" ? "check-circle" : tone === "err" ? "warning-circle" : "info"} size={16} />
-      <p>{text}</p>
-    </div>
-  );
-}
-
-function StepList({ steps, order, onInfo }: { steps: StepView[]; order: MfOrder; onInfo?: (s: StepView) => void }) {
-  const [copied, setCopied] = useState(false);
-  const copy = () => {
-    try {
-      void navigator.clipboard.writeText(sahiOrderId(order));
-    } catch {
-      /* clipboard can be blocked in a preview */
-    }
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1500);
-  };
-  return (
-    <ol className="os-tl">
-      {steps.map((s, i) => {
-        const next = steps[i + 1];
-        return (
-          <li key={s.label} className={`os-step ${s.state}${next?.state === "done" ? " next-done" : ""}`}>
-            <div className="os-rail">
-              <span className="os-dot">
-                {s.state === "done" && <Icon name="check" size={12} />}
-                {s.state === "fail" && <Icon name="x" size={12} />}
-              </span>
-              <span className="os-line" />
-            </div>
-            <div className="os-body">
-              <div className="os-trow">
-                <b>{s.label}</b>
-                {s.time && <span className="os-time">{s.time}</span>}
-              </div>
-              {s.showId && (
-                <p className="os-s">
-                  SAHI Order ID {sahiOrderId(order)}
-                  <button className="os-icon-btn" aria-label={copied ? "Order ID copied" : "Copy SAHI Order ID"} onClick={copy}>
-                    <Icon name={copied ? "check" : "copy"} size={14} />
-                  </button>
-                </p>
-              )}
-              {s.sub && (
-                <p className="os-s">
-                  {s.sub}
-                  {s.info && onInfo && (
-                    <button className="os-icon-btn" aria-label="How is the allotment date decided?" onClick={() => onInfo(s)}>
-                      <Icon name="info" size={16} />
-                    </button>
-                  )}
-                </p>
-              )}
-            </div>
-          </li>
-        );
-      })}
-    </ol>
-  );
-}
-
-function Timeline({ steps, order, defaultOpen, title }: { steps: StepView[]; order: MfOrder; defaultOpen: boolean; title: string }) {
+// "Order details": a disclosure row over the timeline, in one Card.
+function Timeline({ steps, order, defaultOpen }: { steps: StepView[]; order: MfOrder; defaultOpen: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
   const [info, setInfo] = useState<string[] | null>(null);
   return (
-    <div className="os-card">
-      <button className="os-thead" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
-        <span>{title}</span>
-        <Icon name="chevron-down" size={18} />
+    <DlsCard>
+      <button className="os-disc" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+        <b>Order details</b>
+        <Icon name="chevron-down" size={16} />
       </button>
-      {open && <StepList steps={steps} order={order} onInfo={(s) => setInfo(s.info ?? null)} />}
+      {open && (
+        <div className="os-tl-wrap">
+          <DlsTimeline items={timelineItems(steps, order, { onInfo: (s) => setInfo(s.info ?? null) })} />
+        </div>
+      )}
       {info && (
         <Sheet title="How is the allotment date decided?" onClose={() => setInfo(null)}>
-          <ul className="os-list-bullets">
-            {info.map((t) => (
-              <li key={t}>{t}</li>
-            ))}
-          </ul>
+          <Bullets items={info} />
         </Sheet>
       )}
-    </div>
+    </DlsCard>
+  );
+}
+
+function Bullets({ items }: { items: string[] }) {
+  return (
+    <ul className="os-bullets">
+      {items.map((t) => (
+        <li key={t}>{t}</li>
+      ))}
+    </ul>
   );
 }
 
@@ -172,64 +166,49 @@ function RedeemPage({ ctx, onBack }: { ctx: Parameters<typeof redeemView>[0]; on
   const v = redeemView(ctx);
   return (
     <Screen onBack={onBack} title="Order details">
-      <div className="os-fund">
-        <FundMark fund={fund} size={40} />
-        <div>
-          <h2>{fund.name}</h2>
-          <small>{fund.catLabel}</small>
-        </div>
-      </div>
-
-      <div className="os-facts">
-        <div>
-          <small>Order type</small>
-          <b>{kindLabel(order.kind)}</b>
-        </div>
-        <div>
-          <small>Order ID</small>
-          <b>{exchangeOrderId(order)}</b>
-        </div>
-      </div>
-
-      <div className="os-redcard">
-        <div className="os-redhead">
-          <div>
-            <small>{v.head.label}</small>
-            <strong>{v.head.value}</strong>
+      <div className="os-page">
+        <div className="os-fund">
+          <FundMark fund={fund} size={40} />
+          <div className="dls-sheet-head">
+            <h2>{fund.name}</h2>
+            <p>{fund.catLabel}</p>
           </div>
-          <span>To {BANK}</span>
         </div>
-        {v.rows.map((r) => (
-          <div key={r.label} className="os-frow">
-            <span>{r.label}</span>
-            <b>{r.value}</b>
-          </div>
-        ))}
-        <p className="os-warn">
+
+        <DlsCard>
+          <DlsKvStacked label="Order type" value={kindLabel(order.kind)} />
+          <DlsKvStacked label="Order ID" value={exchangeOrderId(order)} />
+        </DlsCard>
+
+        <DlsCard>
+          <DlsKvStacked label={v.head.label} value={v.head.value} />
+          <DlsKvStacked label="Credit to" value={BANK} />
+          {v.rows.map((r) => (
+            <DlsKvDetail key={r.label} label={r.label} value={r.value} />
+          ))}
+        </DlsCard>
+
+        <Notice tone="warn">
           Final amount may differ due to the applicable NAV and exit load.{" "}
           <button className="os-link" onClick={() => setWhy(true)}>
             What does this mean?
           </button>
-        </p>
-      </div>
+        </Notice>
 
-      <div className="os-statuscard">
-        <div className="os-statushead">
-          <h3>Order status</h3>
-          <em className={`amo ${statusClass(order)}`}>{statusLabel(order)}</em>
-        </div>
-        <StepList steps={v.steps} order={order} />
-      </div>
+        <DlsCard padding="inset">
+          <div className="os-status-head">
+            <b>Order status</b>
+            <StatusBadge order={order} />
+          </div>
+          <DlsTimeline items={timelineItems(v.steps, order, { timeAsNote: true })} />
+        </DlsCard>
 
-      {why && (
-        <Sheet title={v.why.title} onClose={() => setWhy(false)}>
-          <ul className="os-list-bullets">
-            {v.why.bullets.map((t) => (
-              <li key={t}>{t}</li>
-            ))}
-          </ul>
-        </Sheet>
-      )}
+        {why && (
+          <Sheet title={v.why.title} onClose={() => setWhy(false)}>
+            <Bullets items={v.why.bullets} />
+          </Sheet>
+        )}
+      </div>
     </Screen>
   );
 }

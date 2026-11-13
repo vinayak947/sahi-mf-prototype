@@ -1,8 +1,9 @@
-/* Order 2.0 status screens: Initiated / In progress / Completed / Failed.
-   Colours are tokens.css variables only. */
+/* Order status screens: the orders list rows and the order detail. Layout values come from the DLS components
+   (List tile, Key value tile, Card, Badge, Timeline, Bottom sheet) in ui/dls.css; colours are tokens.css
+   variables only. */
 
 /* Initiated: the reference shows blue, tokens.css has no blue/info token, so this pill is neutral
-   (custom, no DLS blue token). */
+   (custom, no DLS blue token). Used by the SIP history pills. */
 .st-initiated {
   color: var(--text-secondary);
 }
@@ -12,7 +13,7 @@ em.amo.st-initiated {
   background: var(--surface-L3);
 }
 
-/* ---- Orders list rows --------------------------------------------------------------------------------------------- */
+/* ---- Orders list: List tile, Size=large, standalone (16 above and below, 12 between, 2 between lines) -------- */
 
 .os-list {
   margin: 0;
@@ -20,15 +21,18 @@ em.amo.st-initiated {
   list-style: none;
 }
 
+.os-list > li + li {
+  border-top: 1px solid var(--border-L1);
+}
+
 .os-row {
   display: flex;
   width: 100%;
   align-items: center;
   gap: 12px;
-  padding: 14px 0;
+  padding: 16px 0;
   border: 0;
-  border-bottom: 1px solid var(--line);
-  color: var(--ink);
+  color: var(--text-primary);
   background: transparent;
   text-align: left;
   transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
@@ -43,27 +47,27 @@ em.amo.st-initiated {
 }
 
 .os-mid {
+  display: flex;
   min-width: 0;
   flex: 1;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .os-mid b {
-  display: block;
   overflow: hidden;
   font-family: "SAHI Sans:Medium", sans-serif;
   font-size: 14px;
   font-weight: 500;
-  line-height: 20px;
+  line-height: 16.8px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .os-mid small {
-  display: block;
-  margin-top: 2px;
-  color: var(--ink-3);
+  color: var(--text-secondary);
   font-size: 12px;
-  line-height: 16px;
+  line-height: 14.4px;
 }
 
 .os-end {
@@ -75,388 +79,100 @@ em.amo.st-initiated {
 }
 
 .os-amt {
-  font-family: "SAHI Sans:Medium", sans-serif;
+  font-family: "SAHI Sans:Regular", sans-serif;
   font-size: 14px;
-  line-height: 20px;
+  line-height: 16.8px;
 }
 
-/* ---- Detail ------------------------------------------------------------------------------------------------------- */
+/* ---- Order detail ------------------------------------------------------------------------------------------------ */
 
-.os-head h2 {
-  margin: 4px 0 0;
-  font-family: "SAHI Sans:Medium", sans-serif;
-  font-size: 18px;
-  font-weight: 500;
-  line-height: 24px;
-}
-
-.os-head .sub {
-  margin: 4px 0 12px;
-  color: var(--ink-2);
-  font-size: 13px;
-  line-height: 18px;
-}
-
-.os-banner {
+/* Redemption page: blocks 16 apart, as the Bottom sheet content is. */
+.os-page {
   display: flex;
-  gap: 10px;
-  margin: 16px 0 0;
-  padding: 12px 14px;
-  border-radius: 12px;
-  color: var(--ink);
-  background: var(--surface);
-  font-size: 13px;
-  line-height: 18px;
-}
-
-.os-banner .icon {
-  flex: none;
-  margin-top: 1px;
-}
-
-.os-banner p {
-  margin: 0;
-}
-
-.os-banner.ok {
-  color: var(--positive-text-contrast);
-  background: var(--positive-subtle);
-  box-shadow: inset 0 0 0 1px var(--positive-transparent-L2);
-}
-
-.os-banner.err {
-  color: var(--negative-text-contrast);
-  background: var(--negative-subtle);
-  box-shadow: inset 0 0 0 1px var(--negative-transparent-L2);
-}
-
-.os-card {
-  margin: 16px 0 0;
-  padding: 4px 16px;
-  border-radius: 16px;
-  background: var(--surface);
-}
-
-.os-frow {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 12px 0;
-  font-size: 13px;
-  line-height: 18px;
-}
-
-.os-frow + .os-frow {
-  border-top: 1px solid var(--line-strong);
-}
-
-.os-frow span {
-  color: var(--ink-2);
-}
-
-.os-frow b {
-  max-width: 64%;
-  font-family: "SAHI Sans:Medium", sans-serif;
-  font-weight: 500;
-  text-align: right;
-}
-
-.os-frow.hi b {
-  color: var(--positive-text);
-}
-
-.os-thead {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 0;
-  border: 0;
-  color: var(--ink);
-  background: transparent;
-  font-family: "SAHI Sans:Medium", sans-serif;
-  font-size: 14px;
-  text-align: left;
-}
-
-.os-thead .icon {
-  color: var(--ink-2);
-  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
-}
-
-.os-thead[aria-expanded="true"] .icon {
-  transform: rotate(180deg);
-}
-
-.os-tl {
-  margin: 0;
-  padding: 0 0 8px;
-  list-style: none;
-}
-
-.os-step {
-  position: relative;
-  display: flex;
-  gap: 12px;
-  padding-bottom: 18px;
-}
-
-.os-step:last-child {
-  padding-bottom: 8px;
-}
-
-.os-rail {
-  position: relative;
-  display: flex;
-  width: 20px;
-  flex: none;
   flex-direction: column;
-  align-items: center;
+  gap: 16px;
 }
 
-.os-dot {
-  display: grid;
-  width: 20px;
-  height: 20px;
-  flex: none;
-  place-items: center;
-  border: 2px solid var(--line-strong);
-  border-radius: 50%;
-  background: var(--surface-L1);
-}
-
-.os-step.done .os-dot {
-  border-color: var(--positive-surface);
-  color: var(--positive-on-fill);
-  background: var(--positive-surface);
-}
-
-.os-step.fail .os-dot {
-  border-color: var(--negative-surface);
-  color: var(--negative-on-fill);
-  background: var(--negative-surface);
-}
-
-.os-line {
-  width: 2px;
-  flex: 1;
-  margin-top: 2px;
-  background: var(--line-strong);
-}
-
-.os-step.done.next-done .os-line {
-  background: var(--positive-surface);
-}
-
-.os-step:last-child .os-line {
-  display: none;
-}
-
-.os-body {
-  min-width: 0;
-  flex: 1;
-}
-
-.os-trow {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.os-trow b {
-  font-family: "SAHI Sans:Medium", sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
-}
-
-.os-step.fail .os-trow b {
-  color: var(--negative-text);
-}
-
-.os-step.todo .os-trow b {
-  color: var(--ink-2);
-}
-
-.os-time {
-  color: var(--ink-3);
-  font-size: 12px;
-  line-height: 16px;
-  text-align: right;
-}
-
-.os-s {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin: 2px 0 0;
-  color: var(--ink-3);
-  font-size: 12px;
-  line-height: 16px;
-}
-
-.os-icon-btn {
-  display: inline-grid;
-  width: 24px;
-  height: 24px;
-  flex: none;
-  place-items: center;
-  padding: 0;
-  border: 0;
-  color: var(--ink-2);
-  background: transparent;
-  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
-}
-
-.os-icon-btn:active {
-  transform: scale(0.9);
-}
-
-.os-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.os-actions .mf-btn {
-  flex: 1;
-}
-
-/* Redemption page */
 .os-fund {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 4px 0 16px;
 }
 
-.os-fund h2 {
-  margin: 0;
-  font-family: "SAHI Sans:Medium", sans-serif;
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 22px;
+/* "Order details" disclosure row, Key value tile padding (16 above and below). */
+.os-disc {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+  border: 0;
+  color: var(--text-primary);
+  background: transparent;
+  text-align: left;
 }
 
-.os-fund small {
-  display: block;
-  color: var(--ink-3);
-  font-size: 12px;
-  line-height: 16px;
-}
-
-.os-facts {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.os-facts > div:last-child {
-  text-align: right;
-}
-
-.os-facts small {
-  display: block;
-  color: var(--ink-3);
-  font-size: 12px;
-  line-height: 16px;
-}
-
-.os-facts b {
-  display: block;
-  margin-top: 2px;
+.os-disc b {
+  flex: 1;
   font-family: "SAHI Sans:Medium", sans-serif;
   font-size: 14px;
   font-weight: 500;
+  line-height: 16.8px;
 }
 
-.os-redcard {
-  margin: 0 0 16px;
-  padding: 16px;
-  border-radius: 16px;
-  background: var(--surface);
+.os-disc .icon {
+  color: var(--text-secondary);
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-.os-redhead {
+.os-disc[aria-expanded="true"] .icon {
+  transform: rotate(180deg);
+}
+
+.os-tl-wrap {
+  padding: 16px 0;
+}
+
+.os-status-head {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--line-strong);
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
-.os-redhead small {
-  display: block;
-  color: var(--ink-2);
-  font-size: 12px;
-  line-height: 16px;
-}
-
-.os-redhead strong {
-  display: block;
-  margin-top: 2px;
+.os-status-head b {
   font-family: "SAHI Sans:Medium", sans-serif;
-  font-size: 20px;
+  font-size: 14px;
   font-weight: 500;
-  line-height: 26px;
-}
-
-.os-redhead span {
-  color: var(--ink-2);
-  font-size: 12px;
-  text-align: right;
-}
-
-.os-warn {
-  margin: 4px 0 0;
-  padding-top: 12px;
-  border-top: 1px solid var(--line-strong);
-  color: var(--ink-2);
-  font-size: 12px;
-  line-height: 17px;
+  line-height: 16.8px;
 }
 
 .os-link {
   padding: 0;
   border: 0;
-  color: var(--ink);
+  color: inherit;
   background: transparent;
   font: inherit;
   font-family: "SAHI Sans:Medium", sans-serif;
   text-decoration: underline;
 }
 
-.os-statuscard {
-  padding: 4px 16px 8px;
-  border-radius: 16px;
-  background: var(--surface);
-}
-
-.os-statushead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 0 12px;
-}
-
-.os-statushead h3 {
-  margin: 0;
-  font-family: "SAHI Sans:Medium", sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.os-list-bullets {
+/* Bottom sheet body copy: 14/16.8 Regular, secondary. */
+.os-bullets {
   margin: 0;
   padding: 0 0 0 18px;
-  color: var(--ink-2);
-  font-size: 13px;
-  line-height: 19px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 16.8px;
 }
 
-.os-list-bullets li + li {
-  margin-top: 10px;
+.os-bullets li + li {
+  margin-top: 12px;
+}
+
+/* The Notice strip's own top margin would double the 16 between blocks. */
+.os-page .mf-notice,
+.dls-sheet .mf-notice {
+  margin: 0;
 }

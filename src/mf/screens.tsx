@@ -11,7 +11,6 @@ import {
   type CategoryKey,
   type Fund,
   type MfOrder,
-  type MfOrderStatus,
 } from "./data";
 import { BasketLine } from "./Baskets";
 import { basketOfFundId } from "./baskets-data";
@@ -66,6 +65,7 @@ import { GoalHero } from "./GoalArt";
 import { nextFunds, sectors, themeOf } from "./sectors";
 import { ReturnCalculator } from "./ReturnCalculator";
 import { accountLabel, mandateAccount, methodView } from "./payData";
+import { UI_STATUS_LABEL, uiStatus } from "./orderStatus";
 import { useMf, type ListSpec } from "./store";
 
 
@@ -1085,7 +1085,7 @@ export function HoldingScreen({ fundId }: { fundId: string }) {
                   </span>
                   <span className="row-side">
                     <b>{inr(order.amount)}</b>
-                    <small className={`st-${order.status}`}>{statusLabel(order)}</small>
+                    <small className={statusClass(order)}>{statusLabel(order)}</small>
                   </span>
                 </button>
               </li>
@@ -1108,18 +1108,10 @@ export const CANCEL_REASONS = [
   "Something else",
 ];
 
-// Phase 1 PRD: Scheduled · In progress · Payment done · Completed · Failed. Redemption has no Payment done.
-const statusLabels: Record<MfOrderStatus, string> = {
-  scheduled: "Scheduled",
-  inprogress: "In progress",
-  paymentdone: "Payment done",
-  completed: "Completed",
-  failed: "Failed",
-};
+// Four statuses everywhere (Initiated · In progress · Completed · Failed), from the one mapping in orderStatus.ts.
+export const statusLabel = (order: MfOrder) => UI_STATUS_LABEL[uiStatus(order)];
 
-export const statusLabel = (order: MfOrder) => statusLabels[order.status];
-
-export const statusClass = (order: MfOrder) => `st-${order.status}`;
+export const statusClass = (order: MfOrder) => `st-${uiStatus(order)}`;
 
 // Order types read One-time, SIP and Redemption; "Lumpsum" is only the internal key.
 export const kindLabel = (kind: MfOrder["kind"]) =>

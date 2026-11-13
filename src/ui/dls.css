@@ -1,0 +1,407 @@
+/* DLS pieces for the order screens (ui/dls.tsx). Every number is from the matching SAHI Components · DLS
+   component; every colour is a tokens.css variable. Icon colours: icon/positive = --positive-text,
+   icon/attentive = --warning-text, icon/negative = --negative-text, icon/disabled = --text-tertiary. */
+
+/* ---- Badge: tonal, pill, small (24 high, 4 / 8 padding, 12/14.4 Regular) --------------------------------------- */
+
+.dls-badge {
+  display: inline-flex;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 12px;
+  line-height: 14.4px;
+  white-space: nowrap;
+}
+
+.dls-badge.neutral {
+  color: var(--text-secondary);
+  background: var(--transparent-L1);
+}
+
+.dls-badge.positive {
+  color: var(--positive-text);
+  background: var(--positive-subtle);
+}
+
+.dls-badge.negative {
+  color: var(--negative-text);
+  background: var(--negative-subtle);
+}
+
+.dls-badge.attentive {
+  color: var(--warning-text);
+  background: var(--warning-subtle);
+}
+
+/* ---- Timeline: 24 glyph, 1.5 rail, 8 between rail and content, 4 between lines, 16 between steps ------------ */
+
+.dls-timeline {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  flex-direction: column;
+  list-style: none;
+}
+
+.dls-tl-step {
+  display: flex;
+  gap: 8px;
+  min-height: 48px;
+}
+
+.dls-tl-step.last {
+  min-height: 0;
+}
+
+.dls-tl-rail {
+  position: relative;
+  display: flex;
+  width: 24px;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  align-self: stretch;
+}
+
+.dls-tl-glyph {
+  flex: none;
+}
+
+.dls-tl-step.completed {
+  --tl: var(--positive-text);
+}
+
+.dls-tl-step.inProgress {
+  --tl: var(--warning-text);
+}
+
+.dls-tl-step.failed {
+  --tl: var(--negative-text);
+}
+
+.dls-tl-step.notStarted {
+  --tl: var(--text-tertiary);
+}
+
+.dls-tl-glyph {
+  color: var(--tl);
+}
+
+.dls-tl-line {
+  color: var(--positive-text);
+  background-color: var(--positive-text);
+}
+
+.dls-tl-step.inProgress .dls-tl-glyph,
+.dls-tl-step.inProgress .dls-tl-line {
+  color: var(--warning-text);
+  background-color: var(--warning-text);
+}
+
+.dls-tl-step.failed .dls-tl-glyph,
+.dls-tl-step.failed .dls-tl-line {
+  color: var(--negative-text);
+  background-color: var(--negative-text);
+}
+
+.dls-tl-step.notStarted .dls-tl-glyph,
+.dls-tl-step.notStarted .dls-tl-line {
+  color: var(--text-tertiary);
+  background-color: var(--text-tertiary);
+}
+
+/* The glyph is a mask drawn in the element's background colour, so the rail's colour comes from the same rule. */
+.dls-tl-glyph {
+  background-color: currentColor !important;
+}
+
+.dls-tl-line {
+  width: 1.5px;
+  min-height: 1px;
+  flex: 1 0 0;
+  border-radius: 4px;
+  background-color: var(--tl);
+}
+
+.dls-tl-pulse {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--tl);
+  opacity: 0.4;
+  animation: dls-pulse 1.6s cubic-bezier(0.23, 1, 0.32, 1) infinite;
+}
+
+@keyframes dls-pulse {
+  from {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dls-tl-pulse {
+    animation: none;
+  }
+}
+
+.dls-tl-content {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 16px;
+}
+
+.dls-tl-step.last .dls-tl-content {
+  padding-bottom: 0;
+}
+
+.dls-tl-title {
+  display: flex;
+  min-height: 24px;
+  align-items: center;
+  gap: 8px;
+}
+
+.dls-tl-title p {
+  min-width: 0;
+  margin: 0;
+  flex: 1;
+  color: var(--text-primary);
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 14px;
+  line-height: 16.8px;
+}
+
+.dls-tl-step.notStarted .dls-tl-title p {
+  color: var(--text-tertiary);
+}
+
+.dls-tl-title span {
+  flex: none;
+  color: var(--text-secondary);
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 12px;
+  line-height: 14.4px;
+  white-space: nowrap;
+}
+
+.dls-tl-note {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dls-tl-note p {
+  min-width: 0;
+  margin: 0;
+  flex: 1;
+  color: var(--text-secondary);
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 12px;
+  line-height: 14.4px;
+  overflow-wrap: anywhere;
+}
+
+/* Icon button, small, tertiary: 24 square around a 16 glyph. */
+.dls-icon-btn {
+  display: inline-grid;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: var(--text-secondary);
+  background: transparent;
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.dls-icon-btn:active {
+  transform: scale(0.96);
+}
+
+/* ---- Card (outlined) and Key value tile ------------------------------------------------------------------------ */
+
+.dls-card {
+  overflow: hidden;
+  border: 1px solid var(--border-L1);
+  border-radius: 16px;
+}
+
+.dls-card.rows {
+  padding: 0 16px;
+}
+
+.dls-card.inset {
+  padding: 16px;
+}
+
+.dls-card.rows > * + * {
+  border-top: 1px solid var(--border-L1);
+}
+
+.dls-kv {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 0;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+}
+
+button.dls-kv {
+  border-top: 1px solid var(--border-L1);
+}
+
+.dls-card.rows > .dls-kv:first-child {
+  border-top: 0;
+}
+
+.dls-kv-text {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dls-kv-text small {
+  color: var(--text-secondary);
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 12px;
+  line-height: 14.4px;
+}
+
+.dls-kv-text b {
+  color: var(--text-primary);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 16.8px;
+  overflow-wrap: anywhere;
+}
+
+.dls-kv-text b.positive {
+  color: var(--positive-text);
+}
+
+.dls-kv .icon {
+  color: var(--text-secondary);
+}
+
+/* Style=detail: 16 between label and value, both 14/16.8. */
+.dls-kv.detail {
+  gap: 16px;
+  justify-content: space-between;
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 14px;
+  line-height: 16.8px;
+}
+
+.dls-kv.detail span:first-child {
+  color: var(--text-secondary);
+}
+
+.dls-kv.detail span:last-child {
+  color: var(--text-primary);
+  text-align: right;
+}
+
+/* ---- Bottom sheet: Detent=large (max 95%), Padding=default (16, plus the 12 bottom inset), 16 between blocks ---- */
+
+.dls-sheet-layer {
+  position: fixed;
+  z-index: 45;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.dls-sheet-barrier {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  background: var(--transparent-scrim);
+  cursor: default;
+  animation: mf-scrim-in 240ms ease-out both;
+}
+
+.dls-sheet-layer.closing .dls-sheet-barrier {
+  animation: mf-scrim-out 220ms ease-in both;
+}
+
+.dls-sheet {
+  position: relative;
+  display: flex;
+  width: 100%;
+  max-height: 95%;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 16px 28px;
+  overflow-y: auto;
+  border-radius: 16px 16px 0 0;
+  background: var(--surface-L1);
+  animation: sheet-in 300ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.dls-sheet-layer.closing .dls-sheet {
+  animation: sheet-out 220ms ease-in both;
+}
+
+.dls-sheet-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.dls-sheet-head h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 21.6px;
+}
+
+.dls-sheet-head p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 14px;
+  line-height: 16.8px;
+}
+
+.dls-sheet-head .dls-badge {
+  margin-top: 8px;
+}
+
+/* The order sheet rises over the page behind it, so its layer does not slide in from the side. */
+.mf-layer:has(.dls-sheet-layer) {
+  animation: none;
+}

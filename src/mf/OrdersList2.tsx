@@ -2,7 +2,8 @@ import { useState } from "react";
 import { fundById, type MfOrder } from "./data";
 import { inr } from "./format";
 import { FundMark, Sheet } from "./parts";
-import { kindLabel, statusClass, statusLabel } from "./screens";
+import { kindLabel } from "./screens";
+import { StatusBadge } from "./OrderStatusDetail";
 import { useMf } from "./store";
 import { DlsTab } from "../ui/widgets";
 import { uiStatus, type UiStatus } from "./orderStatus";
@@ -31,10 +32,6 @@ const threeMonthsAgo = () => {
   d.setMonth(d.getMonth() - 3);
   return d.toISOString().slice(0, 10);
 };
-
-// "SIP · Debit on 16 Nov" while waiting on an AutoPay debit, else "One-time · 11 Nov".
-const metaLine = (o: MfOrder) =>
-  `${kindLabel(o.kind)} · ${o.status === "scheduled" && o.debitOn ? `Debit on ${o.debitOn}` : o.placedAt.split(",")[0]}`;
 
 // One mixed list, newest first. Status tabs on top; the order type is picked from the filter button in the page header
 // (MfOrdersPage), which owns the choice and the sheet.
@@ -83,11 +80,11 @@ export function OrdersList2({
                   <FundMark fund={fund} size={40} />
                   <span className="os-mid">
                     <b>{fund.name}</b>
-                    <small>{metaLine(order)}</small>
+                    <small>{kindLabel(order.kind)}</small>
                   </span>
                   <span className="os-end">
                     <span className="os-amt">{inr(order.amount)}</span>
-                    <em className={`amo ${statusClass(order)}`}>{statusLabel(order)}</em>
+                    <StatusBadge order={order} />
                   </span>
                 </button>
               </li>
