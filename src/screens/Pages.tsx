@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { asset } from "../assets";
 import { holdings, indexScalper, orders } from "../data";
 import { Icon, type IconName } from "../ui/Icon";
-import { MfOrders, MfPortfolio, PortfolioOverview, SegmentChips } from "../mf/MfPages";
+import { MfOrdersPage, MfPortfolio, MfPortfolioPage, PortfolioOverview, SegmentChips } from "../mf/MfPages";
 import { useMf } from "../mf/store";
 import {
   Block,
@@ -106,9 +106,7 @@ export function OrdersPage({ mfOnly = false }: { mfOnly?: boolean }) {
   if (seg === "mf") {
     return (
       <main className="page">
-        <h1 className="page-title">Orders</h1>
-        {!mfOnly && <SegmentChips value="mf" onChange={(v) => setSeg(v === "mf" ? "mf" : "stocks")} />}
-        <MfOrders />
+        <MfOrdersPage segments={!mfOnly && <SegmentChips value="mf" onChange={(v) => setSeg(v === "mf" ? "mf" : "stocks")} />} />
       </main>
     );
   }
@@ -172,8 +170,7 @@ export function PortfolioPage({ mfOnly = false }: { mfOnly?: boolean }) {
   if (mfOnly) {
     return (
       <main className="page">
-        <h1 className="page-title">Portfolio</h1>
-        <MfPortfolio hideSips />
+        <MfPortfolioPage />
       </main>
     );
   }

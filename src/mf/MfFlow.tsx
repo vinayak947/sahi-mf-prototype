@@ -5,14 +5,20 @@ import {
   FundScreen,
   HoldingScreen,
   ListScreen,
-  OrderDetailScreen,
   RedeemScreen,
   SearchScreen,
-  SipDetailScreen,
 } from "./screens";
 import { AddBankScreen, PayModeScreen, UpiAppsScreen, VerifyBankScreen } from "./PayMode";
 import { CheckoutScreen } from "./Checkout";
+import { SipDetail2 } from "./SipDetail2";
+import { OrderStatusDetail } from "./OrderStatusDetail";
+import { BasketHoldingScreen } from "./BasketHoldings";
 import { DoneScreen, FailedScreen, SipCancelledScreen } from "./Status";
+import {
+  BasketDoneScreen,
+  BasketScreen,
+  BasketsScreen,
+} from "./Baskets";
 
 function renderRoute(route: Route) {
   switch (route.name) {
@@ -52,7 +58,7 @@ function renderRoute(route: Route) {
     case "holding":
       return <HoldingScreen fundId={route.fundId} />;
     case "sipdetail":
-      return <SipDetailScreen fundId={route.fundId} />;
+      return <SipDetail2 fundId={route.fundId} />;
     case "sipcancelled":
       return (
         <SipCancelledScreen
@@ -66,7 +72,15 @@ function renderRoute(route: Route) {
     case "redeem":
       return <RedeemScreen fundId={route.fundId} />;
     case "orderdetail":
-      return <OrderDetailScreen orderId={route.orderId} />;
+      return <OrderStatusDetail orderId={route.orderId} />;
+    case "basketholding":
+      return <BasketHoldingScreen basketId={route.basketId} />;
+    case "baskets":
+      return <BasketsScreen />;
+    case "basket":
+      return <BasketScreen basketId={route.basketId} />;
+    case "basketdone":
+      return <BasketDoneScreen basketId={route.basketId} mode={route.mode} amount={route.amount} dones={route.dones} />;
   }
 }
 

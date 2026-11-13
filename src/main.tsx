@@ -5,6 +5,9 @@ import './tokens.css'
 import './index.css'
 import './screens.css'
 import './mf/mf.css'
+import './mf/sipdetail.css'
+import './mf/baskets.css'
+import './mf/home.css'
 
 // Light / dark: the profile button on home flips it; ?theme=dark or ?theme=light also sets it. Remembered in this browser.
 try {

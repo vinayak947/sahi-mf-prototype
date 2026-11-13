@@ -2,6 +2,7 @@ import lottie from "lottie-web/build/player/lottie_light";
 import { useEffect, useRef, useState } from "react";
 import { asset } from "../assets";
 import checking from "../lottie/pay-checking.json";
+import { basketOfFundId, splitAmount } from "./baskets-data";
 import { inr } from "./format";
 import { ProtoLink, Screen, Sheet } from "./parts";
 import { accountLabel, DEFAULT_METHOD, mandateAccount, methodView, type PayMethod } from "./payData";
@@ -67,8 +68,9 @@ export function CheckoutScreen({
   fail?: boolean;
   back?: Route;
 }) {
-  const { pop, replace, placeLump, placeSip, payMethod, mandateLimit } = useMf();
+  const { pop, replace, placeLump, placeSip, payMethod, mandateLimit, addBasketPosition } = useMf();
   const sip = day !== undefined;
+  const basket = basketOfFundId(fundId);
   // An approved AutoPay covers this SIP only up to the amount it was approved for.
   const covered = sip && mandateLimit >= amount;
   // Nothing to approve: AutoPay already covers it and nothing is paid today.
@@ -103,6 +105,14 @@ export function CheckoutScreen({
           amount,
           back: back ?? { name: "checkout", fundId, amount, day, payFirst },
         });
+      } else if (basket) {
+        // A basket is one order form, but one order per fund underneath.
+        const parts = splitAmount(basket, amount);
+        const dones = basket.funds.map((f, i) =>
+          sip ? placeSip(f.id, parts[i], day, payFirst, outcome === "pending") : placeLump(f.id, parts[i], outcome === "pending"),
+        );
+        addBasketPosition(basket.id, amount, sip ? { amount, day: day! } : undefined);
+        replace({ name: "basketdone", basketId: basket.id, mode: sip ? "sip" : "lump", amount, dones });
       } else if (sip) {
         replace({ name: "done", done: placeSip(fundId, amount, day, payFirst, outcome === "pending") });
       } else {
@@ -110,7 +120,7 @@ export function CheckoutScreen({
       }
     }, CHECK_MS);
     return () => window.clearTimeout(timer);
-  }, [phase, outcome, sip, day, payFirst, approvingMandate, fundId, amount, back, replace, placeLump, placeSip]);
+  }, [phase, outcome, sip, day, payFirst, approvingMandate, fundId, amount, back, basket, addBasketPosition, replace, placeLump, placeSip]);
 
   function comeBack(next: "ok" | "fail" | "pending") {
     setOutcome(fail ? "fail" : next);

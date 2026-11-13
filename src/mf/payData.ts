@@ -86,7 +86,7 @@ export const DEFAULT_METHOD: PayMethod = { kind: "upi", app: "gpay", account: UP
 // AutoPay runs on a bank account; a UPI ID has none on file, so it falls back to the default one.
 export const mandateAccount = (m: PayMethod): Account => (m.kind === "id" ? DEFAULT_METHOD.account : m.account);
 
-export const accountLabel = (a: Account) => (a.last4 ? `${BANKS[a.bank].short} •••• ${a.last4}` : BANKS[a.bank].name);
+export const accountLabel = (a: Account) => (a.last4 ? `${BANKS[a.bank].short} **** ${a.last4}` : BANKS[a.bank].name);
 
 export const VPA_RE = /^[\w.-]{2,}@[a-z]{2,}$/i;
 export const IFSC_RE = /^[A-Z]{4}0[A-Z0-9]{6}$/;

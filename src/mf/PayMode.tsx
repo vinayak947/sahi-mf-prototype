@@ -418,42 +418,26 @@ function AccountSheet({
   );
 }
 
-// A UPI ID can belong to anyone, so its holder's name is looked up (as UPI apps do before paying)
-// and must match the PAN name. The bank behind it must also be on the profile, which the bank
-// checks when the payment comes in; the note says which accounts those are.
+// The UPI ID is only checked for shape. The bank behind it must be on the profile, which the bank checks
+// when the payment comes in; the note says which accounts those are.
 function AddUpiSheet({ amount, onPay, onClose }: { amount: number; onPay: (vpa: string) => void; onClose: () => void }) {
   const { verifiedBanks } = useMf();
   const [vpa, setVpa] = useState("");
-  const [lookup, setLookup] = useState<{ vpa: string; name: string } | null>(null);
-  const [someoneElse, setSomeoneElse] = useState(false);
   const typed = vpa.trim();
   const valid = VPA_RE.test(typed);
-
-  useEffect(() => {
-    setLookup(null);
-    if (!valid) return;
-    const timer = window.setTimeout(
-      () => setLookup({ vpa: typed, name: someoneElse ? "Rohan Mehta" : PROFILE_NAME }),
-      700,
-    );
-    return () => window.clearTimeout(timer);
-  }, [typed, valid, someoneElse]);
-
-  const found = lookup?.vpa === typed ? lookup : null;
-  const mine = found ? namesMatch(found.name) : false;
 
   return (
     <PaySheet
       label="Enter your UPI ID"
       onClose={onClose}
       foot={(close) => (
-        <button className="mf-btn solid wide" disabled={!mine} onClick={() => close(() => onPay(typed))}>
+        <button className="mf-btn solid wide" disabled={!valid} onClick={() => close(() => onPay(typed))}>
           {investLabel(amount)}
         </button>
       )}
     >
       <h2>Enter your UPI ID</h2>
-      <label className={`pm-field${found && !mine ? " error" : ""}`}>
+      <label className="pm-field">
         <span>UPI ID</span>
         <input
           className="mf-text"
@@ -465,29 +449,15 @@ function AddUpiSheet({ amount, onPay, onClose }: { amount: number; onPay: (vpa: 
           spellCheck={false}
           autoFocus
         />
-        {valid && !found && <small className="pm-lookup">Checking the name on this UPI ID…</small>}
-        {found && mine && (
-          <small className="pm-lookup ok">
-            <Icon name="check-circle" size={14} /> {found.name}, matches your PAN
-          </small>
-        )}
-        {found && !mine && (
-          <small>
-            This UPI ID is in the name of {maskName(found.name)}. Use a UPI ID in your own name.
-          </small>
-        )}
       </label>
-      {found && mine ? (
+      {valid ? (
         <Notice tone="warn" icon="warning-circle">
           Approve from {registeredList(verifiedBanks)}. A payment from any other account is rejected by the fund
           house and refunded.
         </Notice>
       ) : (
-        !(found && !mine) && <RegisteredNudge />
+        <RegisteredNudge />
       )}
-      <ProtoLink onClick={() => setSomeoneElse((v) => !v)}>
-        {someoneElse ? "use a UPI ID in your name" : "simulate a UPI ID in someone else\u2019s name"}
-      </ProtoLink>
     </PaySheet>
   );
 }

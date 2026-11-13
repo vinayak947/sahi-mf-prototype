@@ -51,7 +51,7 @@ export function rupeesInWords(n: number): string {
   if (lakh) parts.push(`${below1000(lakh)} Lakh`);
   if (thousand) parts.push(`${below1000(thousand)} Thousand`);
   if (rest) parts.push(below1000(rest));
-  return `Rupees ${parts.join(" ")} Only`;
+  return `${parts.join(" ")} Only`;
 }
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -178,6 +178,20 @@ export function navSeries(
   };
 }
 
+// The value line of several funds together: each fund's own path, weighted by what it is worth today.
+export function blendSeries(
+  parts: { weight: number; id: string; r1: number; r3: number; r5: number }[],
+  range: Range,
+): { pts: [number, number][]; change: number } {
+  const series = parts.map((p) => ({ weight: p.weight, ...navSeries(p.id, range, p.r1, p.r3, p.r5) }));
+  const total = series.reduce((sum, p) => sum + p.weight, 0) || 1;
+  const pts = series[0].pts.map(
+    ([x], i) => [x, series.reduce((sum, p) => sum + p.weight * p.pts[i][1], 0) / total] as [number, number],
+  );
+  const start = series.reduce((sum, p) => sum + p.weight / (1 + p.change / 100), 0) || 1;
+  return { pts, change: (total / start - 1) * 100 };
+}
+
 // Same Catmull-Rom smoothing the Home analysis chart uses (100 x 100 box).
 export function smoothPath(points: [number, number][], w = 100, h = 100): string {
   const pts = points.map(([x, y]) => [x * w, (1 - y) * h] as const);
@@ -207,6 +221,25 @@ export function nextSipDate(day: number, now = istNow()): Date {
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const soon = (thisMonth.getTime() - today.getTime()) / 864e5 < SIP_LEAD_DAYS;
   return soon ? new Date(now.getFullYear(), now.getMonth() + 1, day) : thisMonth;
+}
+
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+export const fmtWeekday = (d: Date) => `${WEEKDAYS[d.getDay()]} ${fmtDay(d)}`;
+
+// Why a date is not a working day, in words that fit "5 Dec is ___".
+export const closedBecause = (d: Date) =>
+  d.getDay() === 6 ? "a Saturday" : d.getDay() === 0 ? "a Sunday" : "a market holiday";
+
+// The next few SIP instalments: the date the user picked, and the day the money is really debited
+// (the next working day when the picked date is a weekend or market holiday).
+export type SipInstalment = { due: Date; debit: Date; shifted: boolean };
+export function sipSchedule(day: number, count = 3, now = istNow()): SipInstalment[] {
+  const first = nextSipDate(day, now);
+  return Array.from({ length: count }, (_, i) => {
+    const due = new Date(first.getFullYear(), first.getMonth() + i, day);
+    const debit = isBusinessDay(due) ? due : nextBusinessDay(due);
+    return { due, debit, shifted: debit.getTime() !== due.getTime() };
+  });
 }
 
 // Annualised return of dated cash flows (money in negative, money out positive), found by

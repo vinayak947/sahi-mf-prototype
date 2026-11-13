@@ -1,0 +1,492 @@
+/* Order 2.0 home (MfHomeNext). Everything here hangs off .mf-home-next or uses class names only the new home
+   and the new goal pages use, so nothing changes while Order 2.0 is off. */
+
+@keyframes home-rise {
+  0% { opacity: 0; transform: translateY(8px); }
+}
+
+@keyframes home-fade {
+  0% { opacity: 0; }
+}
+
+/* The page sits on a soft wash that fades from the accent into the surface under the banner. */
+.app-shell:has(.mf-home-next) {
+  isolation: isolate;
+  background: linear-gradient(180deg, var(--accent-subtle) 0, var(--surface-L1) 341px);
+}
+
+.dashboard.mf-home-next {
+  padding-top: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+/* ---- Banner ----------------------------------------------------------------------- */
+.mf-home-next .mf-banner {
+  position: relative;
+  margin: 0 -16px -16px;
+}
+
+.mf-home-next .mf-banner-dots {
+  position: absolute;
+  top: -196px;
+  right: 0;
+  left: 0;
+  z-index: -1;
+  width: 100%;
+  height: 188px;
+  object-fit: cover;
+  opacity: 0.3;
+  pointer-events: none;
+  transform: scaleX(-1);
+}
+
+.mf-home-next .mf-intro {
+  position: relative;
+  display: block;
+  height: 166px;
+  padding: 19px 20px 0;
+  overflow: hidden;
+  border-top: 0.5px solid color-mix(in srgb, var(--text-primary) 8%, transparent);
+  border-radius: 0;
+  background: none;
+}
+
+.mf-home-next .mf-intro-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  width: 209px;
+}
+
+.dashboard.mf-home-next .mf-intro h2 {
+  margin: 0;
+  font-family: "SAHI Season Display Mix:Medium", serif;
+  font-size: 24px;
+  font-weight: 580;
+  letter-spacing: -0.24px;
+  line-height: 28px;
+}
+
+.mf-home-next .mf-intro p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 14.4px;
+  text-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.mf-home-next .mf-intro button {
+  height: 36px;
+  margin-top: 0;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 18px;
+  background: var(--surface-inverse);
+  color: var(--text-inverse);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 13px;
+  line-height: 19.5px;
+}
+
+.mf-home-next .mf-intro-art {
+  position: absolute;
+  top: 31px;
+  right: 0;
+  width: 202px;
+  height: 135px;
+  margin: 0;
+  object-fit: cover;
+  pointer-events: none;
+  transform: none;
+}
+
+/* ---- Invest in a sector, All mutual funds ----------------------------------------- */
+.mf-home-next .bi-tags {
+  margin-bottom: 16px;
+}
+
+.mf-home-next .bi-panel {
+  padding: 16px 16px 8px;
+  border: 1px solid var(--border-L1);
+  border-radius: 16px;
+}
+
+.mf-home-next .bi-panel .view-all {
+  padding-bottom: 8px;
+}
+
+.mf-home-next .mf-filterbar:has(+ .bi-panel-all) {
+  margin-bottom: 16px;
+}
+
+.mf-home-next .bi-panel-all > .mf-allhead:first-child {
+  margin-top: 0;
+}
+
+/* Keeps the panel the same height when a filter leaves fewer than five funds. */
+.mf-home-next .bi-panel-all .row-list {
+  min-height: 340px;
+}
+
+.mf-home-next .bi-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mf-home-next .bi-line {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+/* Switching sector: the line and the rows rise in one after another. */
+.mf-home-next .bi-panel .bi-head,
+.mf-home-next .bi-panel .row-list > li {
+  animation: home-rise 0.22s calc(var(--i, 0) * 30ms) cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+/* Filter chips on home: 14px text, a hairline, the chosen one in primary. */
+.mf-home-next .mf-filterbar .chip {
+  border: 1px solid var(--border-L1);
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 16.8px;
+}
+
+.mf-home-next .mf-filterbar .chip.active {
+  border: 1px solid var(--border-L2);
+  color: var(--text-primary);
+  font-family: "SAHI Sans:Medium", sans-serif;
+}
+
+.mf-home-next .mf-filterbar .chip .icon {
+  margin-left: 8px;
+}
+
+.mf-home-next .mf-filterbar .chip:has(.icon) {
+  padding-right: 12px;
+}
+
+/* ---- Collections ------------------------------------------------------------------ */
+.mf-home-next .mf-collections button {
+  gap: 4px;
+}
+
+.mf-home-next .col-art {
+  aspect-ratio: auto;
+  background: transparent;
+}
+
+.mf-home-next .col-art img {
+  width: 66.24%;
+}
+
+/* ---- Invest for a goal: illustrated cards ------------------------------------------ */
+.dream-card.has-art {
+  padding: 13px;
+  overflow: hidden;
+  border: 1px solid var(--border-L2);
+  background: var(--fixed-white);
+}
+
+.dream-art {
+  position: absolute;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.dream-art img {
+  position: absolute;
+  max-width: none;
+  object-fit: cover;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.dream-card.has-art .dream-kicker,
+.dream-card.has-art .dream-big {
+  position: relative;
+}
+
+.dream-card.has-art .dream-kicker {
+  color: var(--fixed-black-secondary);
+}
+
+.dream-card.has-art .dream-big {
+  color: var(--fixed-black);
+  font-size: 24px;
+  letter-spacing: -0.24px;
+  line-height: 28px;
+}
+
+.dream-art.dark {
+  display: none;
+}
+
+:root[data-theme="dark"] .dream-card.has-art {
+  padding: 14px;
+  border: 0;
+  background: var(--fixed-black);
+}
+
+:root[data-theme="dark"] .dream-art.light {
+  display: none;
+}
+
+:root[data-theme="dark"] .dream-art.dark {
+  display: block;
+}
+
+:root[data-theme="dark"] .dream-card.has-art .dream-kicker {
+  color: var(--fixed-white-secondary);
+}
+
+:root[data-theme="dark"] .dream-card.has-art .dream-big {
+  color: var(--fixed-white);
+}
+
+/* Press feedback for the new cards. */
+.mf-home-next .top-card,
+.mf-home-next .dream-card,
+.mf-home-next .mf-collections button {
+  transition: transform 0.16s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.mf-home-next .top-card:active,
+.mf-home-next .dream-card:active,
+.mf-home-next .mf-collections button:active {
+  transform: scale(0.97);
+}
+
+/* ---- Goal page poster (list screen) ----------------------------------------------- */
+.bucket-hero {
+  position: relative;
+  height: 259px;
+  margin: 0 -16px;
+  overflow: hidden;
+  background: var(--fixed-black);
+  text-align: left;
+}
+
+.bucket-art {
+  position: absolute;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.bucket-art img {
+  position: absolute;
+  max-width: none;
+  object-fit: cover;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.hero-copy {
+  position: absolute;
+  top: 114px;
+  left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 247px;
+}
+
+.bucket-eyebrow {
+  color: var(--text-tertiary);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 12px;
+  line-height: 14.4px;
+}
+
+.bucket-hero h2 {
+  margin: 0;
+  color: var(--fixed-white);
+  font-family: "SAHI Season Display Mix:Medium", serif;
+  font-size: 24px;
+  font-weight: 580;
+  letter-spacing: -0.24px;
+  line-height: 28px;
+}
+
+.bucket-hero p {
+  margin: 0;
+  color: var(--fixed-white-secondary);
+  font-size: 14px;
+  line-height: 16.8px;
+}
+
+/* ---- Sign-off: "Mutual fund [mark] se" ---------------------------------------------- */
+.app-shell:has(.mf-signoff) {
+  padding-bottom: 0;
+}
+
+.dashboard.mf-home:has(.mf-signoff) {
+  padding-bottom: 0;
+}
+
+.mf-signoff {
+  margin: 48px -16px 0;
+  padding: 64px 16px 120px;
+  background: linear-gradient(180deg, transparent 0, var(--surface-L2) 70%);
+}
+
+.mf-disclaimer {
+  margin: 12px 0 0;
+  color: var(--ink-2);
+  font-size: 11px;
+  line-height: 15px;
+}
+
+.so-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-3);
+  font-family: "SAHI Season Display Mix:Medium", serif;
+  font-size: 22px;
+  font-weight: 580;
+  letter-spacing: -0.3px;
+  line-height: 28px;
+  white-space: nowrap;
+}
+
+/* The words blur and rise in once, when the footer scrolls into view. */
+.so-w {
+  opacity: 0;
+  filter: blur(4px);
+  transform: translateY(8px);
+  transition:
+    opacity 0.38s cubic-bezier(0.23, 1, 0.32, 1),
+    filter 0.38s cubic-bezier(0.23, 1, 0.32, 1),
+    transform 0.38s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.so-line.in .so-w {
+  opacity: 1;
+  filter: none;
+  transform: none;
+}
+
+.so-line.in .so-w3 {
+  transition-delay: 0.38s;
+}
+
+.so-mark {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0;
+  filter: blur(4px);
+  transform: scale(0.85);
+  transition:
+    opacity 0.2s ease-out,
+    filter 0.2s ease-out,
+    transform 0.2s ease-out;
+}
+
+.so-line.in .so-mark {
+  opacity: 1;
+  filter: none;
+  transform: none;
+  transition-duration: 0.38s;
+  transition-delay: 0.26s;
+  transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.so-mark span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: currentColor;
+  pointer-events: none;
+  -webkit-mask: none 50% / contain no-repeat;
+  mask: none 50% / contain no-repeat;
+  transition: transform 0.14s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.so-mark:active span {
+  transform: scale(0.92);
+}
+
+.so-tail {
+  position: relative;
+}
+
+/* The face that appears after the words, then winks. */
+.so-face {
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  margin: -11px 0 0 7px;
+  color: var(--ink-2);
+  opacity: 0;
+  transform: scale(0.92);
+  transform-origin: 0;
+  transition:
+    opacity 0.2s ease-out,
+    transform 0.2s ease-out;
+}
+
+.so-line.face .so-face {
+  opacity: 1;
+  transform: none;
+  transition-duration: 0.28s;
+  transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.so-eye,
+.so-eye-closed {
+  transform-box: fill-box;
+  transform-origin: 50%;
+}
+
+.so-eye {
+  transition: transform 0.11s ease-out;
+}
+
+.so-eye-closed {
+  opacity: 0;
+  transition: opacity 0.11s ease-out;
+}
+
+.so-line.wink .so-eye-l {
+  transform: scaleY(0.1);
+}
+
+.so-line.wink .so-eye-closed {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mf-home-next .bi-panel .bi-head,
+  .mf-home-next .bi-panel .row-list > li {
+    animation: home-fade 0.15s both;
+  }
+
+  .mf-home-next .top-card:active,
+  .mf-home-next .dream-card:active,
+  .mf-home-next .mf-collections button:active {
+    transform: none;
+  }
+
+  .so-w,
+  .so-mark,
+  .so-face {
+    filter: none;
+    transform: none;
+    transition: opacity 0.2s;
+  }
+}

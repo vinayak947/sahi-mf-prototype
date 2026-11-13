@@ -29,6 +29,7 @@ const icons = {
   "caret-up-down": asset("ph-caret-up-down.svg"),
   "chart-line": asset("ph-chart-line.svg"),
   columns: asset("ph-columns.svg"),
+  copy: asset("ph-copy.svg"),
   "dots-three-vertical": asset("ph-dots-three-vertical.svg"),
   "file-text-fill": asset("ph-file-text-fill.svg"),
   "funnel-simple": asset("ph-funnel-simple.svg"),

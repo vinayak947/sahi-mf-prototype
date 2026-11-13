@@ -1,8 +1,9 @@
+import { statusSampleOrders } from "./orderSamples";
 // Sample (placeholder) mutual-fund data. Every figure here is illustrative and
 // consistent across screens (one source of truth). None of it is live.
 // Fund names are real schemes; the numbers are not.
 
-export type CategoryKey = "index" | "large" | "flexi" | "debt" | "liquid" | "elss" | "small" | "mid" | "gold";
+export type CategoryKey = "index" | "large" | "flexi" | "debt" | "liquid" | "elss" | "small" | "mid" | "gold" | "theme";
 
 export type Risk = "Low" | "Low to Moderate" | "Moderate" | "Moderately High" | "High" | "Very High";
 export const riskLevels: Risk[] = [
@@ -48,6 +49,7 @@ export type Fund = {
   managers: string[];
   aim: string;
   lockIn?: string;
+  theme?: string; // sector or theme a thematic fund invests in ("Defence", "IT"); set on the Order 2.0 sector funds only
 };
 
 const equityAim =
@@ -606,7 +608,11 @@ export const funds: Fund[] = [
   },
 ];
 
-export const fundById = (id: string): Fund => funds.find((fund) => fund.id === id) ?? funds[0];
+// Funds that only the Order 2.0 home lists (sectors.ts adds to this). Looked up after `funds`, so the core never sees them.
+export const extraFunds: Fund[] = [];
+
+export const fundById = (id: string): Fund =>
+  funds.find((fund) => fund.id === id) ?? extraFunds.find((fund) => fund.id === id) ?? funds[0];
 
 export const cutoffKind = (fund: Fund): "liquid" | "other" => (fund.cat === "liquid" ? "liquid" : "other");
 
@@ -673,7 +679,11 @@ export const sampleSips: Sip[] = [
   { fundId: "quant-flexi", amount: 1500, day: 25 },
 ];
 
-export type MfOrderStatus = "placed" | "processing" | "allotted" | "failed";
+// Order statuses, per the Phase 1 PRD. "In progress" on the list chip also covers Scheduled and Payment done.
+export type MfOrderStatus = "scheduled" | "inprogress" | "paymentdone" | "completed" | "failed";
+
+// What the fund house confirmed: shown once an order is Completed.
+export type Allotment = { folio: string; navDate: string; nav: number; units: number; allottedOn?: string };
 
 export type MfOrder = {
   id: string;
@@ -681,33 +691,72 @@ export type MfOrder = {
   kind: "Lumpsum" | "SIP" | "Redeem";
   amount: number;
   status: MfOrderStatus;
+  on: string; // ISO date the order was placed: the list shows the last three months
   placedAt: string; // "28 Oct, 11:42 AM"
-  navDate: string; // "28 Oct"
-  note: string; // what happens next
+  navDate: string; // "28 Oct"; for a Scheduled instalment, its debit date
+  debitOn?: string; // Scheduled: the day the mandate is debited
+  failure?: "payment" | "rejected"; // Failed: before payment, or rejected by the fund house after it
+  failReason?: string;
+  allotment?: Allotment; // Completed: folio, NAV date, NAV and units
   units?: number; // redeem: units sold
   creditBy?: string; // redeem: estimated date the money reaches the bank
+  // Order 2.0 status screens, all optional.
+  exchangeConfirmed?: boolean; // redeem: the exchange has confirmed the order (still In progress until the money is sent)
+  firstInstalment?: boolean; // SIP: first instalment on a reused mandate, debited 2 working days after the order
+  sipDay?: number; // SIP: day of the month of the SIP
+  paidAt?: string; // purchase: when the payment / debit was confirmed, "16 Nov, 9:30 AM"
+};
+
+// Sample folio numbers: one per fund, stable across the demo.
+export const folioFor = (fundId: string) => {
+  let n = 7;
+  for (const c of fundId) n = (n * 31 + c.charCodeAt(0)) % 90000000;
+  return String(10000000 + n) + "/42";
 };
 
 export const sampleOrders: MfOrder[] = [
+  {
+    id: "o8",
+    fundId: "mirae-elss",
+    kind: "SIP",
+    amount: 1000,
+    status: "scheduled",
+    on: "2026-10-28",
+    placedAt: "28 Oct, 10:15 AM",
+    navDate: "4 Nov",
+    debitOn: "4 Nov",
+  },
+  {
+    id: "o9",
+    fundId: "hdfc-liquid",
+    kind: "Lumpsum",
+    amount: 5000,
+    status: "inprogress",
+    on: "2026-10-28",
+    placedAt: "28 Oct, 11:50 AM",
+    navDate: "28 Oct",
+  },
   {
     id: "o3",
     fundId: "hdfc-flexi",
     kind: "SIP",
     amount: 2000,
-    status: "processing",
+    status: "paymentdone",
+    on: "2026-10-28",
     placedAt: "28 Oct, 9:05 AM",
     navDate: "28 Oct",
-    note: "Debited from HDFC Bank ••4417. Units are allotted by 29 Oct.",
   },
   {
-    id: "o7",
-    fundId: "quant-flexi",
-    kind: "SIP",
-    amount: 1500,
-    status: "failed",
-    placedAt: "25 Oct, 9:01 AM",
-    navDate: "25 Oct",
-    note: "AutoPay debit failed: not enough balance in HDFC Bank ••4417. No money was debited.",
+    id: "o10",
+    fundId: "hdfc-flexi",
+    kind: "Redeem",
+    amount: 5000,
+    status: "inprogress",
+    on: "2026-10-27",
+    placedAt: "27 Oct, 6:10 PM",
+    navDate: "28 Oct",
+    units: 2.629,
+    creditBy: "30 Oct",
   },
   {
     id: "o2",
@@ -715,48 +764,91 @@ export const sampleOrders: MfOrder[] = [
     kind: "Lumpsum",
     amount: 10000,
     status: "failed",
+    on: "2026-10-26",
     placedAt: "26 Oct, 4:12 PM",
     navDate: "27 Oct",
-    note: "Payment was not completed. No money was debited. Try again.",
+    failure: "payment",
+  },
+  {
+    id: "o7",
+    fundId: "quant-flexi",
+    kind: "SIP",
+    amount: 1500,
+    status: "failed",
+    on: "2026-10-25",
+    placedAt: "25 Oct, 9:01 AM",
+    navDate: "25 Oct",
+    failure: "payment",
+    failReason: "Not enough balance in HDFC Bank **4417",
+  },
+  {
+    id: "o11",
+    fundId: "mirae-elss",
+    kind: "Lumpsum",
+    amount: 5000,
+    status: "failed",
+    on: "2026-10-24",
+    placedAt: "24 Oct, 2:30 PM",
+    navDate: "24 Oct",
+    failure: "rejected",
+    failReason: "The fund house couldn't process this order. The KYC details didn't match its records.",
   },
   {
     id: "o6",
     fundId: "bandhan-small",
     kind: "SIP",
     amount: 1000,
-    status: "allotted",
+    status: "completed",
+    on: "2026-10-20",
     placedAt: "20 Oct, 9:02 AM",
     navDate: "20 Oct",
-    note: "17.72 units allotted at ₹56.42 NAV.",
+    allotment: { folio: folioFor("bandhan-small"), navDate: "20 Oct", nav: 56.42, units: 17.72 },
+  },
+  {
+    id: "r1",
+    fundId: "hdfc-flexi",
+    kind: "Redeem",
+    amount: 5000,
+    status: "completed",
+    on: "2026-10-15",
+    placedAt: "15 Oct, 10:20 AM",
+    navDate: "15 Oct",
+    units: 2.629,
+    creditBy: "17 Oct",
+    allotment: { folio: folioFor("hdfc-flexi"), navDate: "15 Oct", nav: 1902.1, units: 2.629 },
   },
   {
     id: "o5",
     fundId: "hdfc-flexi",
     kind: "SIP",
     amount: 2000,
-    status: "allotted",
+    status: "completed",
+    on: "2026-10-06",
     placedAt: "6 Oct, 9:04 AM",
     navDate: "6 Oct",
-    note: "1.051 units allotted at ₹1,902.10 NAV.",
+    allotment: { folio: folioFor("hdfc-flexi"), navDate: "6 Oct", nav: 1902.1, units: 1.051 },
   },
   {
     id: "o4",
     fundId: "hdfc-liquid",
     kind: "Lumpsum",
     amount: 35000,
-    status: "allotted",
+    status: "completed",
+    on: "2026-05-02",
     placedAt: "2 May, 11:18 AM",
     navDate: "2 May",
-    note: "6.96 units allotted at ₹5,028.70 NAV.",
+    allotment: { folio: folioFor("hdfc-liquid"), navDate: "2 May", nav: 5028.7, units: 6.96 },
   },
   {
     id: "o1",
     fundId: "quant-flexi",
     kind: "Lumpsum",
     amount: 25000,
-    status: "allotted",
+    status: "completed",
+    on: "2026-01-20",
     placedAt: "20 Jan, 10:31 AM",
     navDate: "20 Jan",
-    note: "655.8 units allotted at ₹38.14 NAV.",
+    allotment: { folio: folioFor("quant-flexi"), navDate: "20 Jan", nav: 38.14, units: 655.8 },
   },
+  ...statusSampleOrders,
 ];

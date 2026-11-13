@@ -1,3 +1,4 @@
+import { sampleBasketPositions, type BasketPosition } from "./baskets-data";
 import {
   createContext,
   useCallback,
@@ -8,6 +9,7 @@ import {
 } from "react";
 import {
   cutoffKind,
+  folioFor,
   fundById,
   payoutDays,
   sampleHoldings,
@@ -24,7 +26,6 @@ import {
   allotDay,
   fmtDay,
   fmtTime,
-  inr,
   istNow,
   navDay,
   nextSipDate,
@@ -32,6 +33,7 @@ import {
   tradeDay,
   afterCutoff,
 } from "./format";
+import type { GoalArtSpec } from "./GoalArt";
 import { DEFAULT_METHOD, REGISTERED, sameAccount, type Account, type PayMethod } from "./payData";
 
 // "new"      never traded: intro-first layout
@@ -47,6 +49,8 @@ export type Bucket = {
   note?: string; // conditions, shown under the poster
   listTitle: string; // heading above the list: what it holds
   ladder?: { goal: string; target: number; years: number }[];
+  art?: GoalArtSpec; // Order 2.0: illustrated card and poster
+  noListFacts?: boolean; // Order 2.0: hide the "all have a 5+ year record" line above the list
 };
 
 export type ListSpec = {
@@ -58,6 +62,8 @@ export type ListSpec = {
   equityOnly?: boolean;
   minStars?: number;
   caption?: string;
+  theme?: string; // Order 2.0: sector page; the chips switch between sectors
+  withExtras?: boolean; // Order 2.0: list from nextFunds (core funds plus sector and extra funds)
 };
 
 export type Done = {
@@ -91,7 +97,12 @@ export type Route =
   | { name: "sipdetail"; fundId: string }
   | { name: "sipcancelled"; fundId: string; amount: number; day: number; reason: string; inProgress: number }
   | { name: "redeem"; fundId: string }
-  | { name: "orderdetail"; orderId: string };
+  | { name: "orderdetail"; orderId: string }
+  // Researcher backed baskets (Order 2.0 home); see Baskets.tsx
+  | { name: "baskets" }
+  | { name: "basketholding"; basketId: string }
+  | { name: "basket"; basketId: string }
+  | { name: "basketdone"; basketId: string; mode: "lump" | "sip"; amount: number; dones: Done[] };
 
 type Store = {
   stack: Route[];
@@ -102,6 +113,8 @@ type Store = {
   segment: Segment;
   setSegment: (segment: Segment) => void;
   holdings: Holding[];
+  basketPositions: BasketPosition[]; // Order 2.0: what is held through baskets
+  addBasketPosition: (basketId: string, amount: number, sip?: { amount: number; day: number }) => void;
   orders: MfOrder[];
   sips: Sip[];
   mandateLimit: number; // UPI AutoPay approved up to this much per debit; 0 = none yet
@@ -130,7 +143,7 @@ export function useMf(): Store {
   return store;
 }
 
-let orderSeq = 10;
+let orderSeq = 100;
 
 // Prototype timings for what the bank, exchange and fund house do in the background.
 const BANK_CONFIRM_MS = 20000; // "no word from the bank" turns into money received
@@ -172,6 +185,7 @@ export function MfProvider({
   const [invested] = useState(readInvested);
   const [segment, setSegmentState] = useState<Segment>(invested ? "holdings" : "new");
   const [holdings, setHoldings] = useState<Holding[]>(invested ? sampleHoldings : []);
+  const [basketPositions, setBasketPositions] = useState<BasketPosition[]>(invested ? sampleBasketPositions : []);
   const [orders, setOrders] = useState<MfOrder[]>(invested ? sampleOrders : []);
   const [sips, setSips] = useState<Sip[]>(invested ? sampleSips : []);
   const [mandateLimit, setMandateLimit] = useState(invested ? 10000 : 0);
@@ -200,11 +214,13 @@ export function MfProvider({
     setStack([]);
     if (next === "holdings") {
       setHoldings(sampleHoldings);
+      setBasketPositions(sampleBasketPositions);
       setOrders(sampleOrders);
       setSips(sampleSips);
       setMandateLimit(10000);
     } else {
       setHoldings([]);
+      setBasketPositions([]);
       setOrders([]);
       setSips([]);
       setMandateLimit(0);
@@ -237,21 +253,29 @@ export function MfProvider({
     });
   }, []);
 
+  const addBasketPosition = useCallback((basketId: string, amount: number, sip?: { amount: number; day: number }) => {
+    setBasketPositions((list) => {
+      const existing = list.find((p) => p.basketId === basketId);
+      if (existing)
+        return list.map((p) => (p.basketId === basketId ? { ...p, invested: p.invested + amount, sip: sip ?? p.sip } : p));
+      return [...list, { basketId, invested: amount, since: iso(istNow()), sip }];
+    });
+  }, []);
+
   const addOrder = useCallback((order: MfOrder) => setOrders((list) => [order, ...list]), []);
   const patchOrder = useCallback(
     (id: string, patch: Partial<MfOrder>) => setOrders((list) => list.map((o) => (o.id === id ? { ...o, ...patch } : o))),
     [],
   );
 
-  // Fund house confirms: units land in the folio and the order is done.
+  // Fund house confirms: units land in the folio and the order is Completed.
   const allot = useCallback(
-    (orderId: string, fundId: string, amount: number) => {
+    (orderId: string, fundId: string, amount: number, navDate: string) => {
       const fund = fundById(fundId);
-      const duty = stampDuty(amount);
-      const units = (amount - duty) / fund.nav;
+      const units = (amount - stampDuty(amount)) / fund.nav;
       patchOrder(orderId, {
-        status: "allotted",
-        note: `${units.toFixed(3)} units allotted at ₹${fund.nav.toLocaleString("en-IN", { minimumFractionDigits: 2 })} NAV, after ${inr(duty, 2)} stamp duty.`,
+        status: "completed",
+        allotment: { folio: folioFor(fundId), navDate, nav: fund.nav, units },
       });
       setHoldings((list) =>
         list.map((h) => {
@@ -264,11 +288,11 @@ export function MfProvider({
     [patchOrder],
   );
 
-  // Money received for a purchase: record the lot, then allot after the fund house's turn.
+  // Money received for a purchase: the order is Payment done, the lot waits for allotment.
   const receive = useCallback(
-    (orderId: string, fundId: string, amount: number, unitsBy: string) => {
+    (orderId: string, fundId: string, amount: number, unitsBy: string, navDate: string) => {
       addHolding(fundId, amount, orderId, `Units by ${unitsBy}`);
-      window.setTimeout(() => allot(orderId, fundId, amount), ALLOT_MS);
+      window.setTimeout(() => allot(orderId, fundId, amount, navDate), ALLOT_MS);
     },
     [addHolding, allot],
   );
@@ -281,27 +305,25 @@ export function MfProvider({
       const nav = navDay(now, kind);
       const units = allotDay(now, kind);
       const orderId = `o${++orderSeq}`;
-      const received = `Money received. Units are priced at the ${fmtDay(nav)} NAV and allotted by ${fmtDay(units)}.`;
       addOrder({
         id: orderId,
         fundId,
         kind: "Lumpsum",
         amount,
-        status: pending ? "placed" : "processing",
+        // Waiting on the bank: In progress. Money confirmed: Payment done.
+        status: pending ? "inprogress" : "paymentdone",
+        on: iso(now),
         placedAt: `${fmtDay(now)}, ${fmtTime(now)}`,
         navDate: fmtDay(nav),
-        note: pending
-          ? "Waiting for your bank to confirm the payment. If it fails, any money debited goes back in 3 to 5 working days."
-          : received,
       });
       // Units only once the money is confirmed. With no word from the bank, it confirms a little later.
       if (pending) {
         window.setTimeout(() => {
-          patchOrder(orderId, { status: "processing", note: received });
-          receive(orderId, fundId, amount, fmtDay(units));
+          patchOrder(orderId, { status: "paymentdone" });
+          receive(orderId, fundId, amount, fmtDay(units), fmtDay(nav));
         }, BANK_CONFIRM_MS);
       } else {
-        receive(orderId, fundId, amount, fmtDay(units));
+        receive(orderId, fundId, amount, fmtDay(units), fmtDay(nav));
       }
       return {
         pending,
@@ -330,18 +352,34 @@ export function MfProvider({
       const start = () => {
         setSips((list) => [...list, { fundId, amount, day }]);
         setMandateLimit((limit) => Math.max(limit, amount));
+        const base = {
+          id: orderId,
+          fundId,
+          kind: "SIP" as const,
+          amount,
+          on: iso(now),
+          placedAt: `${fmtDay(now)}, ${fmtTime(now)}`,
+        };
         if (payFirst) {
+          // First instalment paid now, like a one-time order.
           addOrder({
-            id: orderId,
-            fundId,
-            kind: "SIP",
-            amount,
-            status: "processing",
-            placedAt: `${fmtDay(now)}, ${fmtTime(now)}`,
+            ...base,
+            status: "paymentdone",
             navDate: fmtDay(nav),
-            note: `First instalment paid. Units are priced at the ${fmtDay(nav)} NAV and allotted by ${fmtDay(units)}.`,
           });
-          receive(orderId, fundId, amount, fmtDay(units));
+          receive(orderId, fundId, amount, fmtDay(units), fmtDay(nav));
+        } else {
+          // Reused mandate: the first instalment is ordered today and debited about 2 working days later.
+          const debit = addBusinessDays(now, 2);
+          addOrder({ ...base, status: "scheduled", navDate: fmtDay(debit), debitOn: fmtDay(debit), firstInstalment: true, sipDay: day });
+          // Prototype timing: the debit date arrives (In progress), then the debit lands (Payment done).
+          window.setTimeout(() => {
+            patchOrder(orderId, { status: "inprogress" });
+            window.setTimeout(() => {
+              patchOrder(orderId, { status: "paymentdone", navDate: fmtDay(nav) });
+              receive(orderId, fundId, amount, fmtDay(units), fmtDay(nav));
+            }, BANK_CONFIRM_MS);
+          }, BANK_CONFIRM_MS);
         }
       };
       // No word on AutoPay yet: the SIP starts only once the bank confirms it.
@@ -361,7 +399,7 @@ export function MfProvider({
         stampDuty: payFirst ? stampDuty(amount) : undefined,
       };
     },
-    [addOrder, receive],
+    [addOrder, patchOrder, receive],
   );
 
   // Sells `units` from the oldest free lots (allotted and out of any lock-in; the screen works those out).
@@ -382,15 +420,20 @@ export function MfProvider({
         fundId,
         kind: "Redeem",
         amount,
-        status: "processing",
+        status: "inprogress",
+        on: iso(now),
         placedAt: `${fmtDay(now)}, ${fmtTime(now)}`,
         navDate: fmtDay(trade),
         units,
         creditBy: fmtDay(paid),
-        note: `${units.toFixed(3)} units are sold at the ${fmtDay(trade)} NAV. Money reaches HDFC Bank ••4417 by ${fmtDay(paid)}.`,
       });
+      // Completed when the fund house processes it. Whether the money reached the bank isn't tracked.
       window.setTimeout(
-        () => patchOrder(orderId, { status: "allotted", note: `Money sent to HDFC Bank ••4417 for ${units.toFixed(3)} units.` }),
+        () =>
+          patchOrder(orderId, {
+            status: "completed",
+            allotment: { folio: folioFor(fundId), navDate: fmtDay(trade), nav: fund.nav, units },
+          }),
         ALLOT_MS,
       );
       // The units are set aside for this order straight away so they can't be sold twice.
@@ -438,6 +481,8 @@ export function MfProvider({
       segment,
       setSegment,
       holdings,
+      basketPositions,
+      addBasketPosition,
       orders,
       sips,
       mandateLimit,
@@ -473,6 +518,8 @@ export function MfProvider({
       segment,
       setSegment,
       holdings,
+      basketPositions,
+      addBasketPosition,
       orders,
       sips,
       mandateLimit,

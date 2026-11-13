@@ -6,6 +6,11 @@ import { pct, rupeesInWords } from "./format";
 
 // AMC logos (official marks, square). Files sit in public/assets as amc-*.png.
 const AMC_LOGO: Record<string, string> = {
+  "Aditya Birla": "amc-aditya-birla.png",
+  Edelweiss: "amc-edelweiss.png",
+  Groww: "amc-groww.png",
+  Kotak: "amc-kotak.png",
+  Tata: "amc-tata.png",
   Bandhan: "amc-bandhan.png",
   Franklin: "amc-franklin.png",
   HDFC: "amc-hdfc.png",
@@ -538,6 +543,7 @@ const trend = (
 const ICON_PATHS: Record<IconKey, ReactNode> = {
   index: trend,
   trend,
+  theme: trend,
   large: (
     <>
       <path d="M4.5 20.5V8.5l7-4v16" />

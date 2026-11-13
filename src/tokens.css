@@ -16,6 +16,9 @@
   --surface-recessed: #ededed;
   --surface-inverse: #0f0f0f;
   --fixed-white: #ffffff;
+  --fixed-black: #0f0f0f; /* stays dark in both themes (goal posters) */
+  --fixed-black-secondary: #535353;
+  --fixed-white-secondary: #a3a3a3;
 
   /* text */
   --text-primary: #0f0f0f;
@@ -103,6 +106,9 @@
   --surface-recessed: #0f0f0f;
   --surface-inverse: #ffffff;
   --fixed-white: #ffffff;
+  --fixed-black: #0f0f0f; /* stays dark in both themes (goal posters) */
+  --fixed-black-secondary: #535353;
+  --fixed-white-secondary: #a3a3a3;
 
   --text-primary: #ffffff;
   --text-secondary: #a3a3a3;

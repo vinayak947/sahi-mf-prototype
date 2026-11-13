@@ -808,63 +808,6 @@
   min-height: 64px;
 }
 
-.mf-how {
-  display: grid;
-  gap: 16px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.mf-how li,
-.mf-steps li {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.mf-how i,
-.mf-steps i {
-  display: grid;
-  width: 24px;
-  height: 24px;
-  flex: none;
-  place-items: center;
-  border-radius: 50%;
-  color: var(--ink);
-  background: var(--surface);
-  box-shadow: inset 0 0 0 1px var(--line-strong);
-  font-family: "SAHI Sans:Medium", sans-serif;
-  font-size: 12px;
-  font-style: normal;
-}
-
-.mf-how b,
-.mf-steps b {
-  display: block;
-  font-family: "SAHI Sans:Medium", sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 18px;
-}
-
-.mf-how small,
-.mf-steps small {
-  display: block;
-  margin-top: 2px;
-  color: var(--ink-3);
-  font-size: 12px;
-  line-height: 16px;
-}
-
-.mf-steps {
-  display: grid;
-  gap: 16px;
-  margin: 24px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
 .mf-empty-card {
   display: flex;
   flex-direction: column;
@@ -1431,7 +1374,8 @@
   flex-direction: column;
   align-items: center;
   gap: 9px;
-  margin-top: 72px;
+  /* Centred between the header and the keypad: the keypad (or the NAV strip above it) takes the other half of the free space. */
+  margin-top: auto;
 }
 
 .mf-pad-amount p {
@@ -1444,19 +1388,30 @@
 }
 
 .mf-pad-figure {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 2px;
   color: var(--text-primary);
   font-family: "SAHI Season Display Mix:Medium", serif;
-  font-size: 40px;
+  /* h0.1: a step above DLS h0 (40 / 48), for the order pad amount only. Custom, not a SAHI Base style. */
+  font-size: 52px;
   font-weight: 580;
-  line-height: 48px;
+  line-height: 60px;
 }
 
 .mf-pad-figure b {
+  display: inline-flex;
+  align-items: flex-start;
   font-weight: inherit;
   white-space: nowrap;
+}
+
+/* The rupee sign is small and sits at the top-left of the figure, so it never crowds the digits. */
+.mf-pad-figure .rupee {
+  margin: 8px 6px 0 0;
+  font-size: 20px;
+  line-height: 24px;
 }
 
 /* Rolling digits (reference: screen-time goal stepper). Up and blurred for a new digit,
@@ -1545,9 +1500,18 @@
 
 .mf-pad-figure .caret {
   width: 2px;
-  height: 40px;
+  height: 44px;
   background: var(--accent-default);
   animation: mf-blink 1s steps(2, jump-none) infinite;
+}
+
+/* The amount in words, under the figure. A span, so the red error line below stays the only <small>. */
+.mf-pad-words {
+  color: var(--text-secondary);
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 12px;
+  line-height: 14.4px;
+  text-align: center;
 }
 
 .mf-pad-amount small {
@@ -1700,6 +1664,20 @@
 
 .mf-redeem-all:active {
   transform: scale(0.97);
+}
+
+.mf-redeem-info {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin: 0 -8px 0 -4px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: var(--text-secondary);
+  background: transparent;
+  cursor: pointer;
 }
 
 .mf-redeem-all input {
@@ -2406,6 +2384,20 @@
   background: var(--surface-inverse);
 }
 
+.mf-timeline li.done::before {
+  border-color: var(--positive-surface);
+  background: var(--positive-surface);
+}
+
+.mf-timeline li.done:has(+ li.done)::after {
+  background: var(--positive-surface);
+}
+
+.mf-timeline li.failed::before {
+  border-color: var(--negative-text);
+  background: var(--negative-text);
+}
+
 .mf-timeline b {
   display: block;
   font-family: "SAHI Sans:Medium", sans-serif;
@@ -2422,6 +2414,11 @@
   line-height: 16px;
 }
 
+.mf-timeline li.failed small:first-of-type {
+  color: var(--negative-text);
+}
+
+/* Original statuses, used while the "Order 2.0" setting is off. */
 .st-processing,
 .st-placed {
   color: var(--accent-default);
@@ -2429,10 +2426,6 @@
 
 .st-allotted {
   color: var(--up);
-}
-
-.st-failed {
-  color: var(--negative-text);
 }
 
 em.amo.st-processing,
@@ -2446,9 +2439,82 @@ em.amo.st-allotted {
   background: var(--positive-subtle);
 }
 
+/* Status pills: Scheduled, In progress and Payment done amber; Completed green; Failed red. */
+.st-scheduled,
+.st-inprogress,
+.st-paymentdone {
+  color: var(--warning-text);
+}
+
+.st-completed {
+  color: var(--up);
+}
+
+.st-failed {
+  color: var(--negative-text);
+}
+
+em.amo.st-scheduled,
+em.amo.st-inprogress,
+em.amo.st-paymentdone {
+  border-color: var(--warning-subtle);
+  background: var(--warning-subtle);
+}
+
+em.amo.st-completed {
+  border-color: var(--positive-transparent-L2);
+  background: var(--positive-subtle);
+}
+
 em.amo.st-failed {
   border-color: var(--negative-transparent-L2);
   background: var(--negative-subtle);
+}
+
+/* ---- Orders: status chips, type filter, detail ------------------------------------------------------------------- */
+
+/* Status tabs (the shared underlined tabs) with the type filter at the end of the same row. */
+.mf-orders-bar {
+  gap: 8px;
+}
+
+.mf-orders-bar .tabs-list {
+  min-width: 0;
+  flex: 1;
+  gap: 20px;
+}
+
+.mf-orders-filter {
+  position: relative;
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  color: var(--ink-2);
+  background: transparent;
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.mf-orders-filter:active {
+  transform: scale(0.97);
+}
+
+.mf-orders-filter.on {
+  color: var(--ink);
+}
+
+.mf-orders-filter.on::after {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-default);
+  content: "";
 }
 
 /* ---- Portfolio overview --------------------------------------------------------------------------------------------- */
@@ -2666,15 +2732,6 @@ em.amo.st-failed {
 
 .mf-card .mf-small {
   padding-bottom: 12px;
-}
-
-.mf-btn-danger {
-  border-color: var(--negative-border);
-  color: var(--negative-text);
-}
-
-.mf-sip-card {
-  margin-top: 16px;
 }
 
 .mf-cancel-note {
@@ -4164,12 +4221,6 @@ em.amo.st-failed {
 .pm-pill span {
   white-space: nowrap;
 }
-.pm-field .pm-lookup {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  color: var(--text-secondary);
-}
 .pm-hint {
   margin: 12px 0 0;
   color: var(--text-secondary);
@@ -4179,9 +4230,6 @@ em.amo.st-failed {
 .pm .mf-card,
 .pm .mf-notice {
   margin-top: 16px;
-}
-.pm-field .pm-lookup.ok {
-  color: var(--positive-text);
 }
 
 /* Two or more alerts: a carousel of equal-height cards, the next one peeking in. */
@@ -4233,6 +4281,12 @@ em.amo.st-failed {
   padding: 24px;
   border-radius: 24px;
   background: var(--surface);
+}
+
+/* Order 2.0: no grey card; the holdings, chart, range switcher and stats sit straight on the page. */
+.mf-pf-card.flat {
+  padding: 0;
+  background: none;
 }
 
 .mf-pf-card small,
@@ -4405,6 +4459,343 @@ em.amo.st-failed {
   text-align: left;
 }
 
+/* What is due: the same divided row as "Start a new SIP", with a clock instead of a chevron. */
+.mf-sip-zero .mf-sip-due {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 16px 0;
+  border-top: 1px solid var(--line);
+}
+
+.mf-sip-due .icon {
+  flex: none;
+  color: var(--text-primary);
+}
+
+.mf-sip-due span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.mf-sip-due b {
+  color: var(--text-primary);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
 .mf-sip-zero + .mf-lede {
   margin-top: 16px;
+}
+
+/* ---- Portfolio header: the title with a "more" button and its settings menu (Order 2.0) ------------------------------ */
+
+.mf-pf-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.mf-pf-head .page-title {
+  margin: 0;
+}
+
+.mf-pf-more {
+  position: relative;
+  flex: none;
+}
+
+.mf-pf-more-btn {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  margin-right: -8px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  color: var(--ink);
+  background: transparent;
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.mf-pf-more-btn:active {
+  transform: scale(0.97);
+}
+
+.mf-pf-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 20;
+  min-width: 232px;
+  padding: 8px;
+  border: 1px solid var(--border-L1);
+  border-radius: 16px;
+  background: var(--surface-raised);
+  box-shadow: 0 8px 24px var(--shadow-overlay);
+  transform-origin: top right;
+  animation: mf-pf-menu-in 160ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.mf-pf-menu p {
+  margin: 0;
+  padding: 8px 12px 6px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 14.4px;
+}
+
+.mf-pf-menu button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 0;
+  border-radius: 12px;
+  color: var(--text-primary);
+  background: transparent;
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 14px;
+  line-height: 16.8px;
+  text-align: left;
+}
+
+.mf-pf-menu button:active {
+  background: var(--surface-L2);
+}
+
+/* Radio dot */
+.mf-pf-menu button i {
+  display: grid;
+  width: 18px;
+  height: 18px;
+  flex: none;
+  place-items: center;
+  border: 1.5px solid var(--border-L2);
+  border-radius: 50%;
+}
+
+.mf-pf-menu button.on i {
+  border-color: var(--surface-inverse);
+}
+
+.mf-pf-menu button.on i::after {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--surface-inverse);
+  content: "";
+}
+
+@keyframes mf-pf-menu-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mf-pf-menu {
+    animation: none;
+  }
+}
+
+.mf-pf-head .mf-orders-filter {
+  margin-right: -8px;
+}
+
+/* Pad label row: the pad's name with the SIP / one-time switch beside it. */
+.mf-pad-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mf-pad-mode {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.mf-pad-mode:active:not(:disabled) {
+  transform: scale(0.9);
+}
+
+.mf-pad-mode:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ---- "How your SIP dates work" sheet, over the SIP date sheet ------------------------------------------- */
+
+/* The line under the day grid is now a button: reset it, keep the old look, give it a 44px target. */
+button.mf-days-next {
+  align-self: center;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0;
+  background: transparent;
+  font-family: "SAHI Sans:Regular", sans-serif;
+  cursor: pointer;
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+button.mf-days-next:active {
+  transform: scale(0.97);
+}
+
+.mf-sheet.sip-why .mf-sheet-body {
+  gap: 20px;
+  padding-top: 20px;
+  max-height: calc(100dvh - 220px);
+  overflow-y: auto;
+}
+
+.sip-why-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 16px;
+  list-style: none;
+  border: 1px solid var(--border-L1);
+  border-radius: 16px;
+}
+
+.sip-why-list li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 0 16px 24px;
+}
+
+.sip-why-list li:last-child {
+  padding-bottom: 0;
+}
+
+/* The dot, and the line down to the next one. */
+.sip-why-list li::before {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  width: 10px;
+  height: 10px;
+  box-sizing: border-box;
+  border: 2px solid var(--text-tertiary);
+  border-radius: 50%;
+  background: var(--surface-L1);
+  content: "";
+}
+
+.sip-why-list li:first-child::before {
+  border-color: var(--positive-surface);
+  background: var(--positive-surface);
+}
+
+.sip-why-list li.moved::before {
+  border-color: var(--text-primary);
+}
+
+.sip-why-list li:not(:last-child)::after {
+  position: absolute;
+  top: 18px;
+  bottom: -2px;
+  left: 4px;
+  width: 2px;
+  background: var(--line);
+  content: "";
+}
+
+.sip-why-list b {
+  color: var(--text-primary);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 19.2px;
+}
+
+.sip-why-list small {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 16.8px;
+}
+
+.sip-why-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sip-why-notes .mf-sheet-line p {
+  max-width: none;
+}
+
+/* Clear-amount button: hangs off the right of the figure so the number stays centred. 44px target, 22px glyph. */
+.mf-pad-clear {
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: 0;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-50%) scale(0.9);
+  transition:
+    opacity 160ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.mf-pad-clear.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(-50%) scale(1);
+}
+
+.mf-pad-clear.show:active {
+  transform: translateY(-50%) scale(0.92);
+}
+
+/* Long amounts in words wrap inside the screen instead of running off both edges. */
+.mf-pad-words {
+  max-width: 100%;
+  padding: 0 24px;
+  text-wrap: balance;
+}
+
+/* Big amounts step down so the figure and the clear button both stay on a 375px screen. */
+.mf-pad-figure[data-digits="7"] {
+  font-size: 46px;
+  line-height: 54px;
+}
+
+.mf-pad-figure[data-digits="8"],
+.mf-pad-figure[data-digits="9"] {
+  font-size: 38px;
+  line-height: 46px;
+}
+
+.mf-pad-figure[data-digits="8"] .caret,
+.mf-pad-figure[data-digits="9"] .caret {
+  height: 34px;
 }

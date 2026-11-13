@@ -11,16 +11,22 @@ import {
   type CategoryKey,
   type Fund,
   type MfOrder,
+  type MfOrderStatus,
 } from "./data";
+import { BasketLine } from "./Baskets";
+import { basketOfFundId } from "./baskets-data";
 import {
   addBusinessDays,
   afterCutoff,
+  closedBecause,
   cutoffLabel,
   fmtDay,
+  fmtWeekday,
   fmtTime,
   inr,
   isBusinessDay,
   istNow,
+  SIP_LEAD_DAYS,
   navDay,
   nextBusinessDay,
   nextSipDate,
@@ -28,7 +34,9 @@ import {
   navSeries,
   ordinal,
   pct,
+  rupeesInWords,
   ranges,
+  sipSchedule,
   smoothPath,
   type Range,
 } from "./format";
@@ -54,6 +62,8 @@ import {
   useFundView,
 } from "./parts";
 import { DotField } from "./DotField";
+import { GoalHero } from "./GoalArt";
+import { nextFunds, sectors, themeOf } from "./sectors";
 import { ReturnCalculator } from "./ReturnCalculator";
 import { accountLabel, mandateAccount, methodView } from "./payData";
 import { useMf, type ListSpec } from "./store";
@@ -86,8 +96,47 @@ function sipFor(target: number, years: number, rate = 0.1) {
   return Math.ceil(target / factor / 100) * 100;
 }
 
+// "What it takes" rows for the Order 2.0 goal pages (same rows as the classic goal page, without the poster text above).
+function BucketLadder({ ladder }: { ladder: NonNullable<ListSpec["bucket"]>["ladder"] & {} }) {
+  return (
+    <div className="bucket-ladder">
+      <p className="bucket-ladder-label">How much to invest each month</p>
+      <div className="bucket-ladder-rows">
+        {ladder.map((step) => (
+          <div key={step.goal + step.years} className="ladder-row">
+            <div className="ladder-top">
+              <span>{step.goal}</span>
+              <b>{inr(sipFor(step.target, step.years))}</b>
+            </div>
+            <div className="ladder-sub">
+              <span>in {step.years} years</span>
+              <span>a month</span>
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="bucket-fine">An illustration at an assumed 10% a year. Real returns vary and are not promised.</p>
+    </div>
+  );
+}
+
 function BucketTop({ spec }: { spec: ListSpec }) {
   const b = spec.bucket!;
+  // Order 2.0 goals with art open on a poster; the promise moves onto it and only the note and ladder stay below.
+  if (b.art) {
+    return (
+      <>
+        <GoalHero art={b.art} big={b.big} promise={b.promise} />
+        {(b.note || b.ladder) && (
+          <section className="bucket-intro">
+            {b.note && <p className="bucket-note">{b.note}</p>}
+            {b.ladder && <BucketLadder ladder={b.ladder} />}
+          </section>
+        )}
+        <h2 className="mf-list-title">{b.listTitle}</h2>
+      </>
+    );
+  }
   return (
     <>
       <section className="bucket-intro">
@@ -138,18 +187,29 @@ const CAT_LABEL: Partial<Record<CategoryKey, string>> = {
 export function FundListBody({ spec }: { spec: ListSpec }) {
   const { basis, sort, setBasis, setSort } = useFundView();
   const [cat, setCat] = useState<CategoryKey | "all">(spec.cat ?? "all");
+  const [sector, setSector] = useState<string>(spec.theme ?? "all"); // Order 2.0 sector pages only
 
   const filtered = useMemo(() => {
-    return funds
+    return (spec.withExtras || spec.theme ? nextFunds : funds)
       .filter((fund) => (cat === "all" ? (spec.cats ? spec.cats.includes(fund.cat) : true) : fund.cat === cat))
       .filter((fund) => (spec.sipOnly ? fund.minSip <= 100 : true))
       .filter((fund) => (spec.equityOnly ? fund.catLabel.startsWith("Equity") : true))
+      .filter((fund) => (spec.theme ? (sector === "all" ? themeOf(fund) !== undefined : themeOf(fund) === sector) : true))
       .filter((fund) => (spec.minStars ? fund.stars >= spec.minStars : true));
-  }, [cat, spec.cats, spec.sipOnly, spec.equityOnly, spec.minStars]);
+  }, [cat, sector, spec.cats, spec.sipOnly, spec.equityOnly, spec.minStars, spec.theme, spec.withExtras]);
   const list = sortFunds(filtered, sort, basis);
 
   return (
     <>
+      {spec.theme ? (
+        <FilterRow
+          cat={sector as CategoryKey | "all"}
+          onCat={(key) => setSector(key)}
+          sort={sort}
+          onSort={setSort}
+          chips={sectors.map((item) => ({ key: item.key as CategoryKey, label: item.label }))}
+        />
+      ) : (
       <FilterRow cat={cat} onCat={setCat} sort={sort} onSort={setSort} chips={
           spec.bucket
             ? (spec.cats ?? []).length > 1
@@ -158,6 +218,7 @@ export function FundListBody({ spec }: { spec: ListSpec }) {
             : undefined
         }
       />
+      )}
       <div className="mf-sortbar">
         <span>{list.length} funds</span>
         <ReturnSwitch basis={basis} onChange={setBasis} />
@@ -277,7 +338,26 @@ export function SearchScreen() {
 /* The chart is drawn in real pixels (not a stretched 100x100 box) so the dots stay round.
    The dotted area is the web's: a 4px grid of 0.7px dots, brightest under the line, fading to nothing at the bottom. */
 function NavChart({ fund }: { fund: Fund }) {
-  const [range, setRange] = useState<Range>("3Y");
+  return (
+    <RangeChart
+      initial="3Y"
+      seriesFor={(range) => navSeries(fund.id, range, fund.r1, fund.r3, fund.r5)}
+    />
+  );
+}
+
+// The dotted line chart with its range switcher. The fund page and the portfolio both draw it;
+// each passes what the series looks like for a range.
+export function RangeChart({
+  seriesFor,
+  initial,
+  showChange = true,
+}: {
+  seriesFor: (range: Range) => { pts: [number, number][]; change: number };
+  initial: Range;
+  showChange?: boolean; // the "3Y change" line under the switcher
+}) {
+  const [range, setRange] = useState<Range>(initial);
   const plot = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
   const uid = useId().replace(/:/g, "");
@@ -292,7 +372,7 @@ function NavChart({ fund }: { fund: Fund }) {
     return () => ro.disconnect();
   }, []);
 
-  const { pts, change } = navSeries(fund.id, range, fund.r1, fund.r3, fund.r5);
+  const { pts, change } = seriesFor(range);
   const tone = change >= 0 ? "up" : "down";
   const { w, h } = size;
   const line = w ? smoothPath(pts, w, h) : "";
@@ -327,10 +407,12 @@ function NavChart({ fund }: { fund: Fund }) {
           </button>
         ))}
       </div>
-      <small className="mf-chart-note">
-        {range} change:{" "}
-        <b className={tone}>{pct(change, 1)}</b>
-      </small>
+      {showChange && (
+        <small className="mf-chart-note">
+          {range} change:{" "}
+          <b className={tone}>{pct(change, 1)}</b>
+        </small>
+      )}
     </div>
   );
 }
@@ -519,7 +601,32 @@ const SIP_DAY_ROWS = [1, 8, 15, 22, 29].map((start) =>
 );
 
 export function AmountScreen({ fundId, mode, preset }: { fundId: string; mode: "lump" | "sip"; preset?: number }) {
-  return mode === "lump" ? <OneTimePad fundId={fundId} preset={preset} /> : <SipPad fundId={fundId} />;
+  return mode === "lump" ? <OneTimePad fundId={fundId} preset={preset} /> : <SipPad fundId={fundId} preset={preset} />;
+}
+
+// Round cross beside the amount: wipes the whole figure in one tap (the keypad's backspace takes one digit).
+// It sits outside the figure's width, so the number stays centred; it is only there when there is something to clear.
+function ClearAmount({ show, onClear }: { show: boolean; onClear: () => void }) {
+  return (
+    <button className={`mf-pad-clear${show ? " show" : ""}`} onClick={onClear} aria-label="Clear amount" tabIndex={show ? 0 : -1}>
+      <Icon name="x-circle" size={22} />
+    </button>
+  );
+}
+
+// Who the order is for: a fund, or a basket (the same heading, with its funds' logos stacked).
+function PadHeading({ fund }: { fund: Fund }) {
+  const basket = basketOfFundId(fund.id);
+  if (basket) return <BasketLine basket={basket} note="Direct · Growth" />;
+  return (
+    <div className="mf-fundline">
+      <FundMark fund={fund} size={32} />
+      <span>
+        <b>{fund.name}</b>
+        <small>Direct · Growth</small>
+      </span>
+    </div>
+  );
 }
 
 // The fund house's rules for an amount: minimum, multiple and maximum. Returns what's wrong, if anything.
@@ -528,6 +635,23 @@ function amountProblem(amount: number, min: number, multiple?: number, max?: num
   if (multiple && amount % multiple !== 0) return `Enter a multiple of ${inr(multiple)}`;
   if (max && amount > max) return `Maximum is ${inr(max)}${per}`;
   return null;
+}
+
+// Up-down chevron beside the pad's label: flips between the monthly SIP and one-time pads, carrying the typed amount across.
+// Blocked when the fund doesn't take the other kind of order.
+function PadModeSwitch({ fundId, oneTime, amount, blocked }: { fundId: string; oneTime: boolean; amount: number; blocked: boolean }) {
+  const { replace } = useMf();
+  return (
+    <button
+      type="button"
+      className="mf-pad-mode"
+      disabled={blocked}
+      aria-label={oneTime ? "Switch to monthly SIP" : "Switch to one-time investment"}
+      onClick={() => replace({ name: "amount", fundId, mode: oneTime ? "sip" : "lump", preset: amount > 0 ? amount : undefined })}
+    >
+      <Icon name="caret-up-down" size={16} />
+    </button>
+  );
 }
 
 // One-time order pad, Figma "2 · One-time order pad" (7Jrg7bnhHGo1mitr3hJ2z2, node 25:2310).
@@ -542,16 +666,9 @@ function OneTimePad({ fundId, preset }: { fundId: string; preset?: number }) {
   // Opens on the fund's minimum (or the amount handed in), so it starts valid; errors show only after an edit.
   const [digits, setDigits] = useState(String(preset ?? min));
   const [typed, setTyped] = useState(false); // dots drift until the first amount change, then fade
-  const [why, setWhy] = useState(false);
   const amount = Number(digits || 0);
   const problem = fund.buy ? "This fund isn\u2019t taking one-time investments" : amountProblem(amount, min, fund.multiple);
   const low = problem !== null;
-  const kind = cutoffKind(fund);
-  const cutoff = cutoffLabel(kind);
-  const now = istNow();
-  const late = afterCutoff(now, kind);
-  const isWorkday = isBusinessDay(now);
-  const nav = fmtDay(navDay(now, kind));
 
   // The method is already on screen, so Invest goes straight to the UPI app (or bank).
   function go() {
@@ -564,13 +681,7 @@ function OneTimePad({ fundId, preset }: { fundId: string; preset?: number }) {
       className="pad"
       backdrop={<DotField active={!typed} />}
       heading={
-        <div className="mf-fundline">
-          <FundMark fund={fund} size={32} />
-          <span>
-            <b>{fund.name}</b>
-            <small>Direct · Growth</small>
-          </span>
-        </div>
+        <PadHeading fund={fund} />
       }
       footer={
         <>
@@ -595,11 +706,19 @@ function OneTimePad({ fundId, preset }: { fundId: string; preset?: number }) {
       }
     >
       <div className={`mf-pad-amount${low && amount > 0 ? " error" : ""}`}>
-        <p>One time amount</p>
-        <div className="mf-pad-figure">
-          <b>₹{digits ? <RollingAmount value={digits} /> : <em>0</em>}</b>
-          <i className="caret" />
+        <div className="mf-pad-label">
+          <p>One time amount</p>
+          <PadModeSwitch fundId={fundId} oneTime amount={amount} blocked={fund.buy === "halted"} />
         </div>
+        <div className="mf-pad-figure" data-digits={digits.split(".")[0].length}>
+          <b>
+            <span className="rupee">₹</span>
+            {digits ? <RollingAmount value={digits} /> : <em>0</em>}
+          </b>
+          <i className="caret" />
+          <ClearAmount show={digits !== ""} onClear={() => { setTyped(true); setDigits(""); }} />
+        </div>
+        <span className="mf-pad-words">{rupeesInWords(amount)}</span>
         {low && <small>{problem}</small>}
       </div>
 
@@ -617,31 +736,12 @@ function OneTimePad({ fundId, preset }: { fundId: string; preset?: number }) {
         ))}
       </div>
 
-      <button className="mf-strip" onClick={() => setWhy(true)} aria-haspopup="dialog">
-        <span>Expected NAV date {nav}</span>
-        <Icon name="chevron-right" size={16} />
-      </button>
       <Keypad
         onKey={(k) => {
           setTyped(true);
           setDigits((d) => applyKey(d, k));
         }}
       />
-
-      {why && (
-        <Sheet title={`Expected NAV date ${nav}`} onClose={() => setWhy(false)}>
-          <SheetLine icon="nav-clock">
-            {!late
-              ? `Since you are placing the order before the cut-off time of ${cutoff}, the applicable NAV will be of ${nav}, if your payment reaches the fund house by then.`
-              : isWorkday
-                ? `Since you are placing the order after the cut-off time of ${cutoff}, the applicable NAV moves to the next working day: ${nav}.`
-                : `Since today is not a working day, the applicable NAV moves to the next working day: ${nav}.`}
-          </SheetLine>
-          <SheetLine icon="calendar">
-            The applicable NAV is of {nav}. It will be declared by the fund house after 10 PM.
-          </SheetLine>
-        </Sheet>
-      )}
     </Screen>
   );
 }
@@ -652,16 +752,17 @@ const SIP_QUICK = [1000, 5000, 10000];
 // UPI AutoPay runs without a PIN per debit up to ₹1 lakh for mutual funds; above that needs eNACH (not in the prototype).
 const UPI_AUTOPAY_MAX = 100000;
 
-function SipPad({ fundId }: { fundId: string }) {
+function SipPad({ fundId, preset }: { fundId: string; preset?: number }) {
   const { pop, push, payMethod, sips } = useMf();
   const fund = fundById(fundId);
   const min = fund.minSip;
   const existing = sips.find((s) => s.fundId === fundId);
-  // Opens on the fund's minimum, so the pad starts valid and only shows an error once the user edits below it.
-  const [digits, setDigits] = useState(String(min));
+  // Opens on the fund's minimum (or the amount carried over from the one-time pad), so the pad starts valid.
+  const [digits, setDigits] = useState(String(preset ?? min));
   const [typed, setTyped] = useState(false); // dots drift until the first amount change, then fade
   const [day, setDay] = useState(5);
   const [picking, setPicking] = useState(false);
+  const [explain, setExplain] = useState(false); // the "how SIP dates work" sheet over the date sheet
   const [draft, setDraft] = useState(day);
   const amount = Number(digits || 0);
   const max = Math.min(fund.maxSip ?? Infinity, UPI_AUTOPAY_MAX);
@@ -688,13 +789,7 @@ function SipPad({ fundId }: { fundId: string }) {
       className="pad"
       backdrop={<DotField active={!typed} />}
       heading={
-        <div className="mf-fundline">
-          <FundMark fund={fund} size={32} />
-          <span>
-            <b>{fund.name}</b>
-            <small>Direct · Growth</small>
-          </span>
-        </div>
+        <PadHeading fund={fund} />
       }
       footer={
         <>
@@ -715,11 +810,19 @@ function SipPad({ fundId }: { fundId: string }) {
       }
     >
       <div className={`mf-pad-amount${low && amount > 0 ? " error" : ""}`}>
-        <p>Monthly SIP amount</p>
-        <div className="mf-pad-figure">
-          <b>₹{digits ? <RollingAmount value={digits} /> : <em>0</em>}</b>
-          <i className="caret" />
+        <div className="mf-pad-label">
+          <p>Monthly SIP amount</p>
+          <PadModeSwitch fundId={fundId} oneTime={false} amount={amount} blocked={fund.buy !== undefined} />
         </div>
+        <div className="mf-pad-figure" data-digits={digits.split(".")[0].length}>
+          <b>
+            <span className="rupee">₹</span>
+            {digits ? <RollingAmount value={digits} /> : <em>0</em>}
+          </b>
+          <i className="caret" />
+          <ClearAmount show={digits !== ""} onClear={() => { setTyped(true); setDigits(""); }} />
+        </div>
+        <span className="mf-pad-words">{rupeesInWords(amount)}</span>
         {low && <small>{problem}</small>}
       </div>
       {existing && (
@@ -751,8 +854,8 @@ function SipPad({ fundId }: { fundId: string }) {
         }}
         aria-haspopup="dialog"
       >
-        <Icon name="calendar" size={24} />
-        <span className="mf-sip-date-label">{ordinal(day)} of every month</span>
+        <Icon name="calendar" size={20} />
+        <span className="mf-sip-date-label">Monthly SIP on {ordinal(day)}</span>
         <Icon name="chevron-down-solid" size={16} />
       </button>
 
@@ -792,13 +895,65 @@ function SipPad({ fundId }: { fundId: string }) {
               </div>
             ))}
           </div>
-          <p className="mf-days-next">
+          <button className="mf-days-next" onClick={() => setExplain(true)} aria-haspopup="dialog">
             Next SIP instalment on {firstDebit(draft, true)}
             <Icon name="info" size={18} />
-          </p>
+          </button>
         </Sheet>
       )}
+      {picking && explain && <SipDatesInfo day={draft} amount={amount} onClose={() => setExplain(false)} />}
     </Screen>
+  );
+}
+
+// "How your SIP dates work": opens from the (i) under the date picker. It answers three questions in
+// order: when does the money first move, when does it move after that, and what if that day is closed.
+// It follows the day being looked at in the picker, so every case is reachable by tapping a date.
+function SipDatesInfo({ day, amount, onClose }: { day: number; amount: number; onClose: () => void }) {
+  const now = istNow();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const rows = sipSchedule(day, 3, now);
+  const thisMonth = new Date(now.getFullYear(), now.getMonth(), day);
+  const daysAway = Math.round((thisMonth.getTime() - today.getTime()) / 864e5);
+  const tooClose = daysAway >= 0 && daysAway < SIP_LEAD_DAYS; // this month's date is still ahead, but under the AutoPay notice
+  const shiftedRow = rows.find((r) => r.shifted);
+  const nth = ["2nd", "3rd", "4th"];
+  const monthName = rows[0].due.toLocaleString("en-IN", { month: "long" });
+  return (
+    <Sheet title="How your SIP dates work" action="Got it" className="sip-date sip-why" onClose={onClose}>
+      <ol className="sip-why-list">
+        <li>
+          <b>Today</b>
+          <small>1st instalment. We place it as soon as you invest.</small>
+        </li>
+        {rows.map((r, i) => (
+          <li key={r.due.getTime()} className={r.shifted ? "moved" : ""}>
+            <b>{fmtWeekday(r.debit)}</b>
+            <small>
+              {nth[i]} instalment
+              {r.shifted && <> · {fmtDay(r.due)} is {closedBecause(r.due)}, so it moves to the next working day</>}
+            </small>
+          </li>
+        ))}
+      </ol>
+      <div className="sip-why-notes">
+        <SheetLine icon="calendar">
+          After today, {inr(amount)} is debited every month on the {ordinal(day)}. Your SIP date stays the {ordinal(day)} even
+          when one month&rsquo;s debit moves.
+        </SheetLine>
+        <SheetLine icon="info">
+          If the {ordinal(day)} is a weekend or a market holiday, that month&rsquo;s debit happens on the next working day.
+          {!shiftedRow && " None of your next three fall on one."}
+        </SheetLine>
+        {tooClose && (
+          <SheetLine icon="info">
+            UPI AutoPay needs 24 hours&rsquo; notice before a debit. The {ordinal(day)} is too close for this month, so your
+            next instalment is in {monthName}.
+          </SheetLine>
+        )}
+        <SheetLine icon="nav-clock">Units are allotted 2 to 3 working days after each debit.</SheetLine>
+      </div>
+    </Sheet>
   );
 }
 
@@ -925,7 +1080,7 @@ export function HoldingScreen({ fundId }: { fundId: string }) {
               <li key={order.id}>
                 <button className="list-row" onClick={() => push({ name: "orderdetail", orderId: order.id })}>
                   <span className="row-main">
-                    <b>{order.kind}</b>
+                    <b>{kindLabel(order.kind)}</b>
                     <small>{order.placedAt}</small>
                   </span>
                   <span className="row-side">
@@ -944,7 +1099,7 @@ export function HoldingScreen({ fundId }: { fundId: string }) {
 
 // ---- SIP tracking and cancel -------------------------------------------------------------
 
-const CANCEL_REASONS = [
+export const CANCEL_REASONS = [
   "I want to invest in a different fund",
   "I'm short on money right now",
   "The fund isn't doing well",
@@ -953,118 +1108,25 @@ const CANCEL_REASONS = [
   "Something else",
 ];
 
-export function SipDetailScreen({ fundId }: { fundId: string }) {
-  const { pop, push, replace, sips, orders, cancelSip } = useMf();
-  const [asking, setAsking] = useState(false);
-  const [reason, setReason] = useState<string | null>(null);
-  const fund = fundById(fundId);
-  const sip = sips.find((s) => s.fundId === fundId);
-  if (!sip) {
-    return (
-      <Screen onBack={pop} title="SIP">
-        <p className="mf-empty">This SIP is no longer active.</p>
-      </Screen>
-    );
-  }
-  const inProgress = orders.filter(
-    (o) => o.fundId === fundId && o.kind === "SIP" && (o.status === "placed" || o.status === "processing"),
-  );
-  const next = nextSipDate(sip.day);
-  const confirm = () => {
-    cancelSip(fundId);
-    replace({ name: "sipcancelled", fundId, amount: sip.amount, day: sip.day, reason: reason!, inProgress: inProgress.length });
-  };
-
-  return (
-    <Screen
-      onBack={pop}
-      title="SIP"
-      footer={
-        <button className="mf-btn wide mf-btn-danger" onClick={() => setAsking(true)}>
-          Cancel SIP
-        </button>
-      }
-    >
-      <button className="mf-fundline link" onClick={() => push({ name: "fund", fundId })}>
-        <FundMark fund={fund} size={40} />
-        <span>
-          <b>{fund.name}</b>
-          <small>{fund.catLabel} · Direct plan</small>
-        </span>
-        <Icon name="caret-right" size={16} />
-      </button>
-
-      <div className="mf-card flat mf-sip-card">
-        <Row label="SIP amount" value={`${inr(sip.amount)} a month`} />
-        <Row label="SIP date" value={`${ordinal(sip.day)} of every month`} />
-        <Row label="Next debit" value={fmtDay(next)} />
-      </div>
-
-      {inProgress.length > 0 && (
-        <section className="mf-section">
-          <h3>In progress</h3>
-          <ul className="row-list">
-            {inProgress.map((order) => (
-              <li key={order.id}>
-                <button className="list-row" onClick={() => push({ name: "orderdetail", orderId: order.id })}>
-                  <span className="row-main">
-                    <b>SIP instalment</b>
-                    <small>{order.placedAt}</small>
-                  </span>
-                  <span className="row-side">
-                    <b>{inr(order.amount)}</b>
-                    <small className={`st-${order.status}`}>{statusLabel(order)}</small>
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {asking && (
-        <Sheet
-          title="Why are you cancelling?"
-          action="Cancel SIP"
-          disabled={!reason}
-          onAction={confirm}
-          onClose={() => {
-            setAsking(false);
-            setReason(null);
-          }}
-        >
-          <div className="mf-options" role="radiogroup">
-            {CANCEL_REASONS.map((r) => (
-              <label key={r} className={`mf-option${reason === r ? " on" : ""}`}>
-                <input type="radio" name="cancel-reason" checked={reason === r} onChange={() => setReason(r)} />
-                <span className="radio" />
-                <span>
-                  <b>{r}</b>
-                </span>
-              </label>
-            ))}
-          </div>
-          <p className="mf-small mf-cancel-note">
-            {inProgress.length > 0
-              ? "No new debits after this. The instalment already in progress still completes, and your units stay invested."
-              : "No new debits after this. Your units stay invested."}
-          </p>
-        </Sheet>
-      )}
-    </Screen>
-  );
-}
-
-const statusLabels = {
-  placed: "Placed",
-  processing: "Processing",
-  allotted: "Units allotted",
+// Phase 1 PRD: Scheduled · In progress · Payment done · Completed · Failed. Redemption has no Payment done.
+const statusLabels: Record<MfOrderStatus, string> = {
+  scheduled: "Scheduled",
+  inprogress: "In progress",
+  paymentdone: "Payment done",
+  completed: "Completed",
   failed: "Failed",
-} as const;
+};
 
-// A finished redemption is money sent, not units allotted.
-export const statusLabel = (order: MfOrder) =>
-  order.kind === "Redeem" && order.status === "allotted" ? "Money sent" : statusLabels[order.status];
+export const statusLabel = (order: MfOrder) => statusLabels[order.status];
+
+export const statusClass = (order: MfOrder) => `st-${order.status}`;
+
+// Order types read One-time, SIP and Redemption; "Lumpsum" is only the internal key.
+export const kindLabel = (kind: MfOrder["kind"]) =>
+  kind === "Lumpsum" ? "One-time" : kind === "Redeem" ? "Redemption" : "SIP";
+
+// "Not finished yet": Scheduled, In progress and Payment done all sit under the In progress chip.
+export const isOpen = (order: MfOrder) => order.status !== "completed" && order.status !== "failed";
 
 const DAY = 864e5;
 const daysSince = (isoDate: string, now: Date) => Math.floor((now.getTime() - new Date(isoDate).getTime()) / DAY);
@@ -1096,7 +1158,7 @@ function exitLoadFor(fund: Fund, lots: { date: string; units: number }[], sellUn
 type RedeemBy = "amount" | "units";
 type RedeemSheet = "by" | "value" | "summary" | "nav" | null;
 
-export const REDEEM_BANK = "HDFC Bank ••4417";
+export const REDEEM_BANK = "HDFC Bank **4417";
 
 // Units go to 3 decimal places, as in the folio.
 function applyUnitsKey(current: string, key: string): string {
@@ -1219,43 +1281,12 @@ export function RedeemScreen({ fundId }: { fundId: string }) {
           </span>
         </div>
       }
-      right={
-        !nothing && (
-          <button
-            className="mf-redeem-by"
-            onClick={() => {
-              setDraftBy(by);
-              setSheet("by");
-            }}
-            aria-haspopup="dialog"
-            aria-label={`Redeem by ${by}. Change`}
-          >
-            {by === "amount" ? "Amount" : "Units"}
-            <Icon name="chevron-down" size={16} />
-          </button>
-        )
-      }
       footer={
         <button className="mf-btn solid wide" disabled={!ok} onClick={() => setSheet("summary")}>
           Continue
         </button>
       }
     >
-      <button className="mf-redeem-value" onClick={() => setSheet("value")} aria-haspopup="dialog">
-        <span>
-          Redeemable value
-          <Icon name="info" size={14} />
-        </span>
-        <b>{inr(freeValue)}</b>
-        {(locked > 0 || waiting > 0) && !nothing && (
-          <small>
-            {locked > 0
-              ? `${inr(Math.floor(locked * perUnit))} in lock-in till ${nextUnlock}`
-              : `${unitsText(waiting)} units still being allotted`}
-          </small>
-        )}
-      </button>
-
       {nothing ? (
         <Notice icon="clock">
           {locked > 0 ? (
@@ -1274,13 +1305,15 @@ export function RedeemScreen({ fundId }: { fundId: string }) {
         <>
           <div className={`mf-pad-amount${problem ? " error" : ""}`}>
             <p>{by === "amount" ? "Redemption amount" : "Units to redeem"}</p>
-            <div className="mf-pad-figure">
+            <div className="mf-pad-figure" data-digits={digits.split(".")[0].length}>
               <b>
-                {by === "amount" && "₹"}
+                {by === "amount" && <span className="rupee">₹</span>}
                 {digits ? <RollingAmount value={digits} /> : <em>0</em>}
               </b>
               <i className="caret" />
+              <ClearAmount show={digits !== ""} onClear={() => { setTyped(true); setDigits(""); }} />
             </div>
+            {by === "amount" && <span className="mf-pad-words">{rupeesInWords(n)}</span>}
             {problem ? <small>{problem}</small> : <small className="hint">{helper}</small>}
           </div>
 
@@ -1290,6 +1323,19 @@ export function RedeemScreen({ fundId }: { fundId: string }) {
               <Icon name="check" size={14} />
             </span>
             Redeem all · {by === "amount" ? inr(freeValue) : `${unitsText(maxUnits)} units`}
+            <button
+              type="button"
+              className="mf-redeem-info"
+              aria-label="About the redeemable value"
+              aria-haspopup="dialog"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setSheet("value");
+              }}
+            >
+              <Icon name="info" size={16} />
+            </button>
           </label>
 
           <button
@@ -1425,72 +1471,6 @@ export function RedeemScreen({ fundId }: { fundId: string }) {
             sold.
           </p>
         </Sheet>
-      )}
-    </Screen>
-  );
-}
-
-export function OrderDetailScreen({ orderId }: { orderId: string }) {
-  const { pop, push, orders } = useMf();
-  const order = orders.find((o) => o.id === orderId);
-  if (!order) return null;
-  const fund = fundById(order.fundId);
-  const steps = order.kind === "Redeem" ? ["Placed", "Processing", "Money sent"] : ["Placed", "Processing", "Units allotted"];
-  const at = order.status === "placed" ? 0 : order.status === "processing" ? 1 : order.status === "allotted" ? 2 : -1;
-  return (
-    <Screen
-      onBack={pop}
-      title="Order"
-      footer={
-        order.status === "failed" ? (
-          <button
-            className="mf-btn solid wide"
-            onClick={() => push({ name: "amount", fundId: fund.id, mode: order.kind === "SIP" ? "sip" : "lump" })}
-          >
-            Try again
-          </button>
-        ) : undefined
-      }
-    >
-      <div className="mf-fundline">
-        <FundMark fund={fund} size={40} />
-        <span>
-          <b>{fund.name}</b>
-          <small>
-            {order.kind} · {inr(order.amount)}
-          </small>
-        </span>
-      </div>
-      {order.status === "failed" ? (
-        <Notice tone="error">{order.note}</Notice>
-      ) : (
-        <ol className="mf-timeline">
-          {steps.map((label, i) => (
-            <li key={label} className={i <= at ? "on" : ""}>
-              <b>{label}</b>
-              <small>{i === at ? order.note : i < at ? "Done" : "Next"}</small>
-            </li>
-          ))}
-        </ol>
-      )}
-      {order.kind === "Redeem" ? (
-        <div className="mf-card">
-          <Row label="Order type" value="Redemption" />
-          <Row label="Placed" value={order.placedAt} />
-          <Row label="Amount requested" value={inr(order.amount)} />
-          {order.units !== undefined && <Row label="Units" value={unitsText(order.units)} />}
-          <Row label="Applicable NAV date" value={order.navDate} />
-          {order.creditBy && <Row label="Estimated credit date" value={order.creditBy} hint={`To ${REDEEM_BANK}`} />}
-        </div>
-      ) : (
-        <div className="mf-card">
-          <Row label="Placed" value={order.placedAt} />
-          <Row label="NAV date" value={order.navDate} />
-          <Row label="Amount" value={inr(order.amount)} />
-        </div>
-      )}
-      {order.kind === "Redeem" && order.status !== "allotted" && order.status !== "failed" && (
-        <Notice icon="info">The final amount may differ. It is calculated on the NAV of {order.navDate}.</Notice>
       )}
     </Screen>
   );

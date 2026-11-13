@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Block } from "../ui/widgets";
 import { Icon } from "../ui/Icon";
 import { fundById } from "./data";
-import { inr, pct, xirr } from "./format";
+import { blendSeries, fmtDay, inr, pct, xirr, type Range } from "./format";
 import { FundMark } from "./parts";
-import { FundListBody, statusLabel } from "./screens";
+import { FundListBody, RangeChart } from "./screens";
+import { BasketHoldingsTab } from "./BasketHoldings";
+import { OrdersList2, type TypeFilter } from "./OrdersList2";
 import { useMf } from "./store";
 
 // "Stocks | Mutual funds" switch used at the top of Orders and Portfolio.
@@ -37,83 +39,141 @@ export function SegmentChips({
   );
 }
 
-export function MfOrders() {
-  const { orders, push } = useMf();
-  const inProgress = orders.filter((o) => o.status === "placed" || o.status === "processing");
-  const done = orders.filter((o) => o.status === "allotted");
-  const failed = orders.filter((o) => o.status === "failed");
-  const groups = [
-    { label: `In progress (${inProgress.length})`, list: inProgress },
-    { label: `Completed (${done.length})`, list: done },
-    { label: `Failed (${failed.length})`, list: failed },
-  ];
-  // initial tab: first with something in it
-  const first = Math.max(0, groups.findIndex((g) => g.list.length > 0));
-  return <MfOrderTabs groups={groups} first={first} onOpen={(id) => push({ name: "orderdetail", orderId: id })} />;
-}
+// The Orders page seen from inside Mutual Funds: the order-type filter sits at the right of the header.
+export function MfOrdersPage({ segments }: { segments?: ReactNode }) {
+  const [type, setType] = useState<TypeFilter>("all");
+  const [picking, setPicking] = useState(false);
 
-function MfOrderTabs({
-  groups,
-  first,
-  onOpen,
-}: {
-  groups: { label: string; list: ReturnType<typeof useMf>["orders"] }[];
-  first: number;
-  onOpen: (id: string) => void;
-}) {
-  const [active, setActive] = useState(first);
-  const list = groups[active].list;
   return (
     <>
-      <div className="tabs-row">
-        <div className="tabs-list">
-          {groups.map((g, i) => (
-            <button
-              className={`tab-underlined${i === active ? " active" : ""}`}
-              key={g.label}
-              onClick={() => setActive(i)}
-            >
-              {g.label}
-            </button>
-          ))}
-        </div>
+      <div className="mf-pf-head">
+        <h1 className="page-title">Orders</h1>
+        <button
+          className={`mf-orders-filter${type !== "all" ? " on" : ""}`}
+          aria-label="Filter by order type"
+          onClick={() => setPicking(true)}
+        >
+          <Icon name="funnel-simple" size={20} />
+        </button>
       </div>
-      {list.length === 0 ? (
-        <p className="mf-empty">No orders here yet.</p>
-      ) : (
-        <ul className="order-list">
-          {list.map((order) => {
-            const fund = fundById(order.fundId);
-            return (
-              <li key={order.id}>
-                <button className="order-row" onClick={() => onOpen(order.id)}>
-                  <span className="order-top">
-                    <small>
-                      Mutual fund • {order.kind}
-                    </small>
-                    <em className={`amo st-${order.status}`}>{statusLabel(order)}</em>
-                  </span>
-                  <span className="order-mid">
-                    <b>{fund.name}</b>
-                    <span className="order-qty">{inr(order.amount)}</span>
-                  </span>
-                  <span className="order-bot">
-                    <span>{order.placedAt}</span>
-                    <span>
-                      NAV date: <b>{order.navDate}</b>
-                    </span>
-                  </span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+      {segments}
+      <OrdersList2 type={type} picking={picking} onType={setType} onClosePicker={() => setPicking(false)} />
     </>
   );
 }
 
-export function MfPortfolio({ hideSips = false }: { hideSips?: boolean }) {
+// Mutual funds and baskets are held and shown apart, so a switcher sits on top.
+export function MfPortfolio({ hideSips = false, showBaskets = true }: { hideSips?: boolean; showBaskets?: boolean }) {
+  const [kind, setKind] = useState<"funds" | "baskets">("funds");
+  // Funds only: no switcher, just the holdings.
+  if (!showBaskets) return <FundsPortfolio hideSips={hideSips} />;
+  return (
+    <>
+      <div className="tabs-row mf-subtabs">
+        <div className="tabs-list" role="tablist" aria-label="What you hold">
+          {(["funds", "baskets"] as const).map((k) => (
+            <button
+              key={k}
+              className={`tab-underlined${kind === k ? " active" : ""}`}
+              role="tab"
+              aria-selected={kind === k}
+              onClick={() => setKind(k)}
+            >
+              {k === "funds" ? "Mutual funds" : "Baskets"}
+            </button>
+          ))}
+        </div>
+      </div>
+      {kind === "funds" ? <FundsPortfolio hideSips={hideSips} /> : <BasketHoldingsTab />}
+    </>
+  );
+}
+
+// The Portfolio page seen from inside Mutual Funds. A "more" button beside the title opens a
+// product setting: show mutual funds only, or mutual funds and baskets (which brings the switcher back).
+type PortfolioView = "funds" | "both";
+const PORTFOLIO_VIEW_KEY = "sahi-dev-portfolio-view";
+const PORTFOLIO_VIEWS: { key: PortfolioView; label: string }[] = [
+  { key: "funds", label: "Mutual funds" },
+  { key: "both", label: "Mutual funds + Baskets" },
+];
+
+function readPortfolioView(): PortfolioView {
+  try {
+    return localStorage.getItem(PORTFOLIO_VIEW_KEY) === "both" ? "both" : "funds";
+  } catch {
+    return "funds";
+  }
+}
+
+export function MfPortfolioPage() {
+  const [view, setView] = useState<PortfolioView>(readPortfolioView);
+  const [open, setOpen] = useState(false);
+  const wrap = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const away = (e: PointerEvent) => {
+      if (!wrap.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const esc = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("pointerdown", away);
+    document.addEventListener("keydown", esc);
+    return () => {
+      document.removeEventListener("pointerdown", away);
+      document.removeEventListener("keydown", esc);
+    };
+  }, [open]);
+
+  const pick = (next: PortfolioView) => {
+    setView(next);
+    setOpen(false);
+    try {
+      localStorage.setItem(PORTFOLIO_VIEW_KEY, next);
+    } catch {
+      /* storage blocked: the setting still works for this visit */
+    }
+  };
+
+  return (
+    <>
+      <div className="mf-pf-head">
+        <h1 className="page-title">Portfolio</h1>
+        <div className="mf-pf-more" ref={wrap}>
+          <button
+            className="mf-pf-more-btn"
+            aria-label="Portfolio settings"
+            aria-haspopup="menu"
+            aria-expanded={open}
+            onClick={() => setOpen((o) => !o)}
+          >
+            <Icon name="dots-three-vertical" size={20} />
+          </button>
+          {open && (
+            <div className="mf-pf-menu" role="menu" aria-label="Show in Portfolio">
+              <p>Show in Portfolio</p>
+              {PORTFOLIO_VIEWS.map((v) => (
+                <button
+                  key={v.key}
+                  role="menuitemradio"
+                  aria-checked={view === v.key}
+                  className={view === v.key ? "on" : undefined}
+                  onClick={() => pick(v.key)}
+                >
+                  <i aria-hidden="true" />
+                  {v.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+      <MfPortfolio hideSips showBaskets={view === "both"} />
+    </>
+  );
+}
+
+function FundsPortfolio({ hideSips = false }: { hideSips?: boolean }) {
   const { holdings, push, setSegment } = useMf();
   const current = holdings.reduce((s, h) => s + h.current, 0);
   const invested = holdings.reduce((s, h) => s + h.invested, 0);
@@ -148,7 +208,7 @@ function SipHoldingTabs({
   gain: number;
   hideSips: boolean;
 }) {
-  const { holdings, sips, push } = useMf();
+  const { holdings, sips } = useMf();
   const [tab, setTab] = useState<"h" | "s">("h");
   return (
     <>
@@ -235,6 +295,15 @@ function HoldingsDashboard({ current, invested, gain }: { current: number; inves
     return sum + h.current - h.current / (1 + change / 100);
   }, 0);
 
+  const portfolioSeries = (range: Range) =>
+    blendSeries(
+      holdings.map((h) => {
+        const fund = fundById(h.fundId);
+        return { weight: h.current, id: fund.id, r1: fund.r1, r3: fund.r3, r5: fund.r5 };
+      }),
+      range,
+    );
+
   const shown = rows.sort((a, b) =>
     sort === "returns" ? b.gPct - a.gPct : sort === "current" ? b.h.current - a.h.current : b.h.invested - a.h.invested,
   );
@@ -243,12 +312,13 @@ function HoldingsDashboard({ current, invested, gain }: { current: number; inves
 
   return (
     <>
-      <div className="mf-pf-card">
+      <div className="mf-pf-card flat">
         <small>Holdings</small>
         <div className="mf-pf-total">
           <strong>{inr(current)}</strong>
           {rate !== null && <em className={rate >= 0 ? "up" : "down"}>XIRR {(rate * 100).toFixed(1)}%</em>}
         </div>
+        <RangeChart initial="1M" seriesFor={portfolioSeries} showChange={false} />
         <dl className="mf-pf-stats">
           <div>
             <dt>Total Returns</dt>
@@ -444,23 +514,33 @@ export function SipPage() {
         </>
       ) : (
         <>
-          <div className="summary-card summary-card-lg">
-            <div className="summary-grid">
-              <span>
-                <small>Monthly SIP amount</small>
-                <strong>{inr(monthly)}</strong>
-              </span>
-              <span className="summary-right">
-                <small>Active SIPs</small>
-                <strong>{sips.length}</strong>
-              </span>
+            <div className="mf-sip-zero">
+              <small>
+                Monthly SIP amount · {sips.length} {sips.length === 1 ? "SIP" : "SIPs"}
+              </small>
+              <strong>{inr(monthly)}</strong>
+              <div className="mf-sip-due">
+                <Icon name="clock" size={24} />
+                <span>
+                  {dueSoon.length > 0 ? (
+                    <>
+                      <b>{inr(dueSoon.reduce((sum, s) => sum + s.amount, 0))} due in the next 2 days</b>
+                      <small>
+                        {dueSoon.length === 1 ? fundById(dueSoon[0].fundId).name : `${dueSoon.length} SIPs`} · debits on{" "}
+                        {fmtDay(dueSoon[0].next)}
+                      </small>
+                    </>
+                  ) : (
+                    <>
+                      <b>Next debit on {fmtDay(upcoming[0].next)}</b>
+                      <small>
+                        {fundById(upcoming[0].fundId).name} · {inr(upcoming[0].amount)}
+                      </small>
+                    </>
+                  )}
+                </span>
+              </div>
             </div>
-            {dueSoon.length > 0 && (
-              <span className="summary-day">
-                <b>{inr(dueSoon.reduce((sum, s) => sum + s.amount, 0))}</b> due in the next 2 days
-              </span>
-            )}
-          </div>
 
           <div className="block-head mf-sip-head">
             <h2>Active SIPs ({sips.length})</h2>
