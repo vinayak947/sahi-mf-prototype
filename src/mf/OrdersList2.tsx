@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { fundById, type MfOrder } from "./data";
 import { inr } from "./format";
 import { FundMark, Sheet } from "./parts";
@@ -47,20 +47,43 @@ export function OrdersList2({
   onClosePicker: () => void;
 }) {
   const { orders, push } = useMf();
-  const [tab, setTab] = useState<StatusTab>("all");
+  const [picked, setTab] = useState<StatusTab>("all");
+  const tabsRef = useRef<HTMLDivElement>(null);
 
   const since = threeMonthsAgo();
-  const list = orders
-    .filter((o) => o.on >= since)
+  const ofType = useMemo(
+    () => orders.filter((o) => o.on >= since).filter((o) => type === "all" || o.kind === type),
+    [orders, since, type],
+  );
+  // Only the statuses this order type actually has: "All" always, the rest when at least one order is in them.
+  const tabs = STATUS_TABS.filter((t) => t.key === "all" || ofType.some((o) => uiStatus(o) === t.key));
+  const tab: StatusTab = tabs.some((t) => t.key === picked) ? picked : "all";
+  const list = ofType
     .filter((o) => tab === "all" || uiStatus(o) === tab)
-    .filter((o) => type === "all" || o.kind === type)
     .sort((x, y) => (x.on < y.on ? 1 : x.on > y.on ? -1 : 0));
+
+  // Keep the picked tab and the one after it fully in view, so the last tab never sits clipped at the edge.
+  useEffect(() => {
+    const row = tabsRef.current;
+    const active = row?.querySelector<HTMLElement>("[aria-selected='true']");
+    if (!row || !active) return;
+    const next = (active.nextElementSibling as HTMLElement | null) ?? active;
+    const gutter = 16;
+    const base = row.getBoundingClientRect().left - row.scrollLeft;
+    const left = (el: HTMLElement) => el.getBoundingClientRect().left - base;
+    const nextEnd = left(next) + next.offsetWidth + gutter;
+    if (nextEnd > row.scrollLeft + row.clientWidth) {
+      row.scrollTo({ left: nextEnd - row.clientWidth, behavior: "smooth" });
+    } else if (left(active) - gutter < row.scrollLeft) {
+      row.scrollTo({ left: Math.max(0, left(active) - gutter), behavior: "smooth" });
+    }
+  }, [tab, tabs.length]);
 
   return (
     <>
       <div className="tabs-row mf-orders-bar">
-        <div className="tabs-list" role="tablist" aria-label="Order status">
-          {STATUS_TABS.map((t) => (
+        <div className="tabs-list" role="tablist" aria-label="Order status" ref={tabsRef}>
+          {tabs.map((t) => (
             <DlsTab key={t.key} active={tab === t.key} onClick={() => setTab(t.key)}>
               {t.label}
             </DlsTab>

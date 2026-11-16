@@ -14,14 +14,14 @@ export const UI_STATUS_LABEL: Record<UiStatus, string> = {
 };
 
 // Failed -> Failed; Completed -> Completed; a redemption stays In progress until the money is sent.
-// Purchases: Scheduled and Payment done -> In progress; In progress (payment not yet confirmed) -> Initiated.
-// An order that already has a debit date is waiting on its AutoPay debit, so it is In progress too.
+// Purchases: Scheduled (AutoPay debit still to come) and In progress (payment not yet confirmed) -> Initiated;
+// Payment done (money in, waiting on allotment) -> In progress.
 export function uiStatus(o: MfOrder): UiStatus {
   if (o.status === "failed") return "failed";
   if (o.status === "completed") return "completed";
   if (o.kind === "Redeem") return "inprogress";
-  if (o.status === "inprogress" && !o.debitOn) return "initiated";
-  return "inprogress";
+  if (o.status === "paymentdone") return "inprogress";
+  return "initiated";
 }
 
 // ---- Dates ------------------------------------------------------------------------------------------------------
@@ -118,20 +118,20 @@ export function purchaseView({ order: o, fund, sipDay }: Ctx): DetailView {
     facts = [
       { label: "Units allotted", value: a.units.toFixed(3), hi: true },
       { label: "NAV", value: inr(a.nav, 4) },
-      { label: "Allotment date", value: fmtFull(allotted!) },
-      { label: "Folio no.", value: a.folio },
+      { label: "NAV date", value: fmtFull(parseDay(a.navDate, o.on)) },
       { label: "Amount invested", value: amount },
     ];
   } else if (sip) {
-    let from = "";
-    if (o.firstInstalment && debit) {
-      let next = new Date(debit.getFullYear(), debit.getMonth(), sipDay);
-      if ((next.getTime() - debit.getTime()) / 864e5 < 2) next = new Date(debit.getFullYear(), debit.getMonth() + 1, sipDay);
-      from = `, from ${fmtDay(next)}`;
-    }
+    // The amount carries its own debit line: placed on, will be debited on, debited on.
+    const when =
+      o.status === "scheduled" && debit
+        ? `will be debited on ${fmtDay(debit)}`
+        : o.status === "paymentdone" && debit
+          ? `debited on ${fmtDay(debit)}`
+          : `on ${fmtDay(debit ?? placed)}`;
     facts = [
-      { label: "Amount", value: `${amount} / month` },
-      { label: "SIP date", value: `${ordinal(sipDay)} of every month${from}` },
+      { label: "Amount", value: `${amount} ${when}` },
+      { label: "Order type", value: "SIP transaction" },
       { label: "Payment", value: `${method} · ${BANK}` },
     ];
   } else {
@@ -174,21 +174,13 @@ export function purchaseView({ order: o, fund, sipDay }: Ctx): DetailView {
 
   // Banner
   let banner: DetailView["banner"];
-  if (ui === "completed" && a) banner = { tone: "ok", text: `${a.units.toFixed(3)} units added to your portfolio.` };
-  else if (rejected) banner = { tone: "err", text: o.failReason ?? "The fund house couldn’t process this order, so no units were allotted." };
+  if (rejected) banner = { tone: "err", text: o.failReason ?? "The fund house couldn’t process this order, so no units were allotted." };
   else if (payFailed)
     banner = {
       tone: "err",
       text: sip
         ? `The AutoPay debit from ${BANK} failed, so this instalment wasn’t invested.`
         : "Your payment didn’t go through, so this order wasn’t placed with the fund house.",
-    };
-  else if (o.status === "scheduled" && debit)
-    banner = {
-      tone: "info",
-      text: o.firstInstalment
-        ? `Your 1st order of ${inr(o.amount)} will be debited on ${fmtMonthLong(debit)}. After that, every month on the ${ordinal(sipDay)}.`
-        : `${inr(o.amount)} will be debited on ${fmtDay(debit)}.`,
     };
   else if (o.status === "paymentdone") banner = { tone: "info", text: `Payment received. Units will be allotted by ${fmtDay(expected)}.` };
 
@@ -208,7 +200,7 @@ export function purchaseView({ order: o, fund, sipDay }: Ctx): DetailView {
     );
     if (rejected) steps.push({ label: "Order rejected", state: "fail", sub: "Rejected by the fund house" });
     else if (ui === "completed" && allotted) steps.push({ label: "Units allotted", state: "done", time: fmtFull(allotted) });
-    else if (ui === "initiated") steps.push({ label: "Units allotted", state: "todo" });
+    else if (ui === "initiated" && o.status !== "scheduled") steps.push({ label: "Units allotted", state: "todo" });
     else steps.push({ label: "Units allotted", state: "todo", sub: `Expected by ${fmtDay(expected)}`, info });
   }
 
@@ -218,7 +210,7 @@ export function purchaseView({ order: o, fund, sipDay }: Ctx): DetailView {
     steps,
     nav: a?.nav ?? fund.nav,
     action:
-      ui === "completed" ? (sip ? "viewSip" : "investMore") : ui === "failed" ? (sip ? "viewSip" : "retry") : undefined,
+      ui === "completed" ? (sip ? undefined : "investMore") : ui === "failed" ? (sip ? undefined : "retry") : undefined,
   };
 }
 
@@ -290,15 +282,15 @@ export function redeemView({ order: o, fund }: Ctx): RedeemView {
     head: done ? { label: `Amount credited on ${creditText}`, value: inr(credited, 2) } : { label: "Estimated amount credit date", value: creditText },
     rows: done
       ? [
+          { label: "Amount requested", value: inr(o.amount, 2) },
           { label: "Units", value: unitsText },
           { label: "NAV applicable date", value: a?.navDate ?? o.navDate },
           { label: "Applicable NAV", value: inr(a?.nav ?? fund.nav, 4) },
-          { label: "Amount requested", value: inr(o.amount, 2) },
         ]
       : [
+          { label: "Amount requested", value: inr(o.amount, 2) },
           { label: "Units", value: unitsText },
           { label: "NAV applicable date", value: o.navDate },
-          { label: "Amount requested", value: inr(o.amount, 2) },
         ],
     steps,
     why,
@@ -321,7 +313,7 @@ export function redeemFailedView({ order: o, fund }: Ctx): DetailView {
     ],
     steps: [
       { label: "Order placed on SAHI", state: "done", time: o.placedAt, showId: true },
-      { label: "Order rejected", state: "fail", sub: "Rejected by the fund house" },
+      { label: "Order rejected", state: "fail", time: o.placedAt },
     ],
     action: "retry",
     nav: fund.nav,

@@ -447,7 +447,9 @@ function AddUpiSheet({ amount, onPay, onClose }: { amount: number; onPay: (vpa: 
           autoComplete="off"
           autoCapitalize="none"
           spellCheck={false}
-          autoFocus
+          ref={(el) => {
+            if (el && document.activeElement !== el) el.focus({ preventScroll: true });
+          }}
         />
       </label>
       {valid ? (

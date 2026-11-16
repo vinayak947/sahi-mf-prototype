@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Icon } from "../ui/Icon";
 import {
   DlsBadge,
-  DlsBottomSheet,
   DlsCard,
   DlsKvDetail,
   DlsKvStacked,
@@ -100,71 +99,78 @@ export function OrderStatusDetail({
   const noticeTone = { info: "info", ok: "info", err: "error" } as const;
 
   return (
-    <DlsBottomSheet title="Order details" onClose={pop}>
-      <div className="dls-sheet-head with-badge">
-        <h2>{basket ? basket.name : fund.name}</h2>
-        <p>
-          {basket
-            ? `${kindLabel(order.kind)} • Basket • ${basket.funds.length} funds`
-            : `${kindLabel(order.kind)} • ${fund.catLabel.replace(" · ", " • ")}`}
-        </p>
-        <StatusBadge order={order} />
-      </div>
+    <Screen
+      onBack={pop}
+      title="Order details"
+      footer={
+        view.action && (
+          <button className="mf-btn solid wide" onClick={() => act(view.action!)}>
+            {label[view.action]}
+          </button>
+        )
+      }
+    >
+      <div className="os-page">
+        <div className="os-fund with-badge">
+          <FundMark fund={basket ? basketFunds(basket)[0].fund : fund} size={40} />
+          <div className="dls-sheet-head">
+            <h2>{basket ? basket.name : fund.name}</h2>
+            <p>
+              {basket
+                ? `${kindLabel(order.kind)} • Basket • ${basket.funds.length} funds`
+                : `${kindLabel(order.kind)} • ${fund.catLabel.replace(" · ", " • ")}`}
+            </p>
+          </div>
+          <StatusBadge order={order} />
+        </div>
 
-      {view.banner && <Notice tone={noticeTone[view.banner.tone]}>{view.banner.text}</Notice>}
+        {view.banner && <Notice tone={noticeTone[view.banner.tone]}>{view.banner.text}</Notice>}
 
-      <DlsCard>
-        {view.facts.map((f) => (
-          <DlsKvStacked
-            key={f.label}
-            label={f.label}
-            value={basket && f.label === "Amount" ? `${inr(group!.amount, 2)}${sip ? " / month" : ""}` : f.value}
-            tone={f.hi ? "positive" : undefined}
-          />
-        ))}
-        {sip && !redeem && (
-          <DlsKvStacked
-            label="SIP Regn No."
-            value={sipRegnNo(order)}
-            onTap={basket ? undefined : () => push({ name: "sipdetail", fundId: fund.id })}
-          />
-        )}
-      </DlsCard>
-
-      {basket && (
         <DlsCard>
-          {basketFunds(basket).map(({ fund: f }, i) => (
-            <DlsKvDetail key={`${f.id}-${i}`} label={f.name} value={inr(splitAmount(basket, group!.amount)[i], 2)} />
+          {view.facts.map((f) => (
+            <DlsKvStacked
+              key={f.label}
+              label={f.label}
+              value={basket && f.label === "Amount" ? `${inr(group!.amount, 2)}${sip ? " / month" : ""}` : f.value}
+              tone={f.hi ? "positive" : undefined}
+            />
           ))}
         </DlsCard>
-      )}
 
-      <Timeline steps={view.steps} order={order} defaultOpen={uiStatus(order) !== "completed"} />
+        {sip && !redeem && !basket && (
+          <DlsCard>
+            <button className="dls-kv tap" onClick={() => push({ name: "sipdetail", fundId: fund.id })}>
+              <span className="dls-kv-text">
+                <b>View SIP details</b>
+              </span>
+              <Icon name="chevron-right" size={16} />
+            </button>
+          </DlsCard>
+        )}
 
-      {view.action && (
-        <button className="mf-btn solid wide" onClick={() => act(view.action!)}>
-          {label[view.action]}
-        </button>
-      )}
-    </DlsBottomSheet>
+        {basket && (
+          <DlsCard>
+            {basketFunds(basket).map(({ fund: f }, i) => (
+              <DlsKvDetail key={`${f.id}-${i}`} label={f.name} value={inr(splitAmount(basket, group!.amount)[i], 2)} />
+            ))}
+          </DlsCard>
+        )}
+
+        <StatusCard steps={view.steps} order={order} />
+      </div>
+    </Screen>
   );
 }
 
-// "Order details": a disclosure row over the timeline, in one Card.
-function Timeline({ steps, order, defaultOpen }: { steps: StepView[]; order: MfOrder; defaultOpen: boolean }) {
-  const [open, setOpen] = useState(defaultOpen);
+// "Order status": the one timeline card every order detail page uses (purchase, SIP, redemption), always open.
+function StatusCard({ steps, order }: { steps: StepView[]; order: MfOrder }) {
   const [info, setInfo] = useState<string[] | null>(null);
   return (
-    <DlsCard>
-      <button className="os-disc" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
-        <b>Order details</b>
-        <Icon name="chevron-down" size={16} />
-      </button>
-      {open && (
-        <div className="os-tl-wrap">
-          <DlsTimeline items={timelineItems(steps, order, { onInfo: (s) => setInfo(s.info ?? null) })} />
-        </div>
-      )}
+    <DlsCard padding="inset">
+      <div className="os-status-head">
+        <b>Order status</b>
+      </div>
+      <DlsTimeline items={timelineItems(steps, order, { timeAsNote: true, onInfo: (s) => setInfo(s.info ?? null) })} />
       {info && (
         <Sheet title="How is the allotment date decided?" onClose={() => setInfo(null)}>
           <Bullets items={info} />
@@ -191,12 +197,13 @@ function RedeemPage({ ctx, onBack }: { ctx: Parameters<typeof redeemView>[0]; on
   return (
     <Screen onBack={onBack} title="Order details">
       <div className="os-page">
-        <div className="os-fund">
+        <div className="os-fund with-badge">
           <FundMark fund={fund} size={40} />
           <div className="dls-sheet-head">
             <h2>{fund.name}</h2>
             <p>{fund.catLabel}</p>
           </div>
+          <StatusBadge order={order} />
         </div>
 
         <DlsCard>
@@ -219,13 +226,7 @@ function RedeemPage({ ctx, onBack }: { ctx: Parameters<typeof redeemView>[0]; on
           </button>
         </Notice>
 
-        <DlsCard padding="inset">
-          <div className="os-status-head">
-            <b>Order status</b>
-            <StatusBadge order={order} />
-          </div>
-          <DlsTimeline items={timelineItems(v.steps, order, { timeAsNote: true })} />
-        </DlsCard>
+        <StatusCard steps={v.steps} order={order} />
 
         {why && (
           <Sheet title={v.why.title} onClose={() => setWhy(false)}>

@@ -100,14 +100,7 @@ const classify = (prev: Route[], next: Route[]): Motion =>
 // leaving the flow slides the layer back out instead of dropping it in one frame. The direction is worked out
 // once per navigation, from the previous stack, and is only read by the screens that mount for it.
 export function MfFlow() {
-  const { stack, orders } = useMf();
-  // An order sheet at the root of the flow (opened from the Orders page) rises as a sheet: its layer neither
-  // slides in nor out. Decided by the first route, which is fixed for the layer's life.
-  const rootIsSheet = (st: Route[]) => {
-    const first = st[0];
-    const o = first && first.name === "orderdetail" ? orders.find((x) => x.id === first.orderId) : undefined;
-    return !!o && (o.kind !== "Redeem" || o.status === "failed");
-  };
+  const { stack } = useMf();
   const [nav, setNav] = useState({ stack, motion: "open" as Motion, last: stack, leaving: false });
   if (nav.stack !== stack) {
     const exit = stack.length === 0;
@@ -115,7 +108,7 @@ export function MfFlow() {
       stack,
       motion: exit ? nav.motion : classify(nav.stack, stack),
       last: exit ? nav.stack : stack,
-      leaving: exit && nav.stack.length > 0 && !rootIsSheet(nav.stack),
+      leaving: exit && nav.stack.length > 0,
     });
   }
   const leaving = stack.length === 0 && nav.leaving;
@@ -128,12 +121,10 @@ export function MfFlow() {
   const shown = stack.length > 0 ? stack : leaving ? nav.last : [];
   const top = shown[shown.length - 1];
   if (!top) return null;
-  const under = top.name === "orderdetail" && shown.length > 1 ? shown[shown.length - 2] : undefined;
   return (
     <div
-      className={`mf-layer ${nav.motion}${rootIsSheet(shown) ? " sheet-first" : ""}${leaving ? " leaving" : ""}`}
+      className={`mf-layer ${nav.motion}${leaving ? " leaving" : ""}`}
     >
-      {under && <Fragment key={`${shown.length - 1}-${under.name}`}>{renderRoute(under)}</Fragment>}
       <Fragment key={`${shown.length}-${top.name}`}>{renderRoute(top)}</Fragment>
     </div>
   );

@@ -155,25 +155,6 @@ const iso = (d: Date) =>
 // Two orders for the same thing within this window are a double tap, not a decision.
 const SAME_ROUTE = (a: Route | undefined, b: Route) => !!a && JSON.stringify(a) === JSON.stringify(b);
 
-// Dev panel "Invested flow": remembered in this browser so a reload keeps the same demo.
-const INVESTED_KEY = "sahi-dev-invested";
-
-function readInvested(): boolean {
-  try {
-    return localStorage.getItem(INVESTED_KEY) === "1";
-  } catch {
-    return false;
-  }
-}
-
-function saveInvested(on: boolean) {
-  try {
-    localStorage.setItem(INVESTED_KEY, on ? "1" : "0");
-  } catch {
-    /* storage blocked: the switch still works for this visit */
-  }
-}
-
 export function MfProvider({
   children,
   onOpenPage,
@@ -182,7 +163,7 @@ export function MfProvider({
   onOpenPage: (page: "orders" | "sip") => void;
 }) {
   const [stack, setStack] = useState<Route[]>([]);
-  const [invested] = useState(readInvested);
+  const invested = false; // the prototype always opens in the non-invested flow; the dev panel switches it for the visit
   const [segment, setSegmentState] = useState<Segment>(invested ? "holdings" : "new");
   const [holdings, setHoldings] = useState<Holding[]>(invested ? sampleHoldings : []);
   const [basketPositions, setBasketPositions] = useState<BasketPosition[]>(invested ? sampleBasketPositions : []);
@@ -210,7 +191,6 @@ export function MfProvider({
 
   const setSegment = useCallback((next: Segment) => {
     setSegmentState(next);
-    saveInvested(next === "holdings");
     setStack([]);
     if (next === "holdings") {
       setHoldings(sampleHoldings);

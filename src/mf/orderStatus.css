@@ -99,6 +99,17 @@ em.amo.st-initiated {
   gap: 12px;
 }
 
+/* Status badge sits at the right of the fund header. */
+.os-fund.with-badge .dls-sheet-head {
+  min-width: 0;
+  flex: 1;
+}
+
+.os-fund.with-badge .dls-badge {
+  align-self: flex-start;
+  flex: none;
+}
+
 /* "Order details" disclosure row, Key value tile padding (16 above and below). */
 .os-disc {
   display: flex;

@@ -292,6 +292,11 @@ export function Sheet({
 }) {
   const [closing, setClosing] = useState(false);
   const [acted, setActed] = useState(false);
+  const primary = useRef<HTMLButtonElement>(null);
+  // Focus the button without letting the browser scroll the page to it while the sheet is still sliding up.
+  useEffect(() => {
+    primary.current?.focus({ preventScroll: true });
+  }, []);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setClosing(true);
     window.addEventListener("keydown", onKey);
@@ -317,7 +322,7 @@ export function Sheet({
               setActed(true);
               setClosing(true);
             }}
-            autoFocus
+            ref={primary}
           >
             {action}
           </button>

@@ -564,17 +564,24 @@ export default function App() {
 
 function Shell({ page, setPage }: { page: Page; setPage: (page: Page) => void }) {
   const { stack, markSeen, mfSeen } = useMf();
-  const [market, setMarket] = useState<Market | null>(null);
-  const [tabOrder, setTabOrder] = useState<Market[]>(marketOrder);
+  // The prototype opens straight on Mutual Funds, with no "Where would you like to start?" sheet.
+  const [market, setMarket] = useState<Market | null>("mf");
+  const [tabOrder, setTabOrder] = useState<Market[]>(() => orderFor("mf"));
   const [showSettings, setShowSettings] = useState(false);
   const [onboardingPhase, setOnboardingPhase] =
-    useState<OnboardingPhase>("open");
+    useState<OnboardingPhase>("closed");
   const [tabRevealPhase, setTabRevealPhase] =
-    useState<TabRevealPhase>("hidden");
+    useState<TabRevealPhase>("all");
   const [iconFlight, setIconFlight] = useState<IconFlight | null>(null);
   const [landedMarket, setLandedMarket] = useState<Market | null>(null);
   const activeIconRef = useRef<HTMLImageElement>(null);
   const flightRef = useRef<HTMLImageElement>(null);
+
+  // Landing on Mutual Funds counts as seeing it, so the tab's "new" dot stays off.
+  useEffect(() => {
+    markSeen();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // zoom: icon travels from its tile to the centre at ZOOM_SCALE.
   useEffect(() => {
