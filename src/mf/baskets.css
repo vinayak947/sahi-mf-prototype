@@ -1471,3 +1471,15 @@
   font-weight: 400;
   color: var(--text-secondary);
 }
+
+/* Basket details page hero: the folder card's pieces at page scale. The name keeps the page title style and may
+   wrap; the count, description and stats row match the card. */
+.bk-hero-idp .bk-title { flex-wrap: wrap; row-gap: 0; }
+.bk-hero-idp .bk-title h2 { margin: 0; }
+.bk-hero-idp .bk-count {
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+.bk-stats.bk-stats-hero-idp { margin: 16px 0 8px; }

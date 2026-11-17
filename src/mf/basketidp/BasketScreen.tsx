@@ -1,4 +1,5 @@
 import "../fundidp/fundidp.css";
+import "../baskets.css";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { asset } from "../../assets";
 import { Icon } from "../fundidp/Icon";
@@ -238,9 +239,14 @@ export function BasketScreen({ basketId }: { basketId: string }) {
         </>
       }
     >
-      <div className="fund-hero">
+      {/* Same pieces, in the same order, as the basket's folder card on the home page: logos, name • fund count,
+          who it is for, then 3Y return · Min. SIP · Risk. */}
+      <div className="fund-hero bk-hero-idp">
         <LogoStack basket={basket} size={48} />
-        <h2 data-dock-anchor>{basket.name}</h2>
+        <div className="bk-title">
+          <h2 data-dock-anchor>{basket.name}</h2>
+          <span className="bk-count">• {basket.funds.length} funds</span>
+        </div>
         <p className="fund-meta-idp">{basket.who}</p>
       </div>
       {buy.fund && buy.state === "paused" && (
@@ -250,33 +256,22 @@ export function BasketScreen({ basketId }: { basketId: string }) {
         <Notice tone="warn">{buy.fund.name} has stopped one-time investments, so this basket can only be started as a SIP.</Notice>
       )}
 
-      <div className="fund-figures-idp">
-        <div className="fund-main">
+      <span className="bk-stats bk-stats-hero-idp">
+        <span>
+          <small>3Y return</small>
           <strong className={r3 >= 0 ? "up" : "down"}>
             <Ticker value={r3} format={(v) => pct(v, 1).replace("+", "")} armed={counting} ms={700} />
           </strong>
-          <small>a year over 3 years</small>
-        </div>
-        <div className="fund-day">
-          <b>{riskLabel(risk).replace(" risk", "")}</b>
+        </span>
+        <span>
+          <small>Min. SIP</small>
+          <strong>{inr(basketMin(basket, "sip"))}</strong>
+        </span>
+        <span>
           <small>Risk</small>
-        </div>
-      </div>
-
-      <dl className="fund-stats bk-stats-page-idp">
-        <div>
-          <dt>Funds</dt>
-          <dd>{basket.funds.length}</dd>
-        </div>
-        <div>
-          <dt>Min. SIP</dt>
-          <dd>{inr(basketMin(basket, "sip"))}</dd>
-        </div>
-        <div>
-          <dt>Cost a year</dt>
-          <dd>{basketCost(basket).toFixed(2)}%</dd>
-        </div>
-      </dl>
+          <strong>{riskLabel(risk).replace(" risk", "")}</strong>
+        </span>
+      </span>
 
       <Fold title="What&rsquo;s inside" summary={`${basket.funds.length} funds`} defaultOpen>
         <div className="bk-bar-idp" aria-hidden="true">
