@@ -722,7 +722,7 @@
 
 .bk-list {
   flex-direction: column;
-  gap: 12px;
+  gap: 31px; /* + the next folder's 17 px tab = 48 from one card's bottom to the next card's main sheet */
   display: flex;
 }
 
@@ -1455,3 +1455,7 @@
   flex: 1 1 calc(100% - 24px);
   margin: 40px 12px 0;
 }
+
+/* Home carousel: one card plus a fifth of the next in view. With 16 page padding and 12 between cards,
+   w = (screen − 28) / 1.2; the carousel's content box is the screen less 32, hence (100% + 4px) / 1.2. */
+.hscroll .bk-card { width: calc((100% + 4px) / 1.2); }
