@@ -47,13 +47,13 @@ function FundStack({ basket, size }: { basket: Basket; size: number }) {
 // card's actual size so the corners keep their shape on the full-width "View all" list.
 const TAB = 17; // how far the back sheet's tab rises above the front sheet
 
-function frontPath(w: number, h: number) {
+export function frontPath(w: number, h: number) {
   return `M0 16.37C-.2 7.39 7.02 0 16 0H${w - 16}C${w - 7.02} 0 ${w + 0.2} 7.39 ${w - 0.005} 16.37`
     + `L${w - 3.27} ${h - 15.63}C${w - 3.47} ${h - 6.94} ${w - 10.57} ${h} ${w - 19.26} ${h}`
     + `H19.26C10.57 ${h} 3.47 ${h - 6.94} 3.26 ${h - 15.63}Z`;
 }
 
-function backPath(w: number, h: number) {
+export function backPath(w: number, h: number) {
   return `M0 16.34C-.19 7.37 7.03 0 16 0H76.83C80.75 0 84.53 1.44 87.46 4.04L89.61 5.96C92.54 8.56 96.32 10 100.24 10`
     + `H${w - 16}C${w - 7.02} 10 ${w + 0.2} 17.38 ${w} 26.36L${w - 3.29} ${h - 15.65}C${w - 3.49} ${h - 6.95} ${w - 10.59} ${h} ${w - 19.29} ${h}`
     + `H19.33C10.62 ${h} 3.51 ${h - 6.96} 3.33 ${h - 15.66}Z`;

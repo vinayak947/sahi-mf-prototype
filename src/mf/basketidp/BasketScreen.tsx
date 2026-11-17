@@ -10,6 +10,7 @@ import { Ticker } from "../fundidp/calc/core";
 import { riskLevels } from "../data";
 import { Disclaimer, Fold, FundMark, fundCategory, ManagerAvatar, Notice, Riskometer, Row, Screen, SegmentSwitcher, Stars, VerifiedBadge } from "../fundidp/parts";
 import { ResearcherSheet } from "./ResearcherSheet";
+import { backPath, frontPath } from "../Baskets";
 import { ReturnCalculator } from "../fundidp/ReturnCalculator";
 import { sipReturns } from "../fundidp/sip";
 import { useMf } from "../store";
@@ -33,6 +34,39 @@ export function LogoStack({ basket, size }: { basket: Basket; size: number }) {
           +{list.length - shown.length}
         </span>
       )}
+    </span>
+  );
+}
+
+// The basket's folder from its home card, small, with the fund logos dropped inside at loose angles and peeking out
+// over the front sheet. Drawn in the card's own units (280 × 180) and scaled down evenly, so the tab and corners keep
+// the card's proportions. The tab takes the basket's colour, as on the card.
+const DROPS: [number, number, number][] = [
+  // [left px, top px, turn °] for up to three logos (32px), in a 112 × 72 folder
+  [10, 8, -12],
+  [40, 2, 8],
+  [68, 11, -5],
+];
+
+export function FolderMark({ basket, tint }: { basket: Basket; tint: string }) {
+  const funds = basketFunds(basket).slice(0, 3);
+  return (
+    <span className="bk-mini-folder" style={{ "--bk-tint": tint } as React.CSSProperties} aria-hidden="true">
+      <svg className="bk-mini-back" viewBox="0 0 280 180" width="112" height="72">
+        <path className="bk-folder-back" transform="translate(4 0)" d={backPath(272, 180)} />
+      </svg>
+      {funds.map(({ fund }, i) => (
+        <span
+          key={`${fund.id}-${i}`}
+          className="bk-mini-logo"
+          style={{ left: DROPS[i][0], top: DROPS[i][1], rotate: `${DROPS[i][2]}deg` }}
+        >
+          <FundMark fund={fund} size={32} />
+        </span>
+      ))}
+      <svg className="bk-mini-front" viewBox="0 0 280 180" width="112" height="72">
+        <path className="bk-folder-front" transform="translate(0 92)" d={frontPath(280, 88)} />
+      </svg>
     </span>
   );
 }
@@ -242,12 +276,14 @@ export function BasketScreen({ basketId }: { basketId: string }) {
       {/* Same pieces, in the same order, as the basket's folder card on the home page: logos, name • fund count,
           who it is for, then 3Y return · Min. SIP · Risk. */}
       <div className="fund-hero bk-hero-idp">
-        <LogoStack basket={basket} size={48} />
-        <div className="bk-title">
-          <h2 data-dock-anchor>{basket.name}</h2>
-          <span className="bk-count">• {basket.funds.length} funds</span>
+        <div className="bk-hero-text-idp">
+          <div className="bk-title">
+            <h2 data-dock-anchor>{basket.name}</h2>
+            <span className="bk-count">• {basket.funds.length} funds</span>
+          </div>
+          <p className="fund-meta-idp">{basket.who}</p>
         </div>
-        <p className="fund-meta-idp">{basket.who}</p>
+        <FolderMark basket={basket} tint={SHADES[Math.max(0, baskets.findIndex((b) => b.id === basket.id)) % SHADES.length]} />
       </div>
       {buy.fund && buy.state === "paused" && (
         <Notice tone="warn">{buy.fund.name} is not taking new money right now, so this basket can't be started until it reopens.</Notice>
