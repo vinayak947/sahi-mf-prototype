@@ -1269,7 +1269,7 @@
   gap: 8px;
 }
 .fold-summary {
-  color: var(--ink-3);
+  color: var(--text-primary);
   font-family: "SAHI Sans:Regular", sans-serif;
   font-size: 14px;
   font-weight: 400;
