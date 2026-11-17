@@ -1,20 +1,21 @@
 /* Researcher backed baskets (Order 2.0 home and basket pages). Every class is bk-* so nothing here can touch the
    core prototype; ported from the shared build's stylesheet. */
 
-/* Tints for the three fund slots on a card, and the SEBI seal. The three tint colours are hex in the upstream
-   build too (brand pink, amber, green); there is no token for them in tokens.css. */
+/* Tints for the three fund slots on a card (the "What's inside" bar and dots, and each basket card's tab tint), and the
+   SEBI seal. SAHI's own colours, the same validated set as the fund page's breakups (see fundidp/idp-vars.css):
+   wine, tan, pink; no amber or green. */
 :root {
-  --bk-c1: #f08bc6;
-  --bk-c2: #f6c05a;
-  --bk-c3: #5fd39b;
+  --bk-c1: #a50f66;
+  --bk-c2: #ac7c54;
+  --bk-c3: #e61c9a;
   --bk-vb-fill: var(--accent-text);
   --bk-vb-check: var(--fixed-white);
 }
 
 :root[data-theme="dark"] {
-  --bk-c1: #fc6ad0;
-  --bk-c2: #ffb13d;
-  --bk-c3: #40e897;
+  --bk-c1: #c80e7d;
+  --bk-c2: #ac7c54;
+  --bk-c3: #fc6ad0;
   --bk-vb-fill: var(--accent-text);
   --bk-vb-check: var(--accent-subtle);
 }
@@ -716,8 +717,13 @@
   margin: 0 0 16px;
 }
 
+/* Home: the reviewed date sits under the heading, 4 below it, and the cards 16 below the date. */
 .bk-sub.bk-eyebrow {
-  margin: 0 0 4px;
+  margin: 0 0 16px;
+}
+
+.block-head:has(+ .bk-sub.bk-eyebrow) {
+  margin-bottom: 4px;
 }
 
 .bk-list {
@@ -1498,5 +1504,20 @@
 .bk-mini-folder .bk-folder-back { fill: color-mix(in srgb, var(--bk-tint) 20%, var(--surface-L2)); }
 :root[data-theme=dark] .bk-mini-folder .bk-folder-back { fill: color-mix(in srgb, var(--bk-tint) 14%, var(--surface-L3)); }
 .bk-mini-folder .bk-folder-front { fill: var(--surface-L1); stroke: var(--border-L1); stroke-width: 1px; }
-.bk-mini-logo { position: absolute; line-height: 0; }
+/* Same front-sheet surface as the home card's "wash" (.bk-card[data-bg="wash"]): the tab's colour at 10% (8% dark)
+   fading to nothing over the first 36% of the front sheet, which starts 17 below the tab; under the logos. */
+.bk-mini-folder svg { z-index: 0; }
+.bk-mini-folder::before {
+  position: absolute;
+  inset: 17px 0 0;
+  z-index: 1;
+  border-radius: 16px 16px 0 0;
+  background-image: linear-gradient(to bottom, color-mix(in srgb, var(--bk-tint) 10%, transparent), transparent 36%);
+  pointer-events: none;
+  content: "";
+}
+:root[data-theme=dark] .bk-mini-folder::before {
+  background-image: linear-gradient(to bottom, color-mix(in srgb, var(--bk-tint) 8%, transparent), transparent 36%);
+}
+.bk-mini-logo { position: absolute; z-index: 2; line-height: 0; }
 .bk-mini-logo .fund-mark { box-shadow: inset 0 0 0 1px var(--line), 0 1px 3px rgb(15 15 15 / 14%); }

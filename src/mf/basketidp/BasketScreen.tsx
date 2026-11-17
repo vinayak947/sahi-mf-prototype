@@ -11,6 +11,7 @@ import { riskLevels } from "../data";
 import { Disclaimer, Fold, FundMark, fundCategory, ManagerAvatar, Notice, Riskometer, Row, Screen, SegmentSwitcher, Stars, VerifiedBadge } from "../fundidp/parts";
 import { ResearcherSheet } from "./ResearcherSheet";
 import { backPath, frontPath } from "../Baskets";
+import { BasketKyroCard, BasketKyroSheet } from "./kyroBasket";
 import { ReturnCalculator } from "../fundidp/ReturnCalculator";
 import { sipReturns } from "../fundidp/sip";
 import { useMf } from "../store";
@@ -207,6 +208,7 @@ export function BasketScreen({ basketId }: { basketId: string }) {
   const list = basketFunds(basket);
   const r3 = blended3Y(basket);
   const [shared, setShared] = useState(false);
+  const [kyro, setKyro] = useState<{ q?: string } | null>(null); // the Kyro sheet, opened empty or with a question asked
 
   // Same behaviour as the goal pages: the phone's share sheet when there is one, else the text goes to the clipboard and the icon says "Copied" for a moment.
   async function share() {
@@ -322,6 +324,9 @@ export function BasketScreen({ basketId }: { basketId: string }) {
           <strong>{riskLabel(risk).replace(" risk", "")}</strong>
         </span>
       </span>
+
+      <BasketKyroCard basket={basket} onAsk={(q) => setKyro({ q })} />
+      {kyro && <BasketKyroSheet basket={basket} question={kyro.q} onClose={() => setKyro(null)} />}
 
       <Fold title="What&rsquo;s inside" summary={`${basket.funds.length} funds`} defaultOpen>
         <div className="bk-bar-idp" aria-hidden="true">

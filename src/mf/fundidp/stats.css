@@ -1,0 +1,37 @@
+/* Fund page top stats (NAV · date, Min. SIP, AUM). Kept apart from fundidp.css so a re-sync of that file cannot
+   drop it. Label 14 / 16.8 Regular in text/secondary; value 16 / 19.2 Medium in text/primary. */
+.mf-screen:has(.fund-hero) .fund-stats dt {
+  color: var(--text-secondary);
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 16.8px;
+}
+
+.mf-screen:has(.fund-hero) .fund-stats dd {
+  color: var(--text-primary);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 19.2px;
+}
+
+/* The three stats sit in a card: hairline stroke (border-L1), 16 corners like the page's other panels, 16 inside.
+   No fill, so the logo glow still shows through. */
+.mf-screen:has(.fund-hero) .fund-stats {
+  padding: 16px;
+  border: 1px solid var(--border-L1);
+  border-radius: 16px;
+}
+
+/* Centred: three equal columns, each label and value centred in its column. */
+.mf-screen:has(.fund-hero) .fund-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.mf-screen:has(.fund-hero) .fund-stats > div {
+  align-items: center;
+  text-align: center;
+}

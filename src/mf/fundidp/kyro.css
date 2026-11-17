@@ -1,0 +1,360 @@
+/* Kyro card (Base Design System, node 6722:77370), themed. Dark theme is the Figma card: #13040D with a 14% white
+   hairline, a white → #BB6396 read, #1F1F1F (surface L2) chips, the pink star glows at full strength. Light theme is
+   its light counterpart: a faint SAHI-purple tint over the page surface, no stroke, a text/primary → accent
+   (#66033C) read, white chips with no stroke, the glows softened. 16 corners, 16 inside; chips 16·8, 40
+   corners, 14 Regular, in a row that scrolls sideways to the card's edges. */
+.kyro-card,
+.kyro-sheet,
+.kyro-input {
+  --kyro-bg: color-mix(in srgb, var(--accent-default) 5%, var(--surface-L1));
+  --kyro-line: transparent; /* no stroke on the light card or its chips: the tint and the white chips carry them */
+  --kyro-chip: var(--surface-L1);
+  --kyro-chip-line: transparent;
+  --kyro-ink: var(--text-primary);
+  --kyro-read-from: var(--text-primary);
+  --kyro-read-to: var(--accent-default);
+  --kyro-glow: 0.35;
+  --kyro-badge: var(--surface-L2);
+  --kyro-send: var(--accent-default);
+}
+
+:root[data-theme="dark"] .kyro-card,
+:root[data-theme="dark"] .kyro-sheet,
+:root[data-theme="dark"] .kyro-input {
+  --kyro-bg: #13040d;
+  --kyro-line: rgb(255 255 255 / 14%);
+  --kyro-chip: var(--surface-L2);
+  --kyro-chip-line: transparent;
+  --kyro-ink: #ffffff;
+  --kyro-read-from: #ffffff;
+  --kyro-read-to: #bb6396;
+  --kyro-glow: 1;
+  --kyro-badge: #13040d;
+  --kyro-send: #a50f66;
+}
+
+.kyro-card {
+  position: relative;
+  margin-top: 24px;
+  padding: 16px 0;
+  overflow: hidden;
+  border: 1px solid var(--kyro-line);
+  border-radius: 16px;
+  background: var(--kyro-bg);
+  isolation: isolate;
+}
+
+.kyro-glow {
+  position: absolute;
+  z-index: -1;
+  width: 399.777px;
+  height: 391.957px;
+  max-width: none;
+  opacity: var(--kyro-glow);
+  pointer-events: none;
+}
+
+.kyro-glow.a {
+  top: -231px;
+  left: 87px;
+}
+
+.kyro-glow.b {
+  top: -73px;
+  left: -228px;
+}
+
+/* Heading row: "Kyro's Insight" (14 / 16.8 Medium, written as is, secondary ink) on the left, the fact tag on the
+   right; 12 above the read. */
+.kyro-card,
+.kyro-sheet,
+.kyro-input {
+  --kyro-label: var(--text-secondary);
+}
+
+:root[data-theme="dark"] .kyro-card {
+  --kyro-label: rgb(255 255 255 / 64%);
+}
+
+.kyro-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 16px 12px;
+}
+
+.kyro-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  margin: 0;
+  color: var(--kyro-label);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px; /* the read's size */
+  font-weight: 500;
+  line-height: 16.8px;
+}
+
+/* The tag is always Kyro's subtle purple, whatever it says: a fact, not a good/bad signal. Light: a 10% accent tint
+   with the accent (#66033C) text; dark: the accent-subtle surface with the accent text. */
+.kyro-head .dls-badge,
+.kyro-head .dls-badge.positive,
+.kyro-head .dls-badge.negative,
+.kyro-head .dls-badge.attentive,
+.kyro-head .dls-badge.neutral {
+  flex: none;
+  color: var(--accent-default);
+  background: color-mix(in srgb, var(--accent-default) 10%, var(--surface-L1));
+}
+
+:root[data-theme="dark"] .kyro-head .dls-badge {
+  color: var(--accent-text);
+  background: var(--accent-subtle);
+}
+
+.kyro-read {
+  margin: 0 16px 12px;
+  background: linear-gradient(90deg, var(--kyro-read-from), var(--kyro-read-to));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 14px;
+  line-height: 24px;
+}
+
+.kyro-chips {
+  display: flex;
+  gap: 5px;
+  padding: 0 16px;
+  overflow-x: auto;
+  scroll-padding-inline: 16px;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+
+.kyro-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.kyro-chip {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 15px;
+  border: 1px solid var(--kyro-chip-line);
+  border-radius: 40px;
+  color: var(--kyro-ink);
+  background: var(--kyro-chip);
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 14px;
+  line-height: 16.8px;
+  white-space: nowrap;
+  scroll-snap-align: start;
+  cursor: pointer;
+  transition: transform 100ms ease-out;
+}
+
+.kyro-chip:active {
+  transform: scale(0.97);
+}
+
+.kyro-chip img {
+  flex: none;
+}
+
+.kyro-arrow {
+  display: inline-block;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  background: currentColor;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+/* Printing: words hold their place hidden and turn visible one by one (visibility, not opacity, so the read's text
+   gradient keeps painting through them); a 2 px accent cursor blinks after the last word. The tag and the chips fade
+   up once the insight has printed. */
+.kyro-w {
+  visibility: hidden;
+}
+
+.kyro-w.on {
+  visibility: visible;
+}
+
+.kyro-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 16px;
+  margin-left: 2px;
+  vertical-align: -3px;
+  background: var(--kyro-read-to);
+  animation: kyro-blink 0.9s steps(2, jump-none) infinite;
+}
+
+@keyframes kyro-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.kyro-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.kyro-head .dls-badge,
+.kyro-chips {
+  transition:
+    opacity 300ms ease-out,
+    transform 300ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.kyro-card:not(.printed) .kyro-head .dls-badge,
+.kyro-card:not(.printed) .kyro-chips {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kyro-cursor {
+    animation: none;
+  }
+
+  .kyro-head .dls-badge,
+  .kyro-chips {
+    transition: none;
+  }
+}
+
+/* The stats card right under it: 16, not the 32 it keeps under the chart. */
+.mf-screen:has(.fund-hero) .kyro-card + .fund-stats {
+  margin-top: 16px;
+}
+
+/* ---- Kyro sheet ------------------------------------------------------------------------------------------------ */
+
+.kyro-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 8px;
+}
+
+.kyro-pair {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.kyro-q {
+  align-self: flex-end;
+  max-width: 85%;
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 16px 16px 4px 16px;
+  color: var(--text-primary);
+  background: var(--surface-L2);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.kyro-turn {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.kyro-by {
+  display: grid;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--kyro-badge);
+}
+
+.kyro-turn p {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.kyro-sheet-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.kyro-sheet-chip {
+  padding: 8px 14px;
+  border: 1px solid var(--border-L1);
+  border-radius: 40px;
+  color: var(--text-primary);
+  background: transparent;
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 14px;
+  line-height: 16.8px;
+  cursor: pointer;
+}
+
+.kyro-note {
+  margin: 0;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 14.4px;
+}
+
+.kyro-input {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  gap: 8px;
+  padding: 12px 0 4px;
+  background: var(--surface-L1);
+}
+
+.kyro-input input {
+  flex: 1;
+  min-width: 0;
+}
+
+.kyro-send {
+  display: grid;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  color: #ffffff;
+  background: var(--kyro-send);
+  cursor: pointer;
+}
+
+.kyro-send:disabled {
+  opacity: 0.32;
+  cursor: default;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kyro-chip {
+    transition: none;
+  }
+}

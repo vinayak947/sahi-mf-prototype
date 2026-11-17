@@ -1,17 +1,23 @@
 /* Custom properties the fund and basket pages use that the rest of the prototype does not define (from the same source). */
+/* Breakup colours (asset mix, sector mix, basket weights): SAHI's own scales only, the pink ramp and the warm neutral
+   (sand → espresso). Picked and checked with the dataviz validator: light on #FFFFFF, wine #A50F66 · tan #AC7C54 · pink
+   #E61C9A, all 3:1+ on the surface, colour-blind ΔE 9.6+ and normal-vision ΔE 15+ across every pair; dark on #171717,
+   pink #C80E7D · tan #AC7C54 · light pink #FC6AD0, ΔE 11+ / 19+. The tan is low-chroma by nature (a warm neutral), so
+   identity never rests on colour alone: every segment has a labelled row or legend. A 4th, "Other" slot is the
+   recessive end of the warm neutral: sand #D9C9AE (light), espresso #573730 (dark). */
 :root {
-  --mix-0: #a50f56;
-  --mix-1: #dc9000;
-  --mix-2: #0e854d;
-  --mix-3: #727272;
+  --mix-0: #a50f66;
+  --mix-1: #ac7c54;
+  --mix-2: #e61c9a;
+  --mix-3: #d9c9ae;
   --vb-fill: var(--accent-text);
   --vb-check: #ffffff;
 }
 :root[data-theme="dark"] {
-  --mix-0: #ef4fac;
-  --mix-1: #ffb13d;
-  --mix-2: #40e897;
-  --mix-3: #a3a3a3;
+  --mix-0: #c80e7d;
+  --mix-1: #ac7c54;
+  --mix-2: #fc6ad0;
+  --mix-3: #573730;
   --vb-fill: var(--accent-text);
   --vb-check: var(--accent-subtle);
 }

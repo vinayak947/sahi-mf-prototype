@@ -595,28 +595,30 @@ export function Fold({
   children,
   defaultOpen = true,
   onOpenChange,
+  boxed = false,
 }: {
   title: string;
   summary?: ReactNode; // one short value shown in the closed header (fades out when open), so a closed row still says something
   children: ReactNode;
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
+  boxed?: boolean; // the open content sits on a subtle full-width card (About the fund, Charges and tax)
 }) {
   const [open, setOpenState] = useState(defaultOpen);
   const bodyId = useId();
   const sectionRef = useRef<HTMLElement>(null);
-    setOpenState(value);
-    onOpenChange?.(value);
   const setOpen = (next: (o: boolean) => boolean) => {
     const value = next(open);
-  };
-  // Close when another fold on the same page opens (scoped to this screen's body, so stacked screens don't interfere).
+    setOpenState(value);
+    onOpenChange?.(value);
     // One open at a time: tell the other folds on this page to close.
     if (value) {
       const section = sectionRef.current;
       section?.closest(".mf-body")?.dispatchEvent(new CustomEvent(FOLD_OPEN, { detail: bodyId }));
       if (section) holdInPlace(section);
     }
+  };
+  // Close when another fold on the same page opens (scoped to this screen's body, so stacked screens don't interfere).
   const openRef = useRef(open);
   openRef.current = open;
   useEffect(() => {
@@ -643,7 +645,7 @@ export function Fold({
         </button>
       </h3>
       <div className="fold-body" id={bodyId} inert={!open}>
-        <div className="fold-inner">{children}</div>
+        <div className="fold-inner">{boxed ? <div className="fold-card">{children}</div> : children}</div>
       </div>
     </section>
   );

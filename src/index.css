@@ -104,12 +104,22 @@ button {
   cursor: pointer;
 }
 
+/* Header tint: the light theme's soft pink as it is; in dark, the wine accent tint (#3D0920) at full strength read as
+   a slab of pink, so it is 40% of that over the page surface: still the SAHI colour, just a hint of it. */
+:root {
+  --header-tint: var(--accent-subtle);
+}
+
+:root[data-theme="dark"] {
+  --header-tint: color-mix(in srgb, var(--accent-subtle) 40%, var(--surface-L1));
+}
+
 .app-shell {
   min-height: var(--app-h);
   padding: 0 0 107px;
   background:
-    radial-gradient(ellipse 55% 100px at 50% -15px, var(--accent-subtle) 20%, transparent 85%),
-    linear-gradient(180deg, var(--accent-subtle) 0, var(--surface-L1) 205px);
+    radial-gradient(ellipse 55% 100px at 50% -15px, var(--header-tint) 20%, transparent 85%),
+    linear-gradient(180deg, var(--header-tint) 0, var(--surface-L1) 205px);
 }
 
 .flow-open .app-shell {
@@ -146,7 +156,7 @@ button {
   position: absolute;
   z-index: -1;
   inset: -8px 0 0;
-  background: linear-gradient(180deg, var(--accent-subtle) 0%, var(--accent-subtle) 55%, var(--surface-L1) 100%);
+  background: linear-gradient(180deg, var(--header-tint) 0%, var(--header-tint) 55%, var(--surface-L1) 100%);
   /* a 1px line separates the docked strip from the content below */
   box-shadow: 0 1px 0 var(--line);
   opacity: 0;

@@ -1,6 +1,8 @@
 import "./idp-vars.css";
 import "./fundidp.css";
 import "./charges.css";
+import "./folds.css";
+import "./stats.css";
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { asset } from "../../assets";
 import { Icon } from "./Icon";
@@ -47,6 +49,7 @@ import { RISK_COPY, outcomes, whyRisk, type Outcomes } from "./risk";
 import { ManagerSheet } from "./ManagerSheet";
 import { hostOf, infoFor, joinedAfterLaunch, managerSince, otherFunds, sinceText, tenureText, yearsLabel } from "./managers";
 import { useMf } from "../store";
+import { KyroCard, KyroSheet } from "./kyro";
 
 // ---- Fund page ---------------------------------------------------------------------
 
@@ -690,6 +693,7 @@ export function FundScreen({ fundId }: { fundId: string }) {
   // Returns widget: what a lumpsum earned, or what a monthly SIP earned (worked out from the same published numbers, see ./sip).
   const [retMode, setRetMode] = useState<"lump" | "sip">("lump");
   const [sheetFor, setSheetFor] = useState<string | null>(null); // the manager whose sheet is open
+  const [kyro, setKyro] = useState<{ q?: string } | null>(null); // the Kyro sheet, opened empty or with a question asked
   const mine: [number, number, number] = retMode === "lump" ? [fund.r1, fund.r3, fund.r5] : sipReturns([fund.r1, fund.r3, fund.r5]);
   const avg: [number, number, number] = retMode === "lump" ? fund.avg : sipReturns(fund.avg);
   const rows: [string, number, number][] = [
@@ -757,6 +761,9 @@ export function FundScreen({ fundId }: { fundId: string }) {
       </div>
 
       <NavChart fund={fund} range={range} onRange={setRange} navOn={navOn} />
+
+      <KyroCard fund={fund} onAsk={(q) => setKyro({ q })} />
+      {kyro && <KyroSheet fund={fund} question={kyro.q} onClose={() => setKyro(null)} />}
 
       <dl className="fund-stats">
         <div>
@@ -834,7 +841,7 @@ export function FundScreen({ fundId }: { fundId: string }) {
       <PortfolioWidget fund={fund} />
 
 
-      <Fold title="About the fund" summary={ageText(fund.launched) ?? undefined} defaultOpen={false}>
+      <Fold title="About the fund" summary={ageText(fund.launched) ?? undefined} defaultOpen={false} boxed>
         <p className="mf-body-copy-idp">{fund.aim}</p>
         {/* the facts that are not shown anywhere else on the page: AUM and Min. SIP are in the top row, the expense ratio is under Charges and tax */}
         <div className="mf-grid2-idp about-facts">
@@ -885,7 +892,7 @@ export function FundScreen({ fundId }: { fundId: string }) {
         </button>
       </Fold>
 
-      <Fold title="Charges and tax" summary={`${fund.expense}% a year`} defaultOpen={false}>
+      <Fold title="Charges and tax" summary={`${fund.expense}% a year`} defaultOpen={false} boxed>
         <ChargesAndTax fund={fund} />
       </Fold>
 

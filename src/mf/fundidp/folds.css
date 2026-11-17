@@ -1,0 +1,51 @@
+/* Fund page folds. Kept apart from fundidp.css (like charges.css) so a re-sync of that file cannot drop it.
+
+   Open heading: an opened fold's title grows 4 px, 16 / 19 → 20 / 24 Medium, easing with the open (240 ms, the
+   fold's own curve), so the section being read stands out from the closed rows around it. */
+:root:has(.idp) .mf-body:has(.fund-hero) .fold h3,
+.mf-screen:has(.fund-hero) .fold .fold-head {
+  transition:
+    margin-bottom 0.24s cubic-bezier(0.2, 0, 0, 1),
+    font-size 0.24s cubic-bezier(0.2, 0, 0, 1),
+    line-height 0.24s cubic-bezier(0.2, 0, 0, 1);
+}
+
+:root:has(.idp) .mf-body:has(.fund-hero) .fold.open h3 {
+  font-size: 20px;
+  line-height: 24px;
+}
+
+.mf-screen:has(.fund-hero) .fold.open .fold-head {
+  line-height: 24px;
+}
+
+/* Boxed content (About the fund, Charges and tax): the open content on a subtle surface card, the full 328 content
+   width (the page's 16 margins), as tall as its content, 12 corners and 16 inside, so it reads as one enclosed
+   block under its heading. */
+.fold-card {
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--surface-L2);
+}
+
+.fold-card > :first-child {
+  margin-top: 0;
+}
+
+.fold-card > :last-child {
+  margin-bottom: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root:has(.idp) .mf-body:has(.fund-hero) .fold h3,
+  .mf-screen:has(.fund-hero) .fold .fold-head {
+    transition: none;
+  }
+}
+
+/* Separators between the folds: inset to the content width (328), 16 from each edge, instead of running the full
+   screen width. The fold keeps its 24 above and below; only the bleed into the page margins is dropped. */
+:root:has(.idp) .mf-body:has(.fund-hero) .mf-section-idp {
+  margin-inline: 0;
+  padding-inline: 0;
+}

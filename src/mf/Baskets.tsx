@@ -147,13 +147,13 @@ export function BasketsSection() {
   const { push } = useMf();
   return (
     <Block>
-      <ReviewedLine className="bk-sub bk-eyebrow" />
       <div className="block-head">
         <h2>Researcher backed baskets</h2>
         <button className="text-link" onClick={() => push({ name: "baskets" })}>
           View all
         </button>
       </div>
+      <ReviewedLine className="bk-sub bk-eyebrow" />
       <HScroll>
         {baskets.map((basket, i) => (
           <BasketCard key={basket.id} basket={basket} tint={i} />
