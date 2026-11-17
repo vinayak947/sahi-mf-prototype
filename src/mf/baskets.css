@@ -1459,3 +1459,14 @@
 /* Home carousel: one card plus a fifth of the next in view. With 16 page padding and 12 between cards,
    w = (screen − 28) / 1.2; the carousel's content box is the screen less 32, hence (100% + 4px) / 1.2. */
 .hscroll .bk-card { width: calc((100% + 4px) / 1.2); }
+
+/* "3 funds" sits under the basket name as a quiet caption; no arrow, the whole card is the tap target */
+.bk-card .bk-count {
+  margin: 2px 0 0;
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: var(--text-secondary);
+}
+.bk-card .bk-count + .bk-who { margin-top: 8px; }

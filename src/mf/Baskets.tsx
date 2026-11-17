@@ -105,12 +105,9 @@ function BasketCard({ basket, tint }: { basket: Basket; tint: number }) {
       <FolderShape />
       <span className="bk-top">
         <FundStack basket={basket} size={28} />
-        <span className="bk-count">
-          {basket.funds.length} funds
-          <Icon name="caret-right" size={16} />
-        </span>
       </span>
       <b className="bk-name">{basket.name}</b>
+      <span className="bk-count">{basket.funds.length} funds</span>
       <span className="bk-who">{basket.who}</span>
       <span className="bk-stats">
         <span>
