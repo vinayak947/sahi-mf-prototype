@@ -218,7 +218,7 @@ export function BasketScreen({ basketId }: { basketId: string }) {
         ) : (
           <div className="mf-actions">
             <button className="mf-btn ghost" onClick={() => push({ name: "amount", fundId: basketFundId(basketId), mode: "lump" })}>
-              Invest one-time
+              Invest One-time
             </button>
             <button className="mf-btn solid" onClick={() => push({ name: "amount", fundId: basketFundId(basketId), mode: "sip" })}>
               Start SIP

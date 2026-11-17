@@ -827,7 +827,7 @@ function AmountPad({ fundId, initialMode, preset }: { fundId: string; initialMod
 
   // Order Pad 2.0 (dev switch): the amount is a DLS Number field, the way the Figma order pad draws it, with the
   // payment row and Invest above the keypad. No Lumpsum/SIP switch: the person already chose on the fund page
-  // ("Invest one-time" or "Start SIP"), so the pad opens in that mode and SIP shows its monthly date.
+  // ("Invest One-time" or "Start SIP"), so the pad opens in that mode and SIP shows its monthly date.
   if (orderPad2)
     return (
       <Screen
