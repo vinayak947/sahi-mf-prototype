@@ -405,10 +405,11 @@ export function RowSide({ fund, basis, digits = 1, signed = true }: { fund: Fund
 // "Equity · Small Cap" -> "Equity Small Cap" (asset class and sub-category read as one phrase on rows)
 export const fundCategory = (fund: Fund) => fund.catLabel.replace(" · ", " ");
 
-export function Stars({ n }: { n: number }) {
+// bds: the Base Design System star (filled) at 14, used in the fund header; elsewhere the DLS star at 12.
+export function Stars({ n, bds = false }: { n: number; bds?: boolean }) {
   return (
     <span className="mf-stars-idp" aria-label={`${n}-star rating`}>
-      {n} <Icon name="star-filled" size={12} />
+      {n} {bds ? <Icon name="star-bds" size={14} /> : <Icon name="star-filled" size={12} />}
     </span>
   );
 }

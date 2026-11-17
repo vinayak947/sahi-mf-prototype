@@ -8,6 +8,7 @@ const EXTRA = {
   "star-filled": asset("dls-star-filled.svg"),
   "dls-filter": asset("dls-filter.svg"),
   "share-02": asset("ph-share-02-idp.svg"),
+  "star-bds": asset("bds-star-filled.svg"), // Base Design System star, filled (fund header rating)
 } as const;
 
 export type IconName = SharedIconName | keyof typeof EXTRA;
