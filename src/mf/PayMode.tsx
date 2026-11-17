@@ -32,23 +32,27 @@ import {
 
 // The inline "Invest" buttons pay straight away with the method they sit under:
 // off to the UPI app (or bank), then back for the status check (Checkout.tsx).
-function usePayNow(fundId: string, amount: number, back: "paymode" | "upiapps") {
-  const { push, setPayMethod, isVerified } = useMf();
+function usePayNow(fundId: string, amount: number, back: "paymode" | "upiapps", sip = false) {
+  const { push, popTo, setPayMethod, isVerified } = useMf();
 
   // An account not yet shown to be in the investor's name is checked first (no third-party payments).
+  // From the SIP pad, the pick only becomes the SIP's payment method and the pad comes back; nothing is charged.
   function pay(method: PayMethod, fail = false) {
     if (method.kind !== "id" && !isVerified(method.account)) {
-      push({ name: "verifybank", fundId, amount, method });
+      push({ name: "verifybank", fundId, amount, method, sip });
       return;
     }
     setPayMethod(method);
-    push({ name: "checkout", fundId, amount, fail, back: { name: back, fundId, amount } });
+    if (sip) popTo("amount");
+    else push({ name: "checkout", fundId, amount, fail, back: { name: back, fundId, amount } });
   }
 
   return { pay };
 }
 
 const investLabel = (amount: number) => `Invest ${inr(amount, amount % 1 ? 2 : 0)}`;
+// The confirm label on a pick: pay now for a one-time order, or just choose the method for a SIP.
+const pickLabel = (amount: number, sip: boolean) => (sip ? "Use for SIP" : investLabel(amount));
 
 // ---- Bits ----------------------------------------------------------------------------
 
@@ -155,6 +159,7 @@ function UpiRows({
   onPick,
   onChangeBank,
   onInvest,
+  sip = false,
   children,
 }: {
   apps: UpiApp[];
@@ -164,6 +169,7 @@ function UpiRows({
   onPick: (id: string) => void;
   onChangeBank: (app: UpiApp) => void;
   onInvest: (app: UpiApp) => void;
+  sip?: boolean;
   children?: ReactNode;
 }) {
   const { isVerified } = useMf();
@@ -198,7 +204,7 @@ function UpiRows({
                   )}
                 </button>
                 <button className="mf-btn solid wide" onClick={() => onInvest(app)}>
-                  {isVerified(account) ? investLabel(amount) : "Verify account and invest"}
+                  {isVerified(account) ? pickLabel(amount, sip) : sip ? "Verify account" : "Verify account and invest"}
                 </button>
               </div>
             </div>
@@ -221,9 +227,9 @@ function AddUpiRow({ onClick }: { onClick: () => void }) {
 }
 
 // Shared state and sheets for the two UPI lists.
-function useUpiPicker(fundId: string, amount: number, back: "paymode" | "upiapps") {
+function useUpiPicker(fundId: string, amount: number, back: "paymode" | "upiapps", sip = false) {
   const { payMethod } = useMf();
-  const { pay } = usePayNow(fundId, amount, back);
+  const { pay } = usePayNow(fundId, amount, back, sip);
   const [picked, setPicked] = useState<string | null>(payMethod.kind === "upi" ? payMethod.app : null);
   const [accounts, setAccounts] = useState<Record<string, Account>>(
     payMethod.kind === "upi" ? { [payMethod.app]: payMethod.account } : {},
@@ -242,6 +248,7 @@ function useUpiPicker(fundId: string, amount: number, back: "paymode" | "upiapps
       onPick={setPicked}
       onChangeBank={(app) => app.accounts.length > 1 && setBankSheet(app)}
       onInvest={(app) => pay({ kind: "upi", app: app.id, account: accountFor(app) })}
+      sip={sip}
     >
       {extra}
     </UpiRows>
@@ -258,12 +265,17 @@ function useUpiPicker(fundId: string, amount: number, back: "paymode" | "upiapps
         />
       )}
       {idSheet && (
-        <AddUpiSheet amount={amount} onPay={(vpa) => pay({ kind: "id", vpa })} onClose={() => setIdSheet(false)} />
+        <AddUpiSheet
+          amount={amount}
+          sip={sip}
+          onPay={(vpa) => pay({ kind: "id", vpa })}
+          onClose={() => setIdSheet(false)}
+        />
       )}
     </>
   );
 
-  const failLink = (
+  const failLink = !sip && (
     <ProtoLink
       onClick={() => {
         const app = upiApp(picked ?? "gpay");
@@ -282,9 +294,9 @@ function useUpiPicker(fundId: string, amount: number, back: "paymode" | "upiapps
 
 // ---- Select a payment mode ----------------------------------------------------------------
 
-export function PayModeScreen({ fundId, amount }: { fundId: string; amount: number }) {
+export function PayModeScreen({ fundId, amount, sip = false }: { fundId: string; amount: number; sip?: boolean }) {
   const { pop, push, verifiedBanks } = useMf();
-  const upi = useUpiPicker(fundId, amount, "paymode");
+  const upi = useUpiPicker(fundId, amount, "paymode", sip);
 
   const netOpen = amount >= NET_BANKING_MIN;
   // Net banking only from the investor's own verified accounts.
@@ -296,7 +308,7 @@ export function PayModeScreen({ fundId, amount }: { fundId: string; amount: numb
 
       <div className="pm-section">
         <h3>UPI</h3>
-        <button className="pm-link" onClick={() => push({ name: "upiapps", fundId, amount })}>
+        <button className="pm-link" onClick={() => push({ name: "upiapps", fundId, amount, sip })}>
           View all <Icon name="chevron-right" size={14} />
         </button>
       </div>
@@ -326,7 +338,7 @@ export function PayModeScreen({ fundId, amount }: { fundId: string; amount: numb
               </button>
             ))}
             {netOpen && (
-              <button className="pm-row" onClick={() => push({ name: "addbank", fundId, amount })}>
+              <button className="pm-row" onClick={() => push({ name: "addbank", fundId, amount, sip })}>
                 <PlusMark />
                 <b>Add bank account</b>
                 <Icon name="chevron-right" size={16} />
@@ -344,9 +356,9 @@ export function PayModeScreen({ fundId, amount }: { fundId: string; amount: numb
 
 // ---- View all: Select UPI app ----------------------------------------------------------------
 
-export function UpiAppsScreen({ fundId, amount }: { fundId: string; amount: number }) {
+export function UpiAppsScreen({ fundId, amount, sip = false }: { fundId: string; amount: number; sip?: boolean }) {
   const { pop } = useMf();
-  const upi = useUpiPicker(fundId, amount, "upiapps");
+  const upi = useUpiPicker(fundId, amount, "upiapps", sip);
 
   return (
     <Screen onBack={pop} className="pm">
@@ -420,7 +432,17 @@ function AccountSheet({
 
 // The UPI ID is only checked for shape. The bank behind it must be on the profile, which the bank checks
 // when the payment comes in; the note says which accounts those are.
-function AddUpiSheet({ amount, onPay, onClose }: { amount: number; onPay: (vpa: string) => void; onClose: () => void }) {
+function AddUpiSheet({
+  amount,
+  sip = false,
+  onPay,
+  onClose,
+}: {
+  amount: number;
+  sip?: boolean;
+  onPay: (vpa: string) => void;
+  onClose: () => void;
+}) {
   const { verifiedBanks } = useMf();
   const [vpa, setVpa] = useState("");
   const typed = vpa.trim();
@@ -432,7 +454,7 @@ function AddUpiSheet({ amount, onPay, onClose }: { amount: number; onPay: (vpa: 
       onClose={onClose}
       foot={(close) => (
         <button className="mf-btn solid wide" disabled={!valid} onClick={() => close(() => onPay(typed))}>
-          {investLabel(amount)}
+          {pickLabel(amount, sip)}
         </button>
       )}
     >
@@ -473,13 +495,15 @@ export function VerifyBankScreen({
   amount,
   method,
   added = false,
+  sip = false,
 }: {
   fundId: string;
   amount: number;
   method: PayMethod & { account: Account };
   added?: boolean;
+  sip?: boolean;
 }) {
-  const { pop, replace, verifyBank, setPayMethod } = useMf();
+  const { pop, popTo, replace, verifyBank, setPayMethod } = useMf();
   const [phase, setPhase] = useState<"ask" | "checking" | "ok" | "mismatch" | "failed">("ask");
   const [forceMismatch, setForceMismatch] = useState(false);
   const account = method.account;
@@ -499,7 +523,8 @@ export function VerifyBankScreen({
 
   function pay() {
     setPayMethod(method);
-    replace({ name: "checkout", fundId, amount, back: { name: "paymode", fundId, amount } });
+    if (sip) popTo("amount");
+    else replace({ name: "checkout", fundId, amount, back: { name: "paymode", fundId, amount } });
   }
 
   if (phase === "checking")
@@ -516,7 +541,7 @@ export function VerifyBankScreen({
       footer={
         phase === "ok" ? (
           <button className="mf-btn solid wide" onClick={pay}>
-            {investLabel(amount)}
+            {pickLabel(amount, sip)}
           </button>
         ) : phase === "mismatch" ? (
           <button className="mf-btn solid wide" onClick={pop}>
@@ -588,7 +613,7 @@ export function VerifyBankScreen({
 
 // ---- Add bank account --------------------------------------------------------------------------------
 
-export function AddBankScreen({ fundId, amount }: { fundId: string; amount: number }) {
+export function AddBankScreen({ fundId, amount, sip = false }: { fundId: string; amount: number; sip?: boolean }) {
   const { pop, push } = useMf();
   const [number, setNumber] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -602,7 +627,7 @@ export function AddBankScreen({ fundId, amount }: { fundId: string; amount: numb
 
   function go() {
     const account = { bank: bankFromIfsc(ifsc), last4: number.slice(-4) };
-    push({ name: "verifybank", fundId, amount, method: { kind: "net", account }, added: true });
+    push({ name: "verifybank", fundId, amount, method: { kind: "net", account }, added: true, sip });
   }
 
   return (

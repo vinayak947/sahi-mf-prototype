@@ -39,13 +39,19 @@ function renderRoute(route: Route) {
         />
       );
     case "paymode":
-      return <PayModeScreen fundId={route.fundId} amount={route.amount} />;
+      return <PayModeScreen fundId={route.fundId} amount={route.amount} sip={route.sip} />;
     case "upiapps":
-      return <UpiAppsScreen fundId={route.fundId} amount={route.amount} />;
+      return <UpiAppsScreen fundId={route.fundId} amount={route.amount} sip={route.sip} />;
     case "addbank":
-      return <AddBankScreen fundId={route.fundId} amount={route.amount} />;
+      return <AddBankScreen fundId={route.fundId} amount={route.amount} sip={route.sip} />;
     case "verifybank":
-      return <VerifyBankScreen fundId={route.fundId} amount={route.amount} method={route.method} added={route.added} />;
+      return <VerifyBankScreen
+          fundId={route.fundId}
+          amount={route.amount}
+          method={route.method}
+          added={route.added}
+          sip={route.sip}
+        />;
     case "done":
       return <DoneScreen done={route.done} />;
     case "failed":

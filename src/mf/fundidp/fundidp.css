@@ -1269,7 +1269,7 @@
   gap: 8px;
 }
 .fold-summary {
-  color: var(--ink-3);
+  color: var(--text-primary);
   font-family: "SAHI Sans:Regular", sans-serif;
   font-size: 14px;
   font-weight: 400;
@@ -3824,7 +3824,8 @@
   line-height: 13px;
 }
 .mf-screen:has(.fund-hero) .mf-foot {
-  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  /* Clear the OS home bar: the real inset on a phone, --home-bar in the desktop frame. */
+  padding-bottom: calc(16px + max(env(safe-area-inset-bottom, 0px), var(--home-bar, 0px)));
 }
 .mf-screen:has(.fund-hero) .mf-foot .mf-btn {
   line-height: 17px;

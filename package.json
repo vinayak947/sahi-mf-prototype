@@ -9,7 +9,9 @@
     "preview": "vite preview",
     "deploy": "bash scripts/deploy.sh",
     "format": "oxfmt",
-    "prepare": "git config core.hooksPath .githooks || true"
+    "prepare": "git config core.hooksPath .githooks || true",
+    "phone": "bash scripts/phone.sh",
+    "apk": "bash android/build.sh"
   },
   "dependencies": {
     "lottie-web": "^5.13.0",
