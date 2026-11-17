@@ -1,6 +1,6 @@
 import "../fundidp/fundidp.css";
 import "../baskets.css";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { asset } from "../../assets";
 import { Icon } from "../fundidp/Icon";
 import { Block, HScroll } from "../../ui/widgets";
@@ -38,31 +38,47 @@ export function LogoStack({ basket, size }: { basket: Basket; size: number }) {
   );
 }
 
-// The basket's folder from its home card, smaller, with the fund logos dropped loosely onto its front sheet. Drawn in
-// the card's own units (280 × 180) and scaled evenly, so the tab and corners keep the card's proportions. The tab
-// takes the basket's colour, as on the card.
+// The basket's folder from its home card, full width at the top of the page, with the fund logos dropped loosely
+// onto its front sheet. Same geometry as the card (tab rising 17px, 16px corners), re-drawn for the page width.
+// The tab takes the basket's colour, as on the card.
+const FOLDER_H = 148;
 const DROPS: [number, number, number][] = [
-  // [left px, top px, turn °] for up to three 40px logos on the front sheet of a 168 × 108 folder
-  [18, 40, -10],
-  [64, 52, 7],
-  [108, 36, -4],
+  // [left %, top px, turn °] for up to three 48px logos on the front sheet
+  [22, 50, -10],
+  [44, 66, 7],
+  [64, 44, -4],
 ];
 
 export function FolderMark({ basket, tint }: { basket: Basket; tint: string }) {
   const funds = basketFunds(basket).slice(0, 3);
+  const ref = useRef<HTMLSpanElement>(null);
+  const [w, setW] = useState(0);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const measure = () => setW(el.offsetWidth);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   return (
-    <span className="bk-mini-folder" style={{ "--bk-tint": tint } as React.CSSProperties} aria-hidden="true">
-      <svg viewBox="0 0 280 180" width="168" height="108">
-        <path className="bk-folder-back" transform="translate(4 0)" d={backPath(272, 180)} />
-        <path className="bk-folder-front" transform="translate(0 26)" d={frontPath(280, 154)} />
+    <span ref={ref} className="bk-mini-folder" style={{ "--bk-tint": tint } as React.CSSProperties} aria-hidden="true">
+      <svg width={w} height={FOLDER_H}>
+        {w > 0 && (
+          <>
+            <path className="bk-folder-back" transform="translate(4 0)" d={backPath(w - 8, FOLDER_H)} />
+            <path className="bk-folder-front" transform="translate(0 17)" d={frontPath(w, FOLDER_H - 17)} />
+          </>
+        )}
       </svg>
       {funds.map(({ fund }, i) => (
         <span
           key={`${fund.id}-${i}`}
           className="bk-mini-logo"
-          style={{ left: DROPS[i][0], top: DROPS[i][1], rotate: `${DROPS[i][2]}deg` }}
+          style={{ left: `${DROPS[i][0]}%`, top: DROPS[i][1], rotate: `${DROPS[i][2]}deg` }}
         >
-          <FundMark fund={fund} size={40} />
+          <FundMark fund={fund} size={48} />
         </span>
       ))}
     </span>
@@ -274,6 +290,7 @@ export function BasketScreen({ basketId }: { basketId: string }) {
       {/* Same pieces, in the same order, as the basket's folder card on the home page: logos, name • fund count,
           who it is for, then 3Y return · Min. SIP · Risk. */}
       <div className="fund-hero bk-hero-idp">
+        <FolderMark basket={basket} tint={SHADES[Math.max(0, baskets.findIndex((b) => b.id === basket.id)) % SHADES.length]} />
         <div className="bk-hero-text-idp">
           <div className="bk-title">
             <h2 data-dock-anchor>{basket.name}</h2>
@@ -281,7 +298,6 @@ export function BasketScreen({ basketId }: { basketId: string }) {
           </div>
           <p className="fund-meta-idp">{basket.who}</p>
         </div>
-        <FolderMark basket={basket} tint={SHADES[Math.max(0, baskets.findIndex((b) => b.id === basket.id)) % SHADES.length]} />
       </div>
       {buy.fund && buy.state === "paused" && (
         <Notice tone="warn">{buy.fund.name} is not taking new money right now, so this basket can't be started until it reopens.</Notice>
