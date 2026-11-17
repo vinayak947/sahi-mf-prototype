@@ -81,6 +81,7 @@ body {
 
   .device {
     --app-h: min(892px, calc(100dvh - 48px));
+    --home-bar: 24px; /* the frame has no OS, so leave the Android gesture-bar height clear at the bottom */
     width: 412px;
     height: var(--app-h);
     border-radius: 28px;
