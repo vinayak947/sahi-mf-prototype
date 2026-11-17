@@ -1165,6 +1165,9 @@
   height: 13.5px;
   border-radius: 2px;
   background: var(--surface-L4);
+  /* Magnet: ticks near the needle stretch toward its height (--m set per tick by Dial.tsx, tracking the scroll 1:1). */
+  transform: scaleY(var(--m, 1));
+  transform-origin: top;
 }
 :root:has(.idp) .rc-tick-idp.mid::before {
   height: 19.5px;

@@ -1,5 +1,6 @@
-import { useLayoutEffect, useRef, type CSSProperties } from "react";
+import { useEffect, useLayoutEffect, useRef, type CSSProperties } from "react";
 import { inr } from "../format";
+import { haptic } from "../../../ui/haptics";
 
 /* Short labels for the ruler: 5K, 45K, 1L, 2.5L (K = thousand, L = lakh). */
 const short = (v: number) => {
@@ -24,6 +25,15 @@ function Pad({ side }: { side: "start" | "end" }) {
 
 const TICK = 9;
 
+/* Stoppers are the taller ticks: every 5th step (mid) and every 10th (major, labelled). Crossing one under the needle
+   plays a haptic tick; coming to rest one step off one pulls onto it (two steps off stays put, so fine values are
+   still reachable). Ticks near the needle grow toward its height, falling off over MAGNET_RANGE steps. */
+const MAGNET_SNAP = 1; // steps
+const MAGNET_RANGE = 4; // steps
+const NEEDLE_H = 31.5; // .rc-mark-idp height
+const TICK_H = { "": 13.5, mid: 19.5, major: 25.5 } as const;
+const reduceMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
 /* A ruler you scroll under a fixed centre marker. Native scroll-snap gives touch and trackpad momentum;
    a mouse can drag it, and the arrow keys step it. */
 export function Dial({
@@ -46,6 +56,76 @@ export function Dial({
   const count = Math.round((max - min) / step) + 1;
   const index = Math.round((value - min) / step);
   const at = (i: number) => Math.min(count - 1, Math.max(0, i));
+  const kindAt = (i: number) => {
+    const v = min + i * step;
+    return v % (step * 10) === 0 ? "major" : v % (step * 5) === 0 ? "mid" : "";
+  };
+  const stopper = (i: number) => kindAt(i) !== "";
+
+  // Haptics only after the person touches the dial (the first scroll is the mount placing it).
+  const armed = useRef(false);
+  const lastIdx = useRef(index);
+  const ticks = useRef<(HTMLSpanElement | null)[]>([]);
+  const grown = useRef<number[]>([]);
+  const frame = useRef(0);
+
+  // Nearest stopper within MAGNET_SNAP steps of i, else i itself.
+  const magnet = (i: number) => {
+    for (let d = 0; d <= MAGNET_SNAP; d++) {
+      if (stopper(at(i - d))) return at(i - d);
+      if (stopper(at(i + d))) return at(i + d);
+    }
+    return i;
+  };
+
+  // Ticks within MAGNET_RANGE of the needle stretch toward its height (scaleY on each tick's own line, top-anchored).
+  const magnify = () => {
+    frame.current = 0;
+    const el = ref.current;
+    if (!el) return;
+    const pos = el.scrollLeft / TICK;
+    const next: number[] = [];
+    if (!reduceMotion()) {
+      for (let i = Math.max(0, Math.floor(pos - MAGNET_RANGE)); i <= Math.min(count - 1, Math.ceil(pos + MAGNET_RANGE)); i++) {
+        const d = Math.abs(i - pos);
+        if (d >= MAGNET_RANGE) continue;
+        const f = 0.5 * (1 + Math.cos((Math.PI * d) / MAGNET_RANGE)); // 1 under the needle, 0 at the edge of the range
+        const h = TICK_H[kindAt(i)];
+        ticks.current[i]?.style.setProperty("--m", String(1 + f * ((NEEDLE_H * 0.9) / h - 1)));
+        next.push(i);
+      }
+    }
+    for (const i of grown.current) if (!next.includes(i)) ticks.current[i]?.style.removeProperty("--m");
+    grown.current = next;
+  };
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const arm = () => (armed.current = true);
+    // Native scroll-snap lands on any step; when it lands one step off a stopper, pull onto the stopper.
+    const onEnd = () => {
+      if (drag.current.down) return;
+      const i = at(Math.round(el.scrollLeft / TICK));
+      const target = magnet(i);
+      if (target !== i) el.scrollTo({ left: target * TICK, behavior: "smooth" });
+    };
+    el.addEventListener("pointerdown", arm);
+    el.addEventListener("touchstart", arm, { passive: true });
+    el.addEventListener("wheel", arm, { passive: true });
+    el.addEventListener("keydown", arm);
+    el.addEventListener("scrollend", onEnd);
+    magnify();
+    return () => {
+      el.removeEventListener("pointerdown", arm);
+      el.removeEventListener("touchstart", arm);
+      el.removeEventListener("wheel", arm);
+      el.removeEventListener("keydown", arm);
+      el.removeEventListener("scrollend", onEnd);
+      cancelAnimationFrame(frame.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [count]);
 
   useLayoutEffect(() => {
     if (ref.current) ref.current.scrollLeft = index * TICK;
@@ -58,7 +138,7 @@ export function Dial({
     if (!el) return;
     drag.current.down = false;
     el.classList.remove("dragging");
-    el.scrollTo({ left: at(Math.round(el.scrollLeft / TICK)) * TICK, behavior: "smooth" });
+    el.scrollTo({ left: magnet(at(Math.round(el.scrollLeft / TICK))) * TICK, behavior: "smooth" });
   };
 
   return (
@@ -76,6 +156,21 @@ export function Dial({
         onScroll={(e) => {
           const i = at(Math.round(e.currentTarget.scrollLeft / TICK));
           if (i !== index) onChange(min + i * step);
+          // One tick for each stopper the needle passed since the last frame (firmer on a labelled one).
+          const from = lastIdx.current;
+          if (armed.current && i !== from) {
+            // The steps the needle reached this frame: from+1..i going right, i..from-1 going left.
+            const [lo, hi] = i > from ? [from + 1, i] : [i, from - 1];
+            let hit: "" | "mid" | "major" = "";
+            for (let k = lo; k <= hi; k++) {
+              const kind = kindAt(k);
+              if (kind === "major") hit = "major";
+              else if (kind === "mid" && !hit) hit = "mid";
+            }
+            if (hit) haptic(hit === "major" ? "major" : "tick");
+          }
+          lastIdx.current = i;
+          if (!frame.current) frame.current = requestAnimationFrame(magnify);
         }}
         onKeyDown={(e) => {
           const move = e.key === "ArrowRight" || e.key === "ArrowUp" ? 1 : e.key === "ArrowLeft" || e.key === "ArrowDown" ? -1 : 0;
@@ -100,8 +195,17 @@ export function Dial({
         <Pad side="start" />
         {Array.from({ length: count }, (_, i) => {
           const v = min + i * step;
-          const kind = v % (step * 10) === 0 ? "major" : v % (step * 5) === 0 ? "mid" : "";
-          return <span key={v} className={`rc-tick-idp ${kind}`} data-label={kind === "major" ? short(v) : undefined} />;
+          const kind = kindAt(i);
+          return (
+            <span
+              key={v}
+              ref={(el) => {
+                ticks.current[i] = el;
+              }}
+              className={`rc-tick-idp ${kind}`}
+              data-label={kind === "major" ? short(v) : undefined}
+            />
+          );
         })}
         <Pad side="end" />
       </div>

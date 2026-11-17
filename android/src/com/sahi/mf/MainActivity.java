@@ -86,6 +86,23 @@ public class MainActivity extends Activity {
         });
     }
 
+    /** Haptic tick for the prototype (src/ui/haptics.ts): "major" for a labelled stopper, anything else a light tick.
+     *  Android 14+ has segment ticks made for sliders; older versions use the clock-tick / context-click pair. */
+    @JavascriptInterface
+    public void haptic(String kind) {
+        boolean major = "major".equals(kind);
+        int effect;
+        if (android.os.Build.VERSION.SDK_INT >= 34) {
+            effect = major ? android.view.HapticFeedbackConstants.SEGMENT_TICK
+                           : android.view.HapticFeedbackConstants.SEGMENT_FREQUENT_TICK;
+        } else {
+            effect = major ? android.view.HapticFeedbackConstants.CONTEXT_CLICK
+                           : android.view.HapticFeedbackConstants.CLOCK_TICK;
+        }
+        final int fx = effect;
+        main.post(() -> web.performHapticFeedback(fx));
+    }
+
     static int parse(String css) {
         try {
             css = css.trim();

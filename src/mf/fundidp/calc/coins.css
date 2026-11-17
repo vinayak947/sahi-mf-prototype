@@ -97,11 +97,9 @@
   line-height: 14px;
   font-variant-numeric: tabular-nums;
 }
-:root:has(.idp) .vk-label b.up {
-  color: var(--up);
-}
+:root:has(.idp) .vk-label b.up,
 :root:has(.idp) .vk-label b.down {
-  color: var(--down);
+  color: var(--text-primary);
 }
 /* each top coin catches the light once, when it lands */
 .vk-coin.top::before {
