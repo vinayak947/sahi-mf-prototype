@@ -5100,6 +5100,51 @@ em.amo.st-failed {
 
 /* ---- Order Pad 2.0 (default; the dev switch turns it off): DLS Number field, Figma order pad layout ------------- */
 
+/* Header: the back arrow on its own row, the fund (logo, name, plan · category) below it on the page's 16 px edge.
+   The header is padded 4 around a 48 px back button, so the fund line takes 12 more on each side. */
+/* Vertical rhythm: back-arrow row → title 16, title → fund line 32, fund line → field 32, field → chips 16,
+   chips → SIP date 16. The header rows carry their own margins (no row gap). */
+.mf-screen.pad.v2 .mf-head {
+  flex-wrap: wrap;
+  row-gap: 0;
+  padding-bottom: 0;
+}
+
+/* The amount field sits 24 below the fund line (not centred in the free space); the rest of the space stays
+   between the date and the payment card. */
+.mf-screen.pad.v2 .mf-body {
+  padding-top: 0;
+}
+
+.mf-screen.pad.v2 .mf-pad2-center {
+  margin: 32px 0 auto;
+}
+
+.mf-screen.pad.v2 .mf-head .mf-fundline {
+  order: 1;
+  flex: 1 1 calc(100% - 24px);
+  gap: 16px; /* logo to fund name */
+  margin: 0 12px;
+}
+
+/* Page title over the fund line: what this order is (Start SIP / Invest One-time), 24 Season Display. */
+.mf-screen.pad.v2 .mf-head h1.mf-pad2-title {
+  order: 1;
+  flex: 1 1 calc(100% - 24px);
+  margin: 16px 12px 32px; /* 16 under the back-arrow row, 32 to the fund line */
+  color: var(--text-primary);
+  font-family: "SAHI Season Display Mix:Medium", serif;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 28.8px;
+}
+
+/* Fund name under the title: 16 / 19.2 Medium. */
+.mf-screen.pad.v2 .mf-head .mf-fundline b {
+  font-size: 16px;
+  line-height: 19.2px;
+}
+
 /* Plain surface: no drifting dots behind the field. */
 .mf-screen.pad.v2 {
   background: var(--surface-L1);
@@ -5120,6 +5165,145 @@ em.amo.st-failed {
   gap: 12px;
 }
 
+/* Amount field, per the Payment Mode Improvements Figma (text-field, node 282:437): left-aligned, 64 high, ₹ and the
+   amount both 24 / 28.8 Medium in text/primary, 4 apart, caret a 28 px line right after the value. */
+.mf-screen.pad.v2:not(.redeem) .mf-pad2-amount .dls-nf-field {
+  gap: 4px;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 28.8px;
+}
+
+.mf-screen.pad.v2:not(.redeem) .mf-pad2-amount .dls-nf-affix {
+  font-family: inherit; /* ₹ in the amount's 32 Medium, not the field's Regular affix */
+  font-weight: inherit;
+  color: var(--text-primary);
+}
+
+.mf-screen.pad.v2:not(.redeem) .mf-pad2-amount .dls-nf-caret {
+  height: 28px;
+  margin-left: -3px;
+}
+
+/* Quick-add chips: left-aligned under the field, 12 below it (Figma A2 amount screen, node 124:2887). */
+.mf-screen.pad.v2:not(.redeem) .mf-quick.pad {
+  justify-content: flex-start;
+  margin: 16px 0 0;
+}
+
+/* SIP date chip: on the same left edge as the field and the chips, 16 under the chips. */
+/* 16 corners like the amount field, with the date in text/primary. */
+.mf-screen.pad.v2:not(.redeem) .mf-sip-date {
+  align-self: flex-start;
+  margin-top: 16px;
+  border-radius: 16px; /* same corners as the amount field */
+}
+
+.mf-screen.pad.v2:not(.redeem) .mf-sip-date-label {
+  color: var(--text-primary);
+  font-family: "SAHI Sans:Bold", sans-serif;
+  font-weight: 700;
+}
+
+/* Highlighted in SAHI purple: a light accent tint, a soft accent outline, and the calendar and chevron in the accent.
+   The date itself stays text/primary so it reads in both themes. */
+.mf-screen.pad.v2:not(.redeem) .mf-sip-date {
+  border-color: color-mix(in srgb, var(--accent-default) 28%, transparent);
+  background: color-mix(in srgb, var(--accent-default) 6%, var(--surface-L1));
+}
+
+.mf-screen.pad.v2:not(.redeem) .mf-sip-date .icon {
+  color: var(--accent-default);
+}
+
+/* The date in deep SAHI purple (#3D0920) on the light theme. Dark mode keeps text/primary: this purple is dark
+   mode's accent tint and would vanish on the dark surface. */
+:root:not([data-theme="dark"]) .mf-screen.pad.v2:not(.redeem) .mf-sip-date-label {
+  color: #3d0920;
+}
+
+/* Keep the amount block tight under the header (24) instead of centred in the free space. */
+.mf-screen.pad.v2:not(.redeem) .mf-pad2-center {
+  margin-block: 32px auto;
+}
+
+/* SIP date + payment card: stacked over Invest, 16 apart, the date as wide as the card (chevron at the far end). */
+.mf-pad2-how {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* SIP date card to payment card */
+}
+
+/* SIP date card: the payment card's layout (12·16 padding, 16 gaps, 32 icon slot, 12 corners), so the two read
+   as a pair: same outline, no fill, text/primary text, the same 16 Medium as "Pay via Mandate". */
+/* One line, so no forced height: 12 above and below a 24-high row (50 with borders), tighter than the two-line
+   payment card. The icon slot stays 32 wide so the text keeps the payment card's indent. */
+.mf-paycard.mf-datecard {
+  padding-block: 12px;
+}
+
+.mf-paycard.mf-datecard .mf-datecard-icon {
+  height: 24px;
+}
+
+.mf-datecard-icon {
+  display: grid;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  color: var(--text-primary);
+}
+
+/* Same type as "Pay via Mandate": 16 / 19.2 Medium. */
+.mf-datecard-day {
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 19.2px;
+}
+
+.mf-datecard-day {
+  flex: none;
+  color: var(--text-primary);
+}
+
+.mf-datecard .mf-paycard-change {
+  margin-left: -12px; /* the day sits 4 from the arrow, not the card's 16 gap */
+}
+
+/* Keypad dismissed (tapped outside the field): the payment card and Invest drop to the bottom, clear of the edge.
+   The field is tappable to bring the keypad back. */
+.mf-screen.pad.v2.kb-off .mf-pad2-pay {
+  padding-bottom: 16px;
+}
+
+.mf-screen.pad.v2 .mf-pad2-amount .dls-nf-field {
+  cursor: text;
+}
+
+/* Clear (x) at the field's right, 16 in from the edge (the field's own padding). The Base Design System x, 24, in
+   text/secondary; the tap target reaches 10 past it each way without moving the glyph. */
+.mf-pad2-clear {
+  position: relative;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  color: var(--text-secondary);
+  background: transparent;
+  cursor: pointer;
+}
+
+.mf-pad2-clear::before {
+  position: absolute;
+  inset: -10px;
+  content: "";
+}
+
 .mf-pad2-amount .mf-pad-label {
   align-self: center;
 }
@@ -5131,9 +5315,96 @@ em.amo.st-failed {
   padding-top: 8px;
 }
 
-.mf-pad2-pay .mf-btn {
+/* Payment method card (Figma MethodCard · pre-chosen, node 114:781): 1px chip stroke, radius 16, 4·16 padding
+   around an 8-padded row; 32 round logo, 16 apart from the name (16 Medium) over the account (14 Regular,
+   text/secondary); "Change ›" on the right. 16 above Invest. */
+.mf-screen.pad.v2 .mf-pad2-pay {
+  gap: 16px; /* payment card to the Invest / Start SIP button */
+}
+
+.mf-paycard {
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  border: 1px solid var(--border-L1);
+  border-radius: 16px; /* the amount field's corners, shared with the SIP date card */
+  color: var(--text-primary);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+}
+
+.mf-paycard:disabled {
+  opacity: 1;
+}
+
+.mf-paycard-logo {
+  display: grid;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--transparent-L1);
+  border-radius: 40px;
+  box-sizing: border-box;
+}
+
+.mf-paycard-logo img {
+  width: 24px;
+  height: 24px;
+  object-fit: cover;
+}
+
+.mf-paycard-logo.mandate img {
+  width: 16px;
+  height: 16px;
+}
+
+.mf-paycard-logo.filled img {
+  width: 100%;
+  height: 100%;
+}
+
+.mf-paycard-text {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mf-paycard-text b {
+  overflow: hidden;
+  font-family: "SAHI Sans:Medium", sans-serif;
   font-size: 16px;
+  font-weight: 500;
   line-height: 19.2px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mf-paycard-text small {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 14px;
+  line-height: 16.8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mf-paycard-change {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  color: var(--text-primary);
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 14px;
+  line-height: 16.8px;
 }
 
 .mf-screen.pad.v2 .mf-keypad {
@@ -5143,4 +5414,9 @@ em.amo.st-failed {
 /* Redeem pad: the field is centred between the header and the keypad, as the old figure was. */
 .mf-screen.pad.redeem .mf-pad2-amount {
   margin-top: auto;
+}
+
+/* Order Pad 2.0 corners: 16 on the amount field, as on the cards and chips around it. */
+.mf-screen.pad.v2 .mf-pad2-amount .dls-nf-field {
+  border-radius: 16px;
 }
