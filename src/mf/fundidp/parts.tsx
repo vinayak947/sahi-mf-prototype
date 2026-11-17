@@ -546,7 +546,29 @@ export function ArtBox({ art, className, frame, mirror }: { art: Art; className:
   );
 }
 
+const FOLD_OPEN = "fold-open";
+const FOLD_MS = 240; // .fold-body grid-template-rows transition
+
+// While a fold above collapses, keep the one just tapped where the finger is: each frame, scroll by however far its
+// heading has drifted. Stops once the collapse is over.
+function holdInPlace(section: HTMLElement) {
+  let scroller: HTMLElement | null = section.parentElement;
+  while (scroller && !(scroller.scrollHeight > scroller.clientHeight && /auto|scroll/.test(getComputedStyle(scroller).overflowY)))
+    scroller = scroller.parentElement;
+  if (!scroller) return;
+  const el = scroller;
+  const start = section.getBoundingClientRect().top;
+  const until = performance.now() + FOLD_MS + 80;
+  const tick = () => {
+    const drift = section.getBoundingClientRect().top - start;
+    if (Math.abs(drift) >= 0.5) el.scrollTop += drift;
+    if (performance.now() < until) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
 // A fund page widget that folds away: the title is the toggle, the chevron turns over when it is open.
+// Folds on one page work as an accordion: opening one closes the one that was open.
 // The body stays mounted (so the calculator keeps its state) and is made inert while folded.
 export function Fold({
   title,
@@ -564,12 +586,34 @@ export function Fold({
   const [open, setOpenState] = useState(defaultOpen);
   const setOpen = (next: (o: boolean) => boolean) => {
     const value = next(open);
+  const bodyId = useId();
+  const sectionRef = useRef<HTMLElement>(null);
     setOpenState(value);
     onOpenChange?.(value);
   };
-  const bodyId = useId();
+  // Close when another fold on the same page opens (scoped to this screen's body, so stacked screens don't interfere).
+  const openRef = useRef(open);
+  openRef.current = open;
+  useEffect(() => {
+    const page = sectionRef.current?.closest(".mf-body");
+    if (!page) return;
+    const onOther = (e: Event) => {
+      if ((e as CustomEvent<string>).detail === bodyId || !openRef.current) return;
+      setOpenState(false);
+      onOpenChange?.(false);
+    };
+    page.addEventListener(FOLD_OPEN, onOther);
+    return () => page.removeEventListener(FOLD_OPEN, onOther);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bodyId]);
+    // One open at a time: tell the other folds on this page to close.
+    if (value) {
+      const section = sectionRef.current;
+      section?.closest(".mf-body")?.dispatchEvent(new CustomEvent(FOLD_OPEN, { detail: bodyId }));
+      if (section) holdInPlace(section);
+    }
   return (
-    <section className={`mf-section-idp fold${open ? " open" : ""}`}>
+    <section ref={sectionRef} className={`mf-section-idp fold${open ? " open" : ""}`}>
       <h3>
         <button type="button" className="fold-head" aria-expanded={open} aria-controls={bodyId} onClick={() => setOpen((o) => !o)}>
           {title}
