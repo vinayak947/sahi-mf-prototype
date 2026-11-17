@@ -746,7 +746,7 @@ export function FundScreen({ fundId }: { fundId: string }) {
         </span>
         <h2 data-dock-anchor>{fund.name}</h2>
         <p className="fund-meta-idp">
-          Direct • {fundCategory(fund)} • <Stars n={fund.stars} /> • {riskText}
+          {fund.plan ?? "Direct"} • {fundCategory(fund)} • <Stars n={fund.stars} /> • {riskText}
         </p>
       </div>
       {fund.buyNote && fund.buy !== "restricted" && <Notice tone="warn">{fund.buyNote}</Notice>}
