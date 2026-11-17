@@ -1493,10 +1493,10 @@
 .mf-screen:has(.fund-hero) .fund-hero.bk-hero-idp h2 { flex: 0 1 auto; width: auto; margin: 0; font-size: 24px; line-height: 28px; }
 .bk-hero-idp .fund-meta-idp { margin-top: 4px; line-height: 20px; }
 
-.bk-mini-folder { position: relative; flex: none; width: 112px; height: 72px; isolation: isolate; }
+.bk-mini-folder { position: relative; flex: none; width: 168px; height: 108px; isolation: isolate; }
 .bk-mini-folder svg { position: absolute; inset: 0; overflow: visible; }
 .bk-mini-folder .bk-folder-back { fill: color-mix(in srgb, var(--bk-tint) 20%, var(--surface-L2)); }
 :root[data-theme=dark] .bk-mini-folder .bk-folder-back { fill: color-mix(in srgb, var(--bk-tint) 14%, var(--surface-L3)); }
-.bk-mini-folder .bk-folder-front { fill: var(--surface-L1); stroke: var(--border-L1); stroke-width: 2.5px; }
+.bk-mini-folder .bk-folder-front { fill: var(--surface-L1); stroke: var(--border-L1); stroke-width: 1.7px; }
 .bk-mini-logo { position: absolute; line-height: 0; }
 .bk-mini-logo .fund-mark { box-shadow: inset 0 0 0 1px var(--line), 0 1px 3px rgb(15 15 15 / 14%); }

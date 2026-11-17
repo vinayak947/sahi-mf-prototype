@@ -38,22 +38,23 @@ export function LogoStack({ basket, size }: { basket: Basket; size: number }) {
   );
 }
 
-// The basket's folder from its home card, small, with the fund logos dropped inside at loose angles and peeking out
-// over the front sheet. Drawn in the card's own units (280 × 180) and scaled down evenly, so the tab and corners keep
-// the card's proportions. The tab takes the basket's colour, as on the card.
+// The basket's folder from its home card, smaller, with the fund logos dropped loosely onto its front sheet. Drawn in
+// the card's own units (280 × 180) and scaled evenly, so the tab and corners keep the card's proportions. The tab
+// takes the basket's colour, as on the card.
 const DROPS: [number, number, number][] = [
-  // [left px, top px, turn °] for up to three logos (32px), in a 112 × 72 folder
-  [10, 8, -12],
-  [40, 2, 8],
-  [68, 11, -5],
+  // [left px, top px, turn °] for up to three 40px logos on the front sheet of a 168 × 108 folder
+  [18, 40, -10],
+  [64, 52, 7],
+  [108, 36, -4],
 ];
 
 export function FolderMark({ basket, tint }: { basket: Basket; tint: string }) {
   const funds = basketFunds(basket).slice(0, 3);
   return (
     <span className="bk-mini-folder" style={{ "--bk-tint": tint } as React.CSSProperties} aria-hidden="true">
-      <svg className="bk-mini-back" viewBox="0 0 280 180" width="112" height="72">
+      <svg viewBox="0 0 280 180" width="168" height="108">
         <path className="bk-folder-back" transform="translate(4 0)" d={backPath(272, 180)} />
+        <path className="bk-folder-front" transform="translate(0 26)" d={frontPath(280, 154)} />
       </svg>
       {funds.map(({ fund }, i) => (
         <span
@@ -61,12 +62,9 @@ export function FolderMark({ basket, tint }: { basket: Basket; tint: string }) {
           className="bk-mini-logo"
           style={{ left: DROPS[i][0], top: DROPS[i][1], rotate: `${DROPS[i][2]}deg` }}
         >
-          <FundMark fund={fund} size={32} />
+          <FundMark fund={fund} size={40} />
         </span>
       ))}
-      <svg className="bk-mini-front" viewBox="0 0 280 180" width="112" height="72">
-        <path className="bk-folder-front" transform="translate(0 92)" d={frontPath(280, 88)} />
-      </svg>
     </span>
   );
 }
