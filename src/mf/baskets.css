@@ -1483,7 +1483,7 @@
   font-weight: 400;
   color: var(--text-secondary);
 }
-.bk-stats.bk-stats-hero-idp { margin: 16px 0 8px; }
+.bk-stats.bk-stats-hero-idp { margin: 16px 0 8px; padding: 16px; border: 1px solid var(--border-L2); border-radius: 16px; }
 
 /* Details page hero: name, count and who on the left; the basket's small folder, with its logos dropped in, at the
    top right level with the heading. */
