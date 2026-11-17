@@ -309,6 +309,7 @@ function Header({
                     ? "awaiting-flight"
                     : "",
                   isRevealed ? "tab-revealed" : "tab-hidden",
+                  key !== "mf" ? "tab-off" : "",
                 ]
                   .filter(Boolean)
                   .join(" ")}
@@ -568,6 +569,12 @@ function Shell({ page, setPage }: { page: Page; setPage: (page: Page) => void })
   const [market, setMarket] = useState<Market | null>("mf");
   const [tabOrder, setTabOrder] = useState<Market[]>(() => orderFor("mf"));
   const [showSettings, setShowSettings] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+  useEffect(() => {
+    if (!toast) return;
+    const timer = window.setTimeout(() => setToast(null), 2200);
+    return () => window.clearTimeout(timer);
+  }, [toast]);
   const [onboardingPhase, setOnboardingPhase] =
     useState<OnboardingPhase>("closed");
   const [tabRevealPhase, setTabRevealPhase] =
@@ -752,6 +759,11 @@ function Shell({ page, setPage }: { page: Page; setPage: (page: Page) => void })
         <Header
           market={market}
           onMarket={(nextMarket) => {
+            // Only Mutual Funds is built in this prototype; the other markets answer with a toast.
+            if (nextMarket !== "mf") {
+              setToast(`${marketLabels[nextMarket]} is not part of this prototype`);
+              return;
+            }
             setLandedMarket(null);
             setMarket(nextMarket);
             if (nextMarket === "mf") markSeen();
@@ -781,6 +793,11 @@ function Shell({ page, setPage }: { page: Page; setPage: (page: Page) => void })
           <BottomNav market={market} page={page} onPage={goToPage} />
           <MfFlow />
         </>
+      )}
+      {toast && (
+        <div className="proto-toast" role="status" key={toast}>
+          {toast}
+        </div>
       )}
       {onboardingPhase !== "closed" && (
         <StartSheet
