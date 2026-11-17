@@ -563,9 +563,27 @@ function holdInPlace(section: HTMLElement) {
     const drift = section.getBoundingClientRect().top - start;
     if (Math.abs(drift) >= 0.5) el.scrollTop += drift;
     if (performance.now() < until) requestAnimationFrame(tick);
+    else reveal(section, el);
   };
   requestAnimationFrame(tick);
 }
+
+// Once open, bring the section into view if it runs past the bottom: all of it when it fits, otherwise its heading
+// near the top. The visible area is the scroller minus the screen's header and fixed footer (the buttons).
+function reveal(section: HTMLElement, scroller: HTMLElement) {
+  const screen = section.closest(".mf-screen");
+  const box = scroller.getBoundingClientRect();
+  const head = screen?.querySelector(".mf-head")?.getBoundingClientRect();
+  const foot = screen?.querySelector(".mf-foot")?.getBoundingClientRect();
+  const top = Math.max(box.top, head && head.bottom > box.top ? head.bottom : box.top) + 8;
+  const bottom = Math.min(box.bottom, foot && foot.top < box.bottom ? foot.top : box.bottom) - 16;
+  const r = section.getBoundingClientRect();
+  if (r.bottom <= bottom) return; // already all in view
+  const by = Math.min(r.bottom - bottom, r.top - top); // never push the heading above the top edge
+  if (by > 0) scroller.scrollBy({ top: by, behavior: reduceMotion() ? "auto" : "smooth" });
+}
+
+const reduceMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 // A fund page widget that folds away: the title is the toggle, the chevron turns over when it is open.
 // Folds on one page work as an accordion: opening one closes the one that was open.
@@ -584,14 +602,20 @@ export function Fold({
   onOpenChange?: (open: boolean) => void;
 }) {
   const [open, setOpenState] = useState(defaultOpen);
-  const setOpen = (next: (o: boolean) => boolean) => {
-    const value = next(open);
   const bodyId = useId();
   const sectionRef = useRef<HTMLElement>(null);
     setOpenState(value);
     onOpenChange?.(value);
+  const setOpen = (next: (o: boolean) => boolean) => {
+    const value = next(open);
   };
   // Close when another fold on the same page opens (scoped to this screen's body, so stacked screens don't interfere).
+    // One open at a time: tell the other folds on this page to close.
+    if (value) {
+      const section = sectionRef.current;
+      section?.closest(".mf-body")?.dispatchEvent(new CustomEvent(FOLD_OPEN, { detail: bodyId }));
+      if (section) holdInPlace(section);
+    }
   const openRef = useRef(open);
   openRef.current = open;
   useEffect(() => {
@@ -606,12 +630,6 @@ export function Fold({
     return () => page.removeEventListener(FOLD_OPEN, onOther);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bodyId]);
-    // One open at a time: tell the other folds on this page to close.
-    if (value) {
-      const section = sectionRef.current;
-      section?.closest(".mf-body")?.dispatchEvent(new CustomEvent(FOLD_OPEN, { detail: bodyId }));
-      if (section) holdInPlace(section);
-    }
   return (
     <section ref={sectionRef} className={`mf-section-idp fold${open ? " open" : ""}`}>
       <h3>
