@@ -6,13 +6,13 @@ import { kindLabel } from "./screens";
 import { StatusBadge } from "./OrderStatusDetail";
 import { useMf } from "./store";
 import { DlsTab } from "../ui/widgets";
+import { Icon } from "../ui/Icon";
 import { uiStatus, type UiStatus } from "./orderStatus";
 
 type StatusTab = "all" | UiStatus;
 export type TypeFilter = "all" | MfOrder["kind"];
 
 const STATUS_TABS: { key: StatusTab; label: string }[] = [
-  { key: "all", label: "All" },
   { key: "initiated", label: "Initiated" },
   { key: "inprogress", label: "In progress" },
   { key: "completed", label: "Completed" },
@@ -33,21 +33,23 @@ const threeMonthsAgo = () => {
   return d.toISOString().slice(0, 10);
 };
 
-// One mixed list, newest first. Status tabs on top; the order type is picked from the filter button in the page header
-// (MfOrdersPage), which owns the choice and the sheet.
+// One mixed list, newest first. Status tabs on top; the order type is picked from the filter button under the tabs
+// (opened via onOpenPicker; MfOrdersPage), which owns the choice and the sheet.
 export function OrdersList2({
   type,
   picking,
   onType,
   onClosePicker,
+  onOpenPicker,
 }: {
   type: TypeFilter;
   picking: boolean;
   onType: (type: TypeFilter) => void;
   onClosePicker: () => void;
+  onOpenPicker?: () => void;
 }) {
   const { orders, push } = useMf();
-  const [picked, setTab] = useState<StatusTab>("all");
+  const [picked, setTab] = useState<StatusTab>("initiated");
   const tabsRef = useRef<HTMLDivElement>(null);
 
   const since = threeMonthsAgo();
@@ -55,41 +57,41 @@ export function OrdersList2({
     () => orders.filter((o) => o.on >= since).filter((o) => type === "all" || o.kind === type),
     [orders, since, type],
   );
-  // Only the statuses this order type actually has: "All" always, the rest when at least one order is in them.
-  const tabs = STATUS_TABS.filter((t) => t.key === "all" || ofType.some((o) => uiStatus(o) === t.key));
-  const tab: StatusTab = tabs.some((t) => t.key === picked) ? picked : "all";
+  // Only the statuses this order type actually has: a tab appears when at least one order is in it.
+  const tabs = STATUS_TABS.filter((t) => ofType.some((o) => uiStatus(o) === t.key));
+  const tab: StatusTab | undefined = tabs.some((t) => t.key === picked) ? picked : tabs[0]?.key;
   const list = ofType
-    .filter((o) => tab === "all" || uiStatus(o) === tab)
+    .filter((o) => uiStatus(o) === tab)
     .sort((x, y) => (x.on < y.on ? 1 : x.on > y.on ? -1 : 0));
 
-  // Keep the picked tab and the one after it fully in view, so the last tab never sits clipped at the edge.
-  useEffect(() => {
-    const row = tabsRef.current;
-    const active = row?.querySelector<HTMLElement>("[aria-selected='true']");
-    if (!row || !active) return;
-    const next = (active.nextElementSibling as HTMLElement | null) ?? active;
-    const gutter = 16;
-    const base = row.getBoundingClientRect().left - row.scrollLeft;
-    const left = (el: HTMLElement) => el.getBoundingClientRect().left - base;
-    const nextEnd = left(next) + next.offsetWidth + gutter;
-    if (nextEnd > row.scrollLeft + row.clientWidth) {
-      row.scrollTo({ left: nextEnd - row.clientWidth, behavior: "smooth" });
-    } else if (left(active) - gutter < row.scrollLeft) {
-      row.scrollTo({ left: Math.max(0, left(active) - gutter), behavior: "smooth" });
-    }
-  }, [tab, tabs.length]);
+  const count = (key: StatusTab) => ofType.filter((o) => uiStatus(o) === key).length;
 
   return (
     <>
       <div className="tabs-row mf-orders-bar">
-        <div className="tabs-list" role="tablist" aria-label="Order status" ref={tabsRef}>
+        <div className="tabs-list" role="tablist" aria-label="Order status">
           {tabs.map((t) => (
             <DlsTab key={t.key} active={tab === t.key} onClick={() => setTab(t.key)}>
-              {t.label}
+              {`${t.label} · ${count(t.key)}`}
             </DlsTab>
           ))}
         </div>
       </div>
+
+      {onOpenPicker && (
+        <div className="mf-pf-bar mf-orders-count">
+          <span>
+            {list.length} {list.length === 1 ? "fund" : "funds"}
+          </span>
+          <button
+            className={`dls-chip mf-orders-typechip${type !== "all" ? " on" : ""}`}
+            aria-label="Filter by order type"
+            onClick={onOpenPicker}
+          >
+            <Icon name="funnel-simple" size={16} />
+          </button>
+        </div>
+      )}
 
       {list.length === 0 ? (
         <p className="mf-empty">No orders here yet.</p>

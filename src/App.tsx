@@ -571,6 +571,11 @@ function Shell({ page, setPage }: { page: Page; setPage: (page: Page) => void })
   const [showSettings, setShowSettings] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   useEffect(() => {
+    const show = (e: Event) => setToast(String((e as CustomEvent).detail));
+    window.addEventListener("proto-toast", show);
+    return () => window.removeEventListener("proto-toast", show);
+  }, []);
+  useEffect(() => {
     if (!toast) return;
     const timer = window.setTimeout(() => setToast(null), 2200);
     return () => window.clearTimeout(timer);

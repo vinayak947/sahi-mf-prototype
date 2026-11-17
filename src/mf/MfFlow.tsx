@@ -15,6 +15,8 @@ import { OrderStatusDetail } from "./OrderStatusDetail";
 import { BasketHoldingScreen } from "./BasketHoldings";
 import { BasketDoneScreen, DoneScreen, FailedScreen, SipCancelledScreen } from "./Status";
 import { BasketsScreen } from "./Baskets";
+import { OrderSearchScreen } from "./OrderSearch";
+import { HoldingsSearchScreen } from "./HoldingsSearch";
 import { BasketScreen } from "./basketidp/BasketScreen";
 
 function renderRoute(route: Route) {
@@ -23,6 +25,10 @@ function renderRoute(route: Route) {
       return <ListScreen spec={route.spec} />;
     case "search":
       return <SearchScreen />;
+    case "ordersearch":
+      return <OrderSearchScreen />;
+    case "holdingsearch":
+      return <HoldingsSearchScreen />;
     case "fund":
       return <FundScreen fundId={route.fundId} />;
     case "amount":
@@ -119,10 +125,13 @@ export function MfFlow() {
   const shown = stack.length > 0 ? stack : leaving ? nav.last : [];
   const top = shown[shown.length - 1];
   if (!top) return null;
+  // An order detail is a bottom sheet: the screen it was opened from stays mounted beneath it (keyed as it will be
+  // once the sheet is gone), and when it is the first screen the layer does not slide in.
+  const sheet = top.name === "orderdetail";
+  const under = sheet && shown.length > 1 ? shown[shown.length - 2] : null;
   return (
-    <div
-      className={`mf-layer ${nav.motion}${leaving ? " leaving" : ""}`}
-    >
+    <div className={`mf-layer ${nav.motion}${leaving ? " leaving" : ""}${shown[0].name === "orderdetail" ? " sheet-first" : ""}`}>
+      {under && <Fragment key={`${shown.length - 1}-${under.name}`}>{renderRoute(under)}</Fragment>}
       <Fragment key={`${shown.length}-${top.name}`}>{renderRoute(top)}</Fragment>
     </div>
   );

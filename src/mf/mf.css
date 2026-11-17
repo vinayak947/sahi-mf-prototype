@@ -2529,7 +2529,8 @@ em.amo.st-failed {
   justify-content: space-between;
   margin-top: 12px;
   color: var(--ink-3);
-  font-size: 12px;
+  font-size: 14px;
+  line-height: 18px;
 }
 
 .mf-pf-bar .text-link {
@@ -4433,7 +4434,7 @@ em.amo.st-failed {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 4px; /* the pinned chip row below brings its own 16px of top padding */
 }
 
 .mf-pf-head .page-title {
@@ -5143,4 +5144,120 @@ em.amo.st-failed {
 /* Redeem pad: the field is centred between the header and the keypad, as the old figure was. */
 .mf-screen.pad.redeem .mf-pad2-amount {
   margin-top: auto;
+}
+
+/* Orders: filter chip + status chips in one scrolling row, right under the market tabs. */
+.mf-orders-chips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px -16px 8px;
+  padding: 0 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.mf-orders-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.mf-orders-status {
+  display: contents;
+}
+
+/* The filter stays put at the left while the status chips scroll beneath it; the backing covers the row's 16px
+   gutter and the gap, so chips never show beside it. */
+.mf-orders-sticky {
+  position: sticky;
+  left: -16px; /* the row's own padding counts as part of the sticky area */
+  z-index: 1;
+  display: flex;
+  flex: none;
+  margin: 0 -8px 0 -16px;
+  padding: 0 8px 0 16px;
+  background: var(--surface-L1);
+}
+
+/* A filled field (no outline), unlike the outlined status chips. */
+.mf-orders-typechip {
+  position: relative;
+  width: 40px;
+  justify-content: center;
+  padding: 0;
+  border-color: transparent;
+  color: var(--text-primary);
+  background: var(--surface-L2);
+}
+
+.mf-orders-typechip.on::after {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-default);
+  content: "";
+}
+
+/* Orders search page: the back arrow lives inside the field, as on the watchlist search. */
+.mf-ordersearch-head {
+  padding-top: 12px;
+  padding-bottom: 8px;
+}
+
+.mf-ordersearch-field {
+  display: flex;
+  height: 48px;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 4px;
+  padding: 0 16px 0 8px;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 1.5px var(--border-L2);
+  transition: box-shadow 160ms ease;
+}
+
+.mf-ordersearch-field:focus-within {
+  box-shadow: inset 0 0 0 1.5px var(--text-primary);
+}
+
+.mf-ordersearch-back {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  place-items: center;
+  border: 0;
+  color: var(--text-primary);
+  background: transparent;
+}
+
+.mf-ordersearch-field input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  color: var(--text-primary);
+  background: transparent;
+  font: inherit;
+  font-size: 16px;
+}
+
+.mf-ordersearch-field input::placeholder {
+  color: var(--text-secondary);
+}
+
+.mf-ordersearch-label {
+  margin: 20px 0 12px;
+  color: var(--text-primary);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 16px;
+  line-height: 20px;
+}
+
+/* Orders: the count and the filter chip share one bar under the status tabs, as on Portfolio. */
+.mf-orders-count {
+  margin: 12px 0 4px;
 }

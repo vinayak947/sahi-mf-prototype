@@ -1,4 +1,5 @@
 import "./orderStatus.css";
+import type { IconName } from "../ui/Icon";
 import { cutoffKind, type Fund, type MfOrder } from "./data";
 import { addBusinessDays, cutoffLabel, fmtDay, inr, isBusinessDay, ordinal } from "./format";
 
@@ -214,13 +215,24 @@ export function purchaseView({ order: o, fund, sipDay }: Ctx): DetailView {
   };
 }
 
+export type WhyStory = {
+  steps: { icon?: IconName; glyph?: string; title: string; sub: string }[];
+  outcomes: { icon: IconName; tone: "up" | "down"; title: string; sub: string }[];
+  note: { icon: IconName; text: string };
+};
+
 // Redemption, not failed: pending and completed share the full-page layout.
 export type RedeemView = {
   done: boolean;
   head: { label: string; value: string };
   rows: { label: string; value: string }[];
   steps: StepView[];
-  why: { title: string; bullets: string[] };
+  why: {
+    title: string;
+    bullets: string[];
+    // The same explanation as a short visual story: steps, what can happen to the amount, one note.
+    story: WhyStory;
+  };
   nav: number;
 };
 
@@ -241,6 +253,10 @@ export function redeemView({ order: o, fund }: Ctx): RedeemView {
   const cutText = `Your order was placed ${before ? "before" : "after"} the ${cut} cut-off, so the fund house `;
   const when = before ? `the NAV of ${o.navDate}` : `the NAV of the next working day, ${o.navDate}`;
   const l1 = `You asked to redeem ${inr(o.amount, 2)}. We converted this to ${unitsText} units using the NAV of ${fmtDay(latest)} (${inr(latestNav, 4)}), the latest published.`;
+  const topLoad = fund.loads.length ? Math.max(...fund.loads.map((t) => t.pct)) : 0;
+  const exitNote = topLoad
+    ? `Exit load, if any: up to ${inr((o.amount * topLoad) / 100, 2)} (${Number(topLoad.toFixed(3))}%) is deducted.`
+    : "This fund has no exit load, so no fee is deducted.";
   const exit = "If your units are within the fund’s exit load period, the fund house keeps a small fee (exit load) from the amount.";
 
   let why: RedeemView["why"];
@@ -248,21 +264,44 @@ export function redeemView({ order: o, fund }: Ctx): RedeemView {
     const diff = Math.abs(credited - o.amount);
     const higher = credited >= o.amount;
     why = {
-      title: "Why is the final amount different?",
+      title: `Why you received ${inr(credited, 2)}`,
       bullets: [
         l1,
         `${cutText}redeemed at ${when}, ${inr(a.nav, 4)}. As this NAV was ${higher ? "higher" : "lower"}, you received ${inr(credited, 2)}, which is ${inr(diff, 2)} ${higher ? "more" : "less"} than you asked for.`,
         `No exit load was charged on this order. ${exit}`,
       ],
+      story: {
+        steps: [
+          { glyph: "₹", title: `You asked for ${inr(o.amount, 2)}`, sub: `About ${unitsText} units at ${inr(latestNav, 4)} (${fmtDay(latest)} NAV)` },
+          { icon: "clock", title: `Placed ${before ? "before" : "after"} ${cut}`, sub: before ? `Priced on ${o.navDate}` : `Priced on the next trading day, ${o.navDate}` },
+          { icon: "chart-line", title: `${a.navDate} closing NAV: ${inr(a.nav, 4)}`, sub: `${higher ? "Higher" : "Lower"} than ${inr(latestNav, 4)}` },
+        ],
+        outcomes: [{ icon: higher ? "chart-line" : "trend-down", tone: higher ? "up" : "down", title: `You received ${inr(credited, 2)}`, sub: `${inr(diff, 2)} ${higher ? "more" : "less"} than you asked for` }],
+        note: { icon: "check-circle", text: "No exit load was charged on this order." },
+      },
     };
   } else {
     why = {
-      title: "Why can the final amount be different?",
+      title: `Why you may get more or less than ${inr(o.amount, 0)}`,
       bullets: [
         l1,
         `${cutText}redeems at ${when}${before ? ". That NAV is published only in the evening" : ""}. If it’s higher or lower, the amount you receive changes too.`,
         exit,
       ],
+      story: {
+        steps: [
+          { glyph: "₹", title: `You asked for ${inr(o.amount, 2)}`, sub: `About ${unitsText} units at ${inr(latestNav, 4)} (${fmtDay(latest)} NAV)` },
+          { icon: "clock", title: `Placed ${before ? "before" : "after"} ${cut}`, sub: before ? `Priced on ${o.navDate}` : `Priced on the next trading day, ${o.navDate}` },
+          o.exchangeConfirmed
+            ? { icon: "chart-line", title: `${o.navDate} closing NAV is out`, sub: "Your units are priced at it" }
+            : { icon: "chart-line", title: "NAV is declared after market close", sub: `Your units are priced at the ${o.navDate} closing NAV` },
+        ],
+        outcomes: [
+          { icon: "chart-line", tone: "up", title: "If the NAV rises", sub: "You get more" },
+          { icon: "trend-down", tone: "down", title: "If the NAV falls", sub: "You get less" },
+        ],
+        note: { icon: "info", text: exitNote },
+      },
     };
   }
 

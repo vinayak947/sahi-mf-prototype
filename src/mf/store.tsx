@@ -84,6 +84,8 @@ export type Done = {
 export type Route =
   | { name: "list"; spec: ListSpec }
   | { name: "search" }
+  | { name: "ordersearch" }
+  | { name: "holdingsearch" }
   | { name: "fund"; fundId: string }
   | { name: "amount"; fundId: string; mode: "lump" | "sip"; preset?: number }
   | { name: "checkout"; fundId: string; amount: number; day?: number; payFirst?: boolean; fail?: boolean; back?: Route }
@@ -166,7 +168,7 @@ export function MfProvider({
 }) {
   const [stack, setStack] = useState<Route[]>([]);
   const [orderPad2, setOrderPad2] = useState(true); // Order Pad 2.0 is the default; the dev switch turns it off
-  const invested = false; // the prototype always opens in the non-invested flow; the dev panel switches it for the visit
+  const invested = true; // the prototype opens in the invested flow; the dev panel switches it off for the visit
   const [segment, setSegmentState] = useState<Segment>(invested ? "holdings" : "new");
   const [holdings, setHoldings] = useState<Holding[]>(invested ? sampleHoldings : []);
   const [basketPositions, setBasketPositions] = useState<BasketPosition[]>(invested ? sampleBasketPositions : []);

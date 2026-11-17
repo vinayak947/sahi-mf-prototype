@@ -78,7 +78,7 @@ const toggle = <T,>(list: T[], item: T) => (list.includes(item) ? list.filter((x
 // Nothing changes behind the sheet until Apply.
 type Group = "cat" | "amc" | "rating" | "risk";
 
-function Mark({ kind, on }: { kind: "radio" | "check"; on: boolean }) {
+export function Mark({ kind, on }: { kind: "radio" | "check"; on: boolean }) {
   return (
     <span className={`mf-fmark ${kind}${on ? " on" : ""}`} aria-hidden="true">
       {kind === "check" && on && <Icon name="check" size={12} />}
@@ -493,9 +493,11 @@ export function Sheet({
   onAction,
   disabled = false,
   className,
+  heading,
   children,
 }: {
   title: string;
+  heading?: ReactNode; // replaces the title line (e.g. a tab bar); title still names the dialog
   className?: string;
   action?: string;
   onClose: () => void;
@@ -525,7 +527,7 @@ export function Sheet({
         aria-label={title}
         onAnimationEnd={(e) => closing && e.target === e.currentTarget && (acted && onAction ? onAction() : onClose())}
       >
-        <h2>{title}</h2>
+        {heading ?? <h2>{title}</h2>}
         <div className="mf-sheet-body">{children}</div>
         <div className="mf-sheet-foot">
           <button

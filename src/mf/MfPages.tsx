@@ -1,14 +1,17 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { asset } from "../assets";
+import { RollText } from "../ui/RollText";
 import { Block, DlsTab } from "../ui/widgets";
 import { Icon } from "../ui/Icon";
+import { MarketOrders } from "./MarketOrders";
 import { fundById } from "./data";
-import { blendSeries, fmtDay, inr, pct, xirr, type Range } from "./format";
+import { fmtDay, inr, inrShort, pct, xirr } from "./format";
 import { FundMark } from "./parts";
-import { FundListBody, RangeChart } from "./screens";
 import { BasketHoldingsTab } from "./BasketHoldings";
 import { OrdersList2, type TypeFilter } from "./OrdersList2";
 import { SIP_FROM_100 } from "./listSpecs";
 import { useMf } from "./store";
+import { FilterSortSheet } from "./FilterSortSheet";
 
 // "Stocks | Mutual funds" switch used at the top of Orders and Portfolio.
 export function SegmentChips({
@@ -41,24 +44,60 @@ export function SegmentChips({
 }
 
 // The Orders page seen from inside Mutual Funds: the order-type filter sits at the right of the header.
+type OrderMarket = "mf" | "stocks" | "fno";
+
+// Chips under the Orders title: one orders view per market; the picked one carries a check.
+export function OrderMarketPills({ value, onChange }: { value: OrderMarket; onChange: (next: OrderMarket) => void }) {
+  const items: { key: OrderMarket; label: string }[] = [
+    { key: "mf", label: "Mutual funds" },
+    { key: "stocks", label: "Stocks" },
+    { key: "fno", label: "F&O" },
+  ];
+  return (
+    <div className="chip-row page-chips order-pills" role="tablist" aria-label="Order type">
+      {items.map((item) => {
+        const active = item.key === value;
+        return (
+          <button key={item.key} role="tab" aria-selected={active} className={`chip${active ? " active" : ""}`} onClick={() => onChange(item.key)}>
+            {item.label}
+            {active && <Icon name="check" size={16} />}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export function MfOrdersPage({ segments }: { segments?: ReactNode }) {
   const [type, setType] = useState<TypeFilter>("all");
   const [picking, setPicking] = useState(false);
+  const [market, setMarket] = useState<OrderMarket>("mf");
+  const { push } = useMf();
 
   return (
     <>
       <div className="mf-pf-head">
         <h1 className="page-title">Orders</h1>
         <button
-          className={`mf-orders-filter${type !== "all" ? " on" : ""}`}
-          aria-label="Filter by order type"
-          onClick={() => setPicking(true)}
+          className="mf-pf-more-btn"
+          aria-label="Search orders"
+          onClick={() => push({ name: "ordersearch" })}
         >
-          <Icon name="funnel-simple" size={20} />
+          <Icon name="magnifying-glass" size={24} />
         </button>
       </div>
-      {segments}
-      <OrdersList2 type={type} picking={picking} onType={setType} onClosePicker={() => setPicking(false)} />
+      {segments || <OrderMarketPills value={market} onChange={setMarket} />}
+      {market === "mf" || segments ? (
+        <OrdersList2
+          type={type}
+          picking={picking}
+          onType={setType}
+          onClosePicker={() => setPicking(false)}
+          onOpenPicker={() => setPicking(true)}
+        />
+      ) : (
+        <MarketOrders market={market} />
+      )}
     </>
   );
 }
@@ -169,21 +208,19 @@ export function MfPortfolioPage() {
 }
 
 function FundsPortfolio({ hideSips = false }: { hideSips?: boolean }) {
-  const { holdings, push, setSegment } = useMf();
+  const { holdings, push } = useMf();
   const current = holdings.reduce((s, h) => s + h.current, 0);
   const invested = holdings.reduce((s, h) => s + h.invested, 0);
   const gain = current - invested;
 
   if (holdings.length === 0) {
     return (
-      <div className="mf-empty-card tall">
-        <b>No mutual funds yet</b>
-        <p>Start a SIP from ₹100 or invest a one-time amount. Your funds will show up here.</p>
-        <button className="mf-btn solid" onClick={() => push({ name: "list", spec: { title: "All mutual funds" } })}>
+      <div className="mf-sip-zero">
+        <small>Current value</small>
+        <strong>{inr(0)}</strong>
+        <button onClick={() => push({ name: "list", spec: { title: "All mutual funds" } })}>
           Browse funds
-        </button>
-        <button className="proto-link" onClick={() => setSegment("holdings")}>
-          Prototype · show with sample holdings
+          <Icon name="chevron-right" size={20} />
         </button>
       </div>
     );
@@ -271,6 +308,7 @@ type SortKey = (typeof SORTS)[number]["key"];
 function HoldingsDashboard({ current, invested, gain }: { current: number; invested: number; gain: number }) {
   const { holdings, sips, push } = useMf();
   const [sort, setSort] = useState<SortKey>("returns");
+  const [sorting, setSorting] = useState(false);
 
   const rows = holdings.map((h) => {
     const fund = fundById(h.fundId);
@@ -290,55 +328,34 @@ function HoldingsDashboard({ current, invested, gain }: { current: number; inves
     return sum + h.current - h.current / (1 + change / 100);
   }, 0);
 
-  const portfolioSeries = (range: Range) =>
-    blendSeries(
-      holdings.map((h) => {
-        const fund = fundById(h.fundId);
-        return { weight: h.current, id: fund.id, r1: fund.r1, r3: fund.r3, r5: fund.r5 };
-      }),
-      range,
-    );
-
   const shown = rows.sort((a, b) =>
     sort === "returns" ? b.gPct - a.gPct : sort === "current" ? b.h.current - a.h.current : b.h.invested - a.h.invested,
   );
-  const sortLabel = SORTS.find((x) => x.key === sort)!.label;
-  const nextSort = () => setSort(SORTS[(SORTS.findIndex((x) => x.key === sort) + 1) % SORTS.length].key);
 
   return (
     <>
-      <div className="mf-pf-card flat">
-        <small>Holdings</small>
-        <div className="mf-pf-total">
-          <strong>{inr(current)}</strong>
-          {rate !== null && <em className={rate >= 0 ? "up" : "down"}>XIRR {(rate * 100).toFixed(1)}%</em>}
-        </div>
-        <RangeChart initial="1M" seriesFor={portfolioSeries} showChange={false} />
-        <dl className="mf-pf-stats">
-          <div>
-            <dt>Total Returns</dt>
-            <dd>{inr(gain)}</dd>
-          </div>
-          <div>
-            <dt>Invested</dt>
-            <dd>{inr(invested)}</dd>
-          </div>
-          <div>
-            <dt>1D returns</dt>
-            <dd>{inr(day)}</dd>
-          </div>
-        </dl>
-      </div>
+      <PfSummary
+        tone={day >= 0 ? "positive" : "negative"}
+        hero={inr(current)}
+        note={rate !== null ? <span className={rate >= 0 ? "up" : "down"}>XIRR {(rate * 100).toFixed(1)}%</span> : undefined}
+        stats={[
+          ["Total returns", <PfDelta key="t" amount={gain} pctValue={(gain / invested) * 100} />],
+          ["Invested", <b key="i"><RollText text={inrShort(invested)} /></b>],
+          ["1D returns", <PfDelta key="d" amount={day} pctValue={(day / (current - day)) * 100} />],
+        ]}
+      />
 
-      <hr className="dls-divider" />
-
+      <div className="pf-sheet">
       <div className="mf-pf-bar">
         <span>
           {shown.length} {shown.length === 1 ? "fund" : "funds"}
         </span>
-        <button className="dls-chip" onClick={nextSort} aria-label={`Sort by ${sortLabel}. Change sort`}>
-          Sort: {sortLabel}
-          <Icon name="caret-up-down" size={16} />
+        <button
+          className={`dls-chip mf-orders-typechip${sort !== "returns" ? " on" : ""}`}
+          onClick={() => setSorting(true)}
+          aria-label="Sort holdings"
+        >
+          <Icon name="funnel-simple" size={16} />
         </button>
       </div>
 
@@ -380,6 +397,19 @@ function HoldingsDashboard({ current, invested, gain }: { current: number; inves
           );
         })}
       </ul>
+      </div>
+
+      {sorting && (
+        <FilterSortSheet
+          groups={[]}
+          sorts={[...SORTS]}
+          picks={{}}
+          sort={sort}
+          defaultSort="returns"
+          onApply={(_picks, next) => setSort(next)}
+          onClose={() => setSorting(false)}
+        />
+      )}
     </>
   );
 }
@@ -476,7 +506,7 @@ export function PortfolioOverview({ onOpen }: { onOpen: (view: "stocks" | "mf") 
 
 // SIP tab (Mutual Funds bottom bar): what is running and what is due next.
 export function SipPage() {
-  const { sips, push, setSegment } = useMf();
+  const { sips, push } = useMf();
   const today = new Date();
   const upcoming = sips
     .map((s) => ({
@@ -493,7 +523,7 @@ export function SipPage() {
       <h1 className="page-title">SIPs</h1>
 
       {sips.length === 0 ? (
-        // No SIP running (never invested, or one-time only): ₹0 a month, a way in, and the ₹100 funds right below.
+        // No SIP running (never invested, or one-time only): ₹0 a month and a way in. No fund list or filters here.
         <>
           <div className="mf-sip-zero">
             <small>Monthly SIP amount</small>
@@ -503,11 +533,6 @@ export function SipPage() {
               <Icon name="chevron-right" size={20} />
             </button>
           </div>
-          <p className="mf-lede">{SIP_FROM_100.caption}</p>
-          <FundListBody spec={SIP_FROM_100} />
-          <button className="proto-link" onClick={() => setSegment("holdings")}>
-            Prototype · show with sample SIPs
-          </button>
         </>
       ) : (
         <>
@@ -567,5 +592,56 @@ export function SipPage() {
         </>
       )}
     </main>
+  );
+}
+
+// Summary card shared by Stocks and Mutual funds under Portfolio: the current value is the hero with an optional note
+// (XIRR) right beside it, and three metrics sit in a row below.
+export function PfDelta({ amount, pctValue }: { amount: number; pctValue: number }) {
+  const up = amount >= 0;
+  return (
+    <>
+      <b className={up ? "up" : "down"}>
+        <RollText text={`${up ? "+" : "-"}${inrShort(Math.abs(amount))}`} />
+      </b>
+      <em className={up ? "up" : "down"}>({pctValue.toFixed(2)}%)</em>
+    </>
+  );
+}
+
+export function PfSummary({
+  label = "Current value",
+  hero,
+  note,
+  stats,
+  tone,
+}: {
+  label?: string;
+  hero: string;
+  note?: ReactNode;
+  stats: [string, ReactNode][];
+  tone?: "positive" | "negative"; // a faint wash behind the block: green when the portfolio is up today, red when down
+}) {
+  return (
+    <div
+      className={`pf-summary${tone ? ` ${tone}` : ""}`}
+      style={{ "--pf-dots": `url(${asset("mf-banner-dots.png")})` } as CSSProperties}
+    >
+      <small className="pf-hero-label">{label}</small>
+      <div className="pf-hero">
+        <strong>
+          <RollText text={hero} />
+        </strong>
+        {note && <span className="pf-hero-note">{note}</span>}
+      </div>
+      <dl className="pf-stats">
+        {stats.map(([name, value]) => (
+          <div key={name} className="pf-stat">
+            <dt>{name}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
   );
 }

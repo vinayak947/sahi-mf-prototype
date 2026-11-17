@@ -4,7 +4,8 @@ import { fundById } from "./data";
 import { inr, nextSipDate, ordinal } from "./format";
 import { FundMark, Screen, Sheet } from "./parts";
 import { accountLabel, mandateAccount } from "./payData";
-import { StatusBadge } from "./OrderStatusDetail";
+import { Facts, StatusBadge } from "./OrderStatusDetail";
+import { DlsCard, DlsKvStacked } from "../ui/dls";
 import { CANCEL_REASONS, isOpen } from "./screens";
 import { useMf } from "./store";
 
@@ -79,51 +80,25 @@ export function SipDetail2({ fundId }: { fundId: string }) {
         <Icon name="caret-right" size={16} />
       </button>
 
-      <div className="summary-card summary-card-lg sd-card">
-        <div className="summary-grid">
-          <span>
-            <small>SIP amount</small>
-            <strong>{inr(sip.amount)}</strong>
-          </span>
-          <span className="summary-right">
-            <small>Invested so far</small>
-            <strong>{inr(invested)}</strong>
-          </span>
-        </div>
-        <div className="summary-grid">
-          <span>
-            <small>SIP date</small>
-            <strong>{ordinal(sip.day)} of every month</strong>
-          </span>
-          <span className="summary-right">
-            <small>Frequency</small>
-            <strong>Monthly</strong>
-          </span>
-        </div>
-        <div className="summary-grid">
-          <span>
-            <small>Mandate ID</small>
-            <strong>{mandateId(fundId)}</strong>
-          </span>
-          <span className="summary-right">
-            <small>Mandate status</small>
-            <em className={`amo ${active ? "st-completed" : "st-inprogress"}`}>{active ? "Active" : "Processing"}</em>
-          </span>
-        </div>
-        <hr className="sd-divider" />
-        <div className="summary-grid">
-          <span>
-            <small>Bank account</small>
-            <strong>{bank}</strong>
-          </span>
-        </div>
-      </div>
+      <div className="sd-cards">
+      <DlsCard>
+        <Facts>
+          <DlsKvStacked label="SIP amount" value={inr(sip.amount)} />
+          <DlsKvStacked label="Invested so far" value={inr(invested)} />
+          <DlsKvStacked label="Frequency" value="Monthly" />
+          <DlsKvStacked
+            label="Mandate status"
+            value={<em className={`amo ${active ? "st-completed" : "st-inprogress"}`}>{active ? "Active" : "Processing"}</em>}
+          />
+          <DlsKvStacked label="SIP date" value={`${ordinal(sip.day)} of every month`} />
+          <DlsKvStacked label="Mandate ID" value={mandateId(fundId)} />
+          <DlsKvStacked label="Bank account" value={bank} />
+        </Facts>
+      </DlsCard>
 
-      <div className="sd-next">
-        <Icon name="calendar" size={20} />
-        <span>
-          Next SIP: <b>{`${next.getDate()} ${MONTHS[next.getMonth()]} ${next.getFullYear()}`}</b>
-        </span>
+      <DlsCard>
+        <DlsKvStacked label="Next SIP" value={`${next.getDate()} ${MONTHS[next.getMonth()]} ${next.getFullYear()}`} />
+      </DlsCard>
       </div>
 
       <section className="mf-section sd-txns">
