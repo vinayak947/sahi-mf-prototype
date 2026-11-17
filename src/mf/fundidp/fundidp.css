@@ -3949,3 +3949,49 @@
   font-size: 14px;
   line-height: 17px;
 }
+
+/* Fund page, scrolled: the bar is 48px of content plus 8px under it, so everything sat 4px above the middle of the box.
+   Split that 8px as 4 above and 4 below, so the mark and name (still left-aligned) sit in the vertical middle. Same height. */
+.mf-screen:has(.fund-hero) .mf-head.has-dock-title {
+  transition:
+    border-color 200ms ease,
+    padding 200ms ease;
+}
+.mf-screen:has(.fund-hero) .mf-head.has-dock-title.title-in {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+/* Portfolio > Holdings: one bordered panel, same box as "Invest in a sector" on home (16px radius, hairline, 16/16/8 padding).
+   The switch sits above it, like the sector chips. Inside: the one-line read (no fill of its own), a count row, the rows, the link. */
+.pf-panel {
+  margin-top: 16px;
+  padding: 16px 16px 8px;
+  border: 1px solid var(--border-L1);
+  border-radius: 16px;
+}
+.pf-panel .pf-insight {
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.pf-panel .pf-allhead {
+  margin-top: 16px;
+}
+.pf-panel .pf-list {
+  margin: 0;
+}
+.pf-panel .pf-all {
+  margin-top: 0;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+}
+/* Returns: the switch already leaves 16px under it, so the panel adds none. */
+.seg-returns + .pf-panel {
+  margin-top: 0;
+}
+.pf-panel .mf-small-idp {
+  margin-top: 12px;
+  padding-bottom: 8px;
+}
