@@ -1,0 +1,39 @@
+#!/bin/sh
+# Stops a push to main unless you have pulled the latest main first.
+# Installed for everyone by `npm install` (see "prepare" in package.json).
+# Rules: CONTRIBUTING.md
+
+remote="$1"
+zero=0000000000000000000000000000000000000000
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [ "$remote_ref" = "refs/heads/main" ] || continue
+
+  if [ "$local_sha" = "$zero" ]; then
+    echo "✋ Deleting main is not allowed." >&2
+    exit 1
+  fi
+
+  # Check against what is on GitHub right now, not our last fetch.
+  git fetch --quiet "$remote" main 2>/dev/null
+  latest=$(git rev-parse --quiet --verify FETCH_HEAD 2>/dev/null)
+
+  if [ -n "$latest" ] && ! git merge-base --is-ancestor "$latest" "$local_sha"; then
+    cat >&2 <<MSG
+
+✋ Push to main stopped: someone else has pushed since your last pull.
+
+   Pull first, then push again:
+
+     git pull --rebase origin main
+     npm run build        # make sure it still builds
+     git push origin main
+
+   Never use --force on main. It wipes other people's work.
+   See CONTRIBUTING.md.
+
+MSG
+    exit 1
+  fi
+done
+exit 0

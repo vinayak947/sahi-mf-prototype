@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "deploy": "bash scripts/deploy.sh",
-    "format": "oxfmt"
+    "format": "oxfmt",
+    "prepare": "git config core.hooksPath .githooks || true"
   },
   "dependencies": {
     "lottie-web": "^5.13.0",

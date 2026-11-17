@@ -2,6 +2,10 @@
 
 Mobile prototype of the Mutual Funds market inside the SAHI app. React 19, Vite, Tailwind 4, TypeScript. All data is sample data.
 
+## Before you push
+
+**Always pull the latest `main` before pushing, and never force-push.** Read [CONTRIBUTING.md](CONTRIBUTING.md). `npm install` turns on a check that stops a push to `main` if you haven't pulled.
+
 ## Run it
 
 ```bash
