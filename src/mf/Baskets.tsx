@@ -42,42 +42,51 @@ function FundStack({ basket, size }: { basket: Basket; size: number }) {
   );
 }
 
+/* A basket is drawn as a small pile of cards: the card in front, and one card behind it for each further fund, two at
+   most, peeking out above its top edge. Fan, Folder and Basket looks were tried too; they are in
+   Mutual Funds/archive/basket-card-looks. */
 function BasketCard({ basket, tint }: { basket: Basket; tint: number }) {
   const { push } = useMf();
   const ret = basketReturn3Y(basket);
   const minSip = basketMinimum(basket, "sip");
   const risk = riskLabel(basketRisk(basket));
+  const behind = Math.min(2, basket.funds.length - 1);
   return (
-    <button
-      className="bk-card"
-      data-tint={tint % 3}
-      aria-label={`${basket.name}. ${basket.funds.length} funds. ${risk}. Minimum SIP ${inr(minSip)} a month. Reviewed by SAHI Research, ${REVIEWED}.`}
-      onClick={() => push({ name: "basket", basketId: basket.id })}
-    >
-      <span className="bk-top">
-        <FundStack basket={basket} size={28} />
-        <span className="bk-count">
-          {basket.funds.length} funds
-          <Icon name="caret-right" size={16} />
+    <div className="bk-pile">
+      {Array.from({ length: behind }, (_, i) => (
+        <i key={i} className={`bk-layer l${i + 1}`} aria-hidden="true" />
+      ))}
+      <button
+        className="bk-card"
+        data-tint={tint % 3}
+        aria-label={`${basket.name}. ${basket.funds.length} funds. ${risk}. Minimum SIP ${inr(minSip)} a month. Reviewed by SAHI Research, ${REVIEWED}.`}
+        onClick={() => push({ name: "basket", basketId: basket.id })}
+      >
+        <span className="bk-top">
+          <FundStack basket={basket} size={28} />
+          <span className="bk-count">
+            {basket.funds.length} funds
+            <Icon name="caret-right" size={16} />
+          </span>
         </span>
-      </span>
-      <b className="bk-name">{basket.name}</b>
-      <span className="bk-who">{basket.who}</span>
-      <span className="bk-stats">
-        <span>
-          <small>3Y return</small>
-          <strong className={ret >= 0 ? "up" : "down"}>{plain(ret)}</strong>
+        <b className="bk-name">{basket.name}</b>
+        <span className="bk-who">{basket.who}</span>
+        <span className="bk-stats">
+          <span>
+            <small>3Y return</small>
+            <strong className={ret >= 0 ? "up" : "down"}>{plain(ret)}</strong>
+          </span>
+          <span>
+            <small>Min. SIP</small>
+            <strong>{inr(minSip)}</strong>
+          </span>
+          <span>
+            <small>Risk</small>
+            <strong>{risk.replace(" risk", "")}</strong>
+          </span>
         </span>
-        <span>
-          <small>Min. SIP</small>
-          <strong>{inr(minSip)}</strong>
-        </span>
-        <span>
-          <small>Risk</small>
-          <strong>{risk.replace(" risk", "")}</strong>
-        </span>
-      </span>
-    </button>
+      </button>
+    </div>
   );
 }
 

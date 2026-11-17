@@ -1390,3 +1390,67 @@
 .bk-fit-note {
   color: var(--ink-3);
 }
+
+/* ---- The card as a pile ------------------------------------------------------------------------------------------
+   One card behind for each further fund, two at most, each a little narrower and higher, like a neat stack seen from the
+   front, plain (no tint). They sit inside the wrapper's top padding, so the carousel never clips them. Pressing the card pushes the pile down with it. */
+.bk-pile {
+  isolation: isolate;
+  flex-direction: column;
+  flex: none;
+  padding-top: 12px;
+  display: flex;
+  position: relative;
+}
+
+.bk-list .bk-pile {
+  width: 100%;
+}
+
+.bk-pile .bk-card[data-tint] {
+  background: var(--surface-L1);
+  flex: 1;
+}
+
+.bk-layer {
+  border: 1px solid var(--border-L1);
+  background: var(--surface-L1);
+  border-radius: 16px;
+  height: 48px;
+  position: absolute;
+  transition: transform .2s cubic-bezier(.23, 1, .32, 1);
+}
+
+.bk-layer.l1 {
+  z-index: -1;
+  top: 6px;
+  left: 8px;
+  right: 8px;
+}
+
+.bk-layer.l2 {
+  z-index: -2;
+  opacity: .7;
+  top: 0;
+  left: 16px;
+  right: 16px;
+}
+
+.bk-pile:has(> .bk-card:active) .l1 { transform: translateY(3px); }
+.bk-pile:has(> .bk-card:active) .l2 { transform: translateY(5px); }
+
+/* When a long name wraps to two lines, that card sets the carousel's height; the others keep their numbers on the
+   bottom edge instead of leaving a gap under them. */
+.bk-pile .bk-who {
+  margin-bottom: 16px;
+}
+
+.bk-pile .bk-card .bk-stats {
+  margin-top: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bk-layer {
+    transition: none;
+  }
+}
