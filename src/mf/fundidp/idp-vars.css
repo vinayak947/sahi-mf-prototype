@@ -1,0 +1,17 @@
+/* Custom properties the fund and basket pages use that the rest of the prototype does not define (from the same source). */
+:root {
+  --mix-0: #a50f56;
+  --mix-1: #dc9000;
+  --mix-2: #0e854d;
+  --mix-3: #727272;
+  --vb-fill: var(--accent-text);
+  --vb-check: #ffffff;
+}
+:root[data-theme="dark"] {
+  --mix-0: #ef4fac;
+  --mix-1: #ffb13d;
+  --mix-2: #40e897;
+  --mix-3: #a3a3a3;
+  --vb-fill: var(--accent-text);
+  --vb-check: var(--accent-subtle);
+}

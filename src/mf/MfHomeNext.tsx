@@ -9,6 +9,7 @@ import { BasketsSection } from "./Baskets";
 import { Alerts } from "./MfHome";
 import { FilterRow, FundMark, fundCategory, ReturnSwitch, RowSide, sortFunds, Stars, useFundView } from "./parts";
 import { nextFunds, sectors, themeOf } from "./sectors";
+import { SIP_FROM_100 } from "./listSpecs";
 import { useMf, type ListSpec } from "./store";
 
 // The Order 2.0 home. The core home (MfHome) stays as it is; this one is shown instead when Order 2.0 is on.
@@ -28,17 +29,7 @@ function Banner() {
           <h2>Start investing with as little as ₹100</h2>
           <p>₹0 commission • Withdraw anytime</p>
           <button
-            onClick={() =>
-              push({
-                name: "list",
-                spec: {
-                  title: "SIP from ₹100",
-                  sipOnly: true,
-                  withExtras: true,
-                  caption: "A SIP invests a set amount every month. Start at ₹100, stop any time.",
-                },
-              })
-            }
+            onClick={() => push({ name: "list", spec: SIP_FROM_100 })}
           >
             Start a SIP
           </button>
@@ -239,11 +230,7 @@ const collections: { art: string; label: string; grow?: number; spec: ListSpec }
     art: "col-sip100.png",
     label: "SIP with ₹100",
     grow: 1.15,
-    spec: {
-      title: "SIP from ₹100",
-      sipOnly: true,
-      caption: "A SIP invests a set amount every month. Start at ₹100, stop any time.",
-    },
+    spec: SIP_FROM_100,
   },
   {
     art: "col-small-cap.png",

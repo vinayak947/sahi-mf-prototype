@@ -7,6 +7,7 @@ import { FundMark } from "./parts";
 import { FundListBody, RangeChart } from "./screens";
 import { BasketHoldingsTab } from "./BasketHoldings";
 import { OrdersList2, type TypeFilter } from "./OrdersList2";
+import { SIP_FROM_100 } from "./listSpecs";
 import { useMf } from "./store";
 
 // "Stocks | Mutual funds" switch used at the top of Orders and Portfolio.
@@ -485,8 +486,7 @@ export function SipPage() {
     .sort((a, b) => a.next.getTime() - b.next.getTime());
   const monthly = sips.reduce((sum, s) => sum + s.amount, 0);
   const dueSoon = upcoming.filter((s) => (s.next.getTime() - today.getTime()) / 864e5 <= 2);
-  const fromHundred = { title: "SIP from ₹100", sipOnly: true, caption: "Funds you can start with ₹100 a month. Stop anytime." };
-  const startList = () => push({ name: "list", spec: fromHundred });
+  const startList = () => push({ name: "list", spec: SIP_FROM_100 });
 
   return (
     <main className="page">
@@ -503,8 +503,8 @@ export function SipPage() {
               <Icon name="chevron-right" size={20} />
             </button>
           </div>
-          <p className="mf-lede">{fromHundred.caption}</p>
-          <FundListBody spec={fromHundred} />
+          <p className="mf-lede">{SIP_FROM_100.caption}</p>
+          <FundListBody spec={SIP_FROM_100} />
           <button className="proto-link" onClick={() => setSegment("holdings")}>
             Prototype · show with sample SIPs
           </button>

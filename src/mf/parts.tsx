@@ -3,6 +3,7 @@ import { asset } from "../assets";
 import { Icon, type IconName } from "../ui/Icon";
 import { riskLevels, type CategoryKey, type Fund, type Risk } from "./data";
 import { pct, rupeesInWords } from "./format";
+import "./filter.css";
 
 // AMC logos (official marks, square). Files sit in public/assets as amc-*.png.
 const AMC_LOGO: Record<string, string> = {
@@ -38,7 +39,7 @@ export function FundMark({ fund, size = 40 }: { fund: Fund; size?: number }) {
 // Sort + category chips, the same row on home and on every fund list.
 export type FundSort = "returns" | "rating" | "cost";
 const SORT_LABELS: Record<FundSort, string> = {
-  returns: "Returns, high to low",
+  returns: "3Y returns, high to low",
   rating: "Rating, high to low",
   cost: "Expense ratio, low to high",
 };
@@ -51,41 +52,253 @@ const ROW_CHIPS: { key: CategoryKey; label: string }[] = [
   { key: "liquid", label: "Liquid" },
 ];
 
-export function sortFunds(list: Fund[], sort: FundSort, basis: ReturnBasis): Fund[] {
-  const ret = (f: Fund) => (basis === "1Y" ? f.r1 : basis === "5Y" ? f.r5 : f.r3);
+// "Returns" always ranks on 3Y. The 1Y/3Y/5Y switch changes the number shown, never the order, so a person can read one fund across periods.
+export function sortFunds(list: Fund[], sort: FundSort, _basis?: ReturnBasis): Fund[] {
   return [...list].sort((a, b) =>
-    sort === "returns" ? ret(b) - ret(a) : sort === "rating" ? b.stars - a.stars || b.r3 - a.r3 : a.expense - b.expense,
+    sort === "returns" ? b.r3 - a.r3 : sort === "rating" ? b.stars - a.stars || b.r3 - a.r3 : a.expense - b.expense,
   );
 }
 
-export function FilterRow({
+// Advanced filters (the "Filters" sheet): AMC, rating and risk. Category is the chip row's own filter, shared with the sheet.
+export type FundFilters = { amcs: string[]; stars: number; risks: Risk[] };
+export const noFilters: FundFilters = { amcs: [], stars: 0, risks: [] };
+export const filterCount = (f: FundFilters) => f.amcs.length + f.risks.length + (f.stars ? 1 : 0);
+export function applyFilters(list: Fund[], f: FundFilters): Fund[] {
+  return list.filter(
+    (fund) =>
+      (f.amcs.length === 0 || f.amcs.includes(fund.amc)) &&
+      (f.stars === 0 || fund.stars >= f.stars) &&
+      (f.risks.length === 0 || f.risks.includes(fund.risk)),
+  );
+}
+const toggle = <T,>(list: T[], item: T) => (list.includes(item) ? list.filter((x) => x !== item) : [...list, item]);
+
+// Filter sheet (Figma Base Design System 4705:76693): a bottom sheet whose header switches between "Filter" and "Sort by"; Filter is a
+// left rail of groups (Category, AMC, Rating, Risk) beside a grey panel of choices; the bar below holds Clear all and Apply.
+// Nothing changes behind the sheet until Apply.
+type Group = "cat" | "amc" | "rating" | "risk";
+
+function Mark({ kind, on }: { kind: "radio" | "check"; on: boolean }) {
+  return (
+    <span className={`mf-fmark ${kind}${on ? " on" : ""}`} aria-hidden="true">
+      {kind === "check" && on && <Icon name="check" size={12} />}
+    </span>
+  );
+}
+
+export function FiltersSheet({
+  cat,
+  filters,
+  sort,
+  cats,
+  amcs,
+  risks,
+  count,
+  showSort,
+  onApply,
+  onClose,
+}: {
+  cat: CategoryKey | "all";
+  filters: FundFilters;
+  sort: FundSort;
+  cats: { key: CategoryKey; label: string }[]; // empty: the list is already one category, so no Category group
+  amcs: string[];
+  risks: Risk[];
+  count: (cat: CategoryKey | "all", f: FundFilters) => number;
+  showSort: boolean; // false on a list with one fixed ranking
+  onApply: (cat: CategoryKey | "all", f: FundFilters, sort: FundSort) => void;
+  onClose: () => void;
+}) {
+  const [tab, setTab] = useState<"filter" | "sort">("filter");
+  const groups: Group[] = [...(cats.length > 1 ? (["cat"] as Group[]) : []), "amc", "rating", "risk"];
+  const [group, setGroup] = useState<Group>(groups[0]);
+  const [draftCat, setDraftCat] = useState(cat);
+  const [draft, setDraft] = useState(filters);
+  const [draftSort, setDraftSort] = useState(sort);
+  const [closing, setClosing] = useState(false);
+  const [applied, setApplied] = useState(false);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setClosing(true);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+  const n = count(draftCat, draft);
+  const dirty = draftCat !== "all" || filterCount(draft) > 0 || draftSort !== "returns";
+  const GROUP_LABEL: Record<Group, string> = { cat: "Category", amc: "AMC", rating: "Rating", risk: "Risk" };
+  const picked: Record<Group, number> = {
+    cat: draftCat === "all" ? 0 : 1,
+    amc: draft.amcs.length,
+    rating: draft.stars ? 1 : 0,
+    risk: draft.risks.length,
+  };
+  const Opt = ({ kind, on, onClick, children }: { kind: "radio" | "check"; on: boolean; onClick: () => void; children: ReactNode }) => (
+    <button className={`mf-fopt${on ? " on" : ""}`} role={kind === "radio" ? "radio" : "checkbox"} aria-checked={on} onClick={onClick}>
+      {children}
+      <Mark kind={kind} on={on} />
+    </button>
+  );
+  return (
+    <div className={`mf-sheet-layer${closing ? " closing" : ""}`}>
+      <button className="mf-sheet-scrim" aria-label="Close" onClick={() => setClosing(true)} />
+      <div
+        className="mf-sheet mf-fsheet"
+        role="dialog"
+        aria-modal="true"
+        aria-label={showSort ? "Filter and sort" : "Filter"}
+        onAnimationEnd={(e) => {
+          if (closing && e.target === e.currentTarget) {
+            if (applied) onApply(draftCat, draft, draftSort);
+            onClose();
+          }
+        }}
+      >
+        <header className="mf-fsheet-head">
+          {showSort ? (
+            <div className="mf-fseg" role="tablist">
+              <button role="tab" aria-selected={tab === "filter"} className={tab === "filter" ? "on" : ""} onClick={() => setTab("filter")}>
+                Filter
+              </button>
+              <button role="tab" aria-selected={tab === "sort"} className={tab === "sort" ? "on" : ""} onClick={() => setTab("sort")}>
+                Sort by
+              </button>
+            </div>
+          ) : (
+            <h2>Filter</h2>
+          )}
+          <button className="mf-fsheet-x" aria-label="Close" onClick={() => setClosing(true)}>
+            <Icon name="x" size={24} />
+          </button>
+        </header>
+        <div className="mf-fsheet-body">
+          {tab === "sort" ? (
+            <div className="mf-fpanel wide" role="radiogroup" aria-label="Sort by">
+              {(Object.keys(SORT_LABELS) as FundSort[]).map((key) => (
+                <Opt key={key} kind="radio" on={draftSort === key} onClick={() => setDraftSort(key)}>
+                  {SORT_LABELS[key]}
+                </Opt>
+              ))}
+            </div>
+          ) : (
+            <>
+              <nav className="mf-frail" aria-label="Filter by">
+                {groups.map((g) => (
+                  <button key={g} className={group === g ? "on" : ""} aria-current={group === g} onClick={() => setGroup(g)}>
+                    <span>{GROUP_LABEL[g]}</span>
+                    {picked[g] > 0 && <i>{picked[g]}</i>}
+                  </button>
+                ))}
+              </nav>
+              <div className="mf-fpanel" role={group === "amc" || group === "risk" ? "group" : "radiogroup"} aria-label={GROUP_LABEL[group]} key={group}>
+                {group === "cat" && (
+                  <>
+                    <Opt kind="radio" on={draftCat === "all"} onClick={() => setDraftCat("all")}>
+                      All categories
+                    </Opt>
+                    {cats.map((c) => (
+                      <Opt key={c.key} kind="radio" on={draftCat === c.key} onClick={() => setDraftCat(c.key)}>
+                        {c.label}
+                      </Opt>
+                    ))}
+                  </>
+                )}
+                {group === "amc" &&
+                  amcs.map((a) => (
+                    <Opt key={a} kind="check" on={draft.amcs.includes(a)} onClick={() => setDraft({ ...draft, amcs: toggle(draft.amcs, a) })}>
+                      {a}
+                    </Opt>
+                  ))}
+                {group === "rating" && (
+                  <>
+                    <Opt kind="radio" on={draft.stars === 0} onClick={() => setDraft({ ...draft, stars: 0 })}>
+                      Any rating
+                    </Opt>
+                    {[3, 4, 5].map((r) => (
+                      <Opt key={r} kind="radio" on={draft.stars === r} onClick={() => setDraft({ ...draft, stars: r })}>
+                        {r}★{r < 5 ? " & above" : ""}
+                      </Opt>
+                    ))}
+                  </>
+                )}
+                {group === "risk" &&
+                  risks.map((r) => (
+                    <Opt key={r} kind="check" on={draft.risks.includes(r)} onClick={() => setDraft({ ...draft, risks: toggle(draft.risks, r) })}>
+                      {r}
+                    </Opt>
+                  ))}
+              </div>
+            </>
+          )}
+        </div>
+        <footer className="mf-fsheet-foot">
+          <button
+            className="mf-btn"
+            disabled={!dirty}
+            onClick={() => {
+              setDraftCat("all");
+              setDraft(noFilters);
+              setDraftSort("returns");
+            }}
+          >
+            Clear all
+          </button>
+          <button
+            className="mf-btn solid"
+            disabled={n === 0}
+            onClick={() => {
+              setApplied(true);
+              setClosing(true);
+            }}
+          >
+            {n === 0 ? "No funds match" : "Apply"}
+          </button>
+        </footer>
+      </div>
+    </div>
+  );
+}
+
+export function FilterRow<K extends string = CategoryKey>({
   cat,
   onCat,
   sort,
   onSort,
   chips,
+  noSort,
+  onFilters,
+  filterBadge = 0,
 }: {
-  cat: CategoryKey | "all";
-  onCat: (cat: CategoryKey | "all") => void;
+  cat: K | "all";
+  onCat: (cat: K | "all") => void;
   sort: FundSort;
   onSort: (sort: FundSort) => void;
-  chips?: { key: CategoryKey; label: string }[]; // dream pages pass only the categories their list holds
+  noSort?: boolean; // a list with one fixed ranking (Top performing) has no Sort by chip
+  onFilters?: () => void; // list pages: the "Filters" chip opens the filter sheet
+  filterBadge?: number; // how many advanced filters (AMC, rating, risk) are on
+  chips?: { key: K; label: string }[]; // dream pages pass only the categories their list holds; the sector list passes the sectors
 }) {
   const [menu, setMenu] = useState(false);
   const row = useRef<HTMLDivElement>(null);
   // Open with the selected chip in view (a collection can start on "Small Cap").
   useEffect(() => {
     const el = row.current;
-    const on = el?.querySelector<HTMLElement>(".chip.active:not(:first-child)");
+    const on = el?.querySelector<HTMLElement>(".chip.active:not(.fchip):not(.sortchip)");
     if (el && on) el.scrollLeft = Math.max(0, on.offsetLeft - el.offsetLeft - 16);
   }, []);
   return (
     <div className="mf-filterbar">
       <div className="chip-row mf-chips2" ref={row}>
-        <button className={`chip${menu || sort !== "returns" ? " active" : ""}`} onClick={() => setMenu((v) => !v)}>
-          Sort by <Icon name="caret-down" size={12} />
-        </button>
-        {(chips ?? ROW_CHIPS).map((chip) => (
+        {onFilters && (
+          <button className={`chip fchip${filterBadge > 0 ? " active" : ""}`} onClick={onFilters} aria-label={filterBadge > 0 ? `Filter and sort, ${filterBadge} on` : "Filter and sort"}>
+            <Icon name="dls-filter" size={16} />
+            {filterBadge > 0 && <span className="chip-count">{filterBadge}</span>}
+          </button>
+        )}
+        {!noSort && !onFilters && ( // on list pages Sort by lives in the filter sheet
+          <button className={`chip sortchip${menu || sort !== "returns" ? " active" : ""}`} onClick={() => setMenu((v) => !v)}>
+            Sort by <Icon name="caret-down" size={12} />
+          </button>
+        )}
+        {(chips ?? (ROW_CHIPS as unknown as { key: K; label: string }[])).map((chip) => (
           <button
             key={chip.key}
             className={`chip${cat === chip.key ? " active" : ""}`}

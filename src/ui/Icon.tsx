@@ -47,13 +47,16 @@ const DLS_BY_NAME = {
 
 // The DLS chevron_left glyph, shipped earlier as an asset (DlsIcons U+E02A).
 const BACK = asset("dls-chevron-left.svg");
+// The DLS filter glyph (DlsIcons U+E1DF), the funnel on the filter chip of the fund lists.
+const FILTER = asset("dls-filter.svg");
 
-export type IconName = keyof typeof DLS_BY_NAME | "back";
+export type IconName = keyof typeof DLS_BY_NAME | "back" | "dls-filter";
 
 const cache = new Map<string, string>();
 
 function maskFor(name: IconName): string {
   if (name === "back") return `url("${BACK}")`;
+  if (name === "dls-filter") return `url("${FILTER}")`;
   let uri = cache.get(name);
   if (!uri) {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="${DLS_PATHS[DLS_BY_NAME[name]]}"/></svg>`;

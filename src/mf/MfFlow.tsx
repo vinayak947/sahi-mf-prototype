@@ -2,22 +2,20 @@ import { Fragment, useEffect, useState } from "react";
 import { useMf, type Route } from "./store";
 import {
   AmountScreen,
-  FundScreen,
   HoldingScreen,
   ListScreen,
   RedeemScreen,
   SearchScreen,
 } from "./screens";
+import { FundScreen } from "./fundidp/FundScreen";
 import { AddBankScreen, PayModeScreen, UpiAppsScreen, VerifyBankScreen } from "./PayMode";
 import { CheckoutScreen } from "./Checkout";
 import { SipDetail2 } from "./SipDetail2";
 import { OrderStatusDetail } from "./OrderStatusDetail";
 import { BasketHoldingScreen } from "./BasketHoldings";
 import { BasketDoneScreen, DoneScreen, FailedScreen, SipCancelledScreen } from "./Status";
-import {
-  BasketScreen,
-  BasketsScreen,
-} from "./Baskets";
+import { BasketsScreen } from "./Baskets";
+import { BasketScreen } from "./basketidp/BasketScreen";
 
 function renderRoute(route: Route) {
   switch (route.name) {

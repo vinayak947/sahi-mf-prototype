@@ -41,7 +41,7 @@ export type Fund = {
   loads: { days: number; pct: number }[];
   loadFree?: number; // share of units free of exit load each year (PPFAS: 10%)
   // "sip-only": the fund house stopped one-time buys. "halted": no new money at all; running SIPs carry on.
-  buy?: "sip-only" | "halted";
+  buy?: "sip-only" | "halted" | "restricted";
   buyNote?: string;
   risk: Risk;
   benchmark: string;
@@ -107,7 +107,7 @@ export const funds: Fund[] = [
     risk: "Very High",
     benchmark: "BSE 500 TRI",
     launched: "1 Jan 2013",
-    managers: ["Sandeep Tandon", "Ankit Pande"],
+    managers: ["Sandeep Tandon", "Ankit Pande", "Sanjeev Sharma"],
     aim: equityAim,
   },
   {
@@ -161,7 +161,7 @@ export const funds: Fund[] = [
     risk: "Very High",
     benchmark: "NIFTY 500 TRI",
     launched: "1 Jan 1995",
-    managers: ["Roshi Jain", "Dhruv Muchhal"],
+    managers: ["Amit Ganatra", "Dhruv Muchhal"],
     aim: equityAim,
   },
   {
@@ -243,7 +243,7 @@ export const funds: Fund[] = [
     risk: "Very High",
     benchmark: "NIFTY Midcap 150 TRI",
     launched: "24 Feb 2014",
-    managers: ["Niket Shah", "Ajay Khandelwal"],
+    managers: ["Ajay Khandelwal", "Ankit Agarwal", "Varun Sharma"],
     aim: equityAim,
   },
   {
@@ -408,7 +408,7 @@ export const funds: Fund[] = [
     risk: "Very High",
     benchmark: "NIFTY 50 TRI",
     launched: "17 Jul 2002",
-    managers: ["Nirman Morakhia"],
+    managers: ["Nandita Menezes", "Arun Agarwal"],
     aim: "To track the NIFTY 50 index. The fund aims to give returns close to the index, before expenses. There is no assurance that the objective will be achieved.",
   },
   {
@@ -435,7 +435,7 @@ export const funds: Fund[] = [
     risk: "Moderate",
     benchmark: "NIFTY Short Duration Debt Index",
     launched: "25 Jun 2010",
-    managers: ["Anil Bamboli", "Dhruv Muchhal"],
+    managers: ["Anil Bamboli"],
     aim: "To generate income by investing in debt and money market instruments such that the Macaulay duration is between 1 and 3 years. There is no assurance that the objective will be achieved.",
   },
   {
@@ -489,7 +489,7 @@ export const funds: Fund[] = [
     risk: "Low to Moderate",
     benchmark: "NIFTY Liquid Index A-I",
     launched: "17 Oct 2000",
-    managers: ["Anupam Joshi", "Dhruv Muchhal"],
+    managers: ["Swapnil Jangam", "Rohan Pillai"],
     aim: "To generate income through a portfolio of money market and debt securities with maturity up to 91 days. There is no assurance that the objective will be achieved.",
   },
   {
@@ -517,7 +517,7 @@ export const funds: Fund[] = [
     risk: "Very High",
     benchmark: "BSE 500 TRI",
     launched: "31 Dec 1998",
-    managers: ["Sanjeev Sharma", "Ankit Pande"],
+    managers: ["Sanjeev Sharma", "Ankit Pande", "Sandeep Tandon"],
     aim: "To generate long-term capital growth and give tax benefit under section 80C. Units have a 3-year lock-in. There is no assurance that the objective will be achieved.",
     lockIn: "3 years",
   },

@@ -7,6 +7,7 @@ import {
   cutoffKind,
   ELSS_LOCK_YEARS,
   funds,
+  riskLevels,
   fundById,
   payoutDays,
   type CategoryKey,
@@ -26,11 +27,8 @@ import {
   isBusinessDay,
   istNow,
   SIP_LEAD_DAYS,
-  navDay,
-  nextBusinessDay,
   nextSipDate,
   tradeDay,
-  navSeries,
   ordinal,
   pct,
   rupeesInWords,
@@ -45,11 +43,15 @@ import {
   FundMark,
   Keypad,
   Notice,
+  applyFilters,
   FilterRow,
+  FiltersSheet,
+  filterCount,
   fundCategory,
+  noFilters,
+  type FundFilters,
   ReturnSwitch,
   type ReturnBasis,
-  Riskometer,
   RollingAmount,
   RowSide,
   Sheet,
@@ -64,7 +66,6 @@ import {
 import { DotField } from "./DotField";
 import { GoalHero } from "./GoalArt";
 import { nextFunds, sectors, themeOf } from "./sectors";
-import { ReturnCalculator } from "./ReturnCalculator";
 import { accountLabel, mandateAccount, methodView } from "./payData";
 import { UI_STATUS_LABEL, uiStatus } from "./orderStatus";
 import { useMf, type ListSpec } from "./store";
@@ -184,21 +185,39 @@ const CAT_LABEL: Partial<Record<CategoryKey, string>> = {
   gold: "Gold & Silver",
 };
 
-// Filter chips, count and fund rows for a list spec. Shared by the list screen and the SIP tab's empty state.
-export function FundListBody({ spec }: { spec: ListSpec }) {
-  const { basis, sort, setBasis, setSort } = useFundView();
-  const [cat, setCat] = useState<CategoryKey | "all">(spec.cat ?? "all");
-  const [sector, setSector] = useState<string>(spec.theme ?? "all"); // Order 2.0 sector pages only
-
-  const filtered = useMemo(() => {
-    return (spec.withExtras || spec.theme ? nextFunds : funds)
-      .filter((fund) => (cat === "all" ? (spec.cats ? spec.cats.includes(fund.cat) : true) : fund.cat === cat))
+// The funds a list could hold before any chip or filter is applied, and what the filter sheet offers from them.
+function useListPool(spec: ListSpec, sector: string) {
+  return useMemo(() => {
+    const base = (spec.withExtras || spec.theme ? nextFunds : funds)
+      .filter((fund) => (spec.cats ? spec.cats.includes(fund.cat) : true))
       .filter((fund) => (spec.sipOnly ? fund.minSip <= 100 : true))
       .filter((fund) => (spec.equityOnly ? fund.catLabel.startsWith("Equity") : true))
       .filter((fund) => (spec.theme ? (sector === "all" ? themeOf(fund) !== undefined : themeOf(fund) === sector) : true))
       .filter((fund) => (spec.minStars ? fund.stars >= spec.minStars : true));
-  }, [cat, sector, spec.cats, spec.sipOnly, spec.equityOnly, spec.minStars, spec.theme, spec.withExtras]);
-  const list = sortFunds(filtered, sort, basis);
+    const catKeys = [...new Set(base.map((fund) => fund.cat))].filter((key) => CAT_LABEL[key]);
+    return {
+      base,
+      cats: spec.theme || spec.cat ? [] : catKeys.map((key) => ({ key, label: CAT_LABEL[key]! })),
+      amcs: [...new Set(base.map((fund) => fund.amc))].sort(),
+      risks: riskLevels.filter((risk) => base.some((fund) => fund.risk === risk)),
+    };
+  }, [spec.cats, spec.cat, spec.sipOnly, spec.equityOnly, spec.minStars, spec.theme, spec.withExtras, sector]);
+}
+
+// Filter chips, count and fund rows for a list spec. Shared by the list screen and the SIP tab's empty state,
+// so a change here shows up everywhere a list is shown. The filter chip opens the Filters sheet (category, AMC, rating, risk, sort).
+export function FundListBody({ spec }: { spec: ListSpec }) {
+  const { basis, sort, setBasis, setSort } = useFundView();
+  const [cat, setCat] = useState<CategoryKey | "all">(spec.cat ?? "all");
+  const [sector, setSector] = useState<string>(spec.theme ?? "all"); // Order 2.0 sector pages only
+  const [filters, setFilters] = useState<FundFilters>(noFilters);
+  const [sheet, setSheet] = useState(false);
+
+  const pool = useListPool(spec, sector);
+  const inCat = (c: CategoryKey | "all", f: FundFilters) =>
+    applyFilters(c === "all" ? pool.base : pool.base.filter((fund) => fund.cat === c), f);
+  const list = sortFunds(inCat(cat, filters), sort, basis);
+  const filterBadge = filterCount(filters) + (sort !== "returns" ? 1 : 0);
 
   return (
     <>
@@ -208,20 +227,31 @@ export function FundListBody({ spec }: { spec: ListSpec }) {
           onCat={(key) => setSector(key)}
           sort={sort}
           onSort={setSort}
+          onFilters={() => setSheet(true)}
+          filterBadge={filterBadge}
           chips={sectors.map((item) => ({ key: item.key as CategoryKey, label: item.label }))}
         />
       ) : (
-      <FilterRow cat={cat} onCat={setCat} sort={sort} onSort={setSort} chips={
-          spec.bucket
-            ? (spec.cats ?? []).length > 1
-              ? spec.cats!.map((key) => ({ key, label: CAT_LABEL[key] ?? key }))
-              : []
-            : undefined
-        }
-      />
+        <FilterRow
+          cat={cat}
+          onCat={setCat}
+          sort={sort}
+          onSort={setSort}
+          onFilters={() => setSheet(true)}
+          filterBadge={filterBadge}
+          chips={
+            spec.bucket
+              ? (spec.cats ?? []).length > 1
+                ? spec.cats!.map((key) => ({ key, label: CAT_LABEL[key] ?? key }))
+                : []
+              : undefined
+          }
+        />
       )}
       <div className="mf-sortbar">
-        <span>{list.length} funds</span>
+        <span>
+          {list.length} {list.length === 1 ? "fund" : "funds"}
+        </span>
         <ReturnSwitch basis={basis} onChange={setBasis} />
       </div>
       <ul className="row-list">
@@ -232,6 +262,24 @@ export function FundListBody({ spec }: { spec: ListSpec }) {
         ))}
       </ul>
       {list.length === 0 && <p className="mf-empty">No funds match this filter.</p>}
+      {sheet && (
+        <FiltersSheet
+          cat={cat}
+          filters={filters}
+          sort={sort}
+          showSort
+          cats={pool.cats}
+          amcs={pool.amcs}
+          risks={pool.risks}
+          count={(c, f) => inCat(c, f).length}
+          onApply={(c, f, nextSort) => {
+            setCat(c);
+            setFilters(f);
+            setSort(nextSort);
+          }}
+          onClose={() => setSheet(false)}
+        />
+      )}
     </>
   );
 }
@@ -338,17 +386,6 @@ export function SearchScreen() {
 
 /* The chart is drawn in real pixels (not a stretched 100x100 box) so the dots stay round.
    The dotted area is the web's: a 4px grid of 0.7px dots, brightest under the line, fading to nothing at the bottom. */
-function NavChart({ fund }: { fund: Fund }) {
-  return (
-    <RangeChart
-      initial="3Y"
-      seriesFor={(range) => navSeries(fund.id, range, fund.r1, fund.r3, fund.r5)}
-    />
-  );
-}
-
-// The dotted line chart with its range switcher. The fund page and the portfolio both draw it;
-// each passes what the series looks like for a range.
 export function RangeChart({
   seriesFor,
   initial,
@@ -415,181 +452,6 @@ export function RangeChart({
         </small>
       )}
     </div>
-  );
-}
-
-export function FundScreen({ fundId }: { fundId: string }) {
-  const { pop, push } = useMf();
-  const fund = fundById(fundId);
-  const now = new Date();
-  const lastNav = navDay(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1));
-  const navDate = fmtDay(afterCutoff(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1)) ? nextBusinessDay(lastNav) : lastNav);
-  const riskText = `${fund.risk.charAt(0)}${fund.risk.slice(1).toLowerCase()} risk`;
-  const rows: [string, number, number][] = [
-    ["1Y", fund.r1, fund.avg[0]],
-    ["3Y", fund.r3, fund.avg[1]],
-    ["5Y", fund.r5, fund.avg[2]],
-  ];
-
-  return (
-    <Screen
-      onBack={pop}
-      footer={
-        fund.buy === "halted" ? (
-          <button className="mf-btn solid wide" disabled>
-            New investments paused
-          </button>
-        ) : fund.buy === "sip-only" ? (
-          <button className="mf-btn solid wide" onClick={() => push({ name: "amount", fundId, mode: "sip" })}>
-            Start SIP
-          </button>
-        ) : (
-          <div className="mf-actions">
-            <button className="mf-btn ghost" onClick={() => push({ name: "amount", fundId, mode: "sip" })}>
-              Start SIP
-            </button>
-            <button className="mf-btn solid" onClick={() => push({ name: "amount", fundId, mode: "lump" })}>
-              Invest one-time
-            </button>
-          </div>
-        )
-      }
-    >
-      <div className="fund-hero">
-        <FundMark fund={fund} size={48} />
-        <h2>{fund.name}</h2>
-        <p className="fund-meta">
-          {fundCategory(fund)} • <Stars n={fund.stars} /> • {riskText}
-        </p>
-      </div>
-      {fund.buyNote && <Notice tone="warn">{fund.buyNote}</Notice>}
-
-      <div className="fund-figures">
-        <span>
-          <small>3Y returns</small>
-          <strong className={fund.r3 >= 0 ? "up" : "down"}>{pct(fund.r3, 1)}</strong>
-        </span>
-        <span className="right">
-          <small>NAV · {navDate}</small>
-          <strong>
-            ₹{fund.nav.toLocaleString("en-IN", { minimumFractionDigits: 2 })}{" "}
-            <em className={fund.navChange >= 0 ? "up" : "down"}>
-              {fund.navChange >= 0 ? "+" : ""}
-              {fund.navChange.toFixed(2)}%
-            </em>
-          </strong>
-        </span>
-      </div>
-
-      <NavChart fund={fund} />
-
-      <section className="mf-section">
-        <h3>Returns</h3>
-        <table className="mf-table">
-          <thead>
-            <tr>
-              <th />
-              <th>1Y</th>
-              <th>3Y</th>
-              <th>5Y</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>This fund</td>
-              {rows.map(([k, v]) => (
-                <td key={k} className={v >= 0 ? "up" : "down"}>
-                  <b>{pct(v, 1)}</b>
-                </td>
-              ))}
-            </tr>
-            <tr>
-              <td>Category average</td>
-              {rows.map(([k, , a]) => (
-                <td key={k}>{pct(a, 1)}</td>
-              ))}
-            </tr>
-          </tbody>
-        </table>
-        <p className="mf-small">
-          Annualised, for a lumpsum held the whole period. Past performance does not predict future returns.
-        </p>
-      </section>
-
-      <ReturnCalculator fund={fund} />
-
-      <section className="mf-section">
-        <h3>Key facts</h3>
-        <div className="mf-grid2">
-          <Row label="Fund size (AUM)" value={fund.aum} />
-          <Row label="Expense ratio" value={`${fund.expense}% a year`} />
-          <Row label="Minimum one-time" value={fund.buy ? "Not open" : inr(fund.minLump)} />
-          <Row label="Minimum SIP" value={`${inr(fund.minSip)} a month`} />
-          <Row label="Benchmark" value={fund.benchmark} />
-          <Row label="Launched" value={fund.launched} />
-        </div>
-      </section>
-
-      <section className="mf-section">
-        <h3>About the fund</h3>
-        <p className="mf-body-copy">{fund.aim}</p>
-        <div className="mf-managers">
-          <small>Managed by</small>
-          {fund.managers.map((name) => (
-            <span key={name}>
-              <i>{name.split(" ").map((p) => p[0]).slice(0, 2).join("")}</i>
-              {name}
-            </span>
-          ))}
-        </div>
-        <button className="mf-link">
-          <Icon name="file-text-fill" size={16} />
-          Scheme Information Document
-          <Icon name="caret-right" size={16} />
-        </button>
-      </section>
-
-      <section className="mf-section">
-        <h3>Charges and tax</h3>
-        <div className="mf-facts">
-          <Row label="Exit load" value={fund.exitLoad} />
-          <Row
-            label="Expense ratio"
-            value={`${fund.expense}% a year, charged daily from the NAV. About ${inr(Math.round(fund.expense * 1000))} a year on ₹1 lakh.`}
-          />
-          <Row
-            label="Tax on gains"
-            value={
-              fund.cat === "debt" || fund.cat === "liquid"
-                ? "Gains are added to your income and taxed at your slab rate."
-                : fund.cat === "gold"
-                  ? "Held under 24 months: taxed at your slab rate. Held over 24 months: 12.5% on your gain."
-                  : "Held under 12 months: 20% on your gain. Held over 12 months: 12.5% on gains above ₹1.25 lakh in a financial year."
-            }
-          />
-        </div>
-        <p className="mf-small">Tax rates assume no other capital gains. Your own rate may differ.</p>
-      </section>
-
-      <section className="mf-section">
-        <h3>Riskometer</h3>
-        <Riskometer risk={fund.risk} />
-        <p className="mf-small center">
-          Your principal will be at {fund.risk.toLowerCase()} risk. Reviewed monthly against the actual portfolio.
-        </p>
-      </section>
-
-      <Notice icon="clock">
-        <b>Price is set at the end of day.</b> If your money reaches the fund house by {cutoffLabel(cutoffKind(fund))} on
-        a working day, you get {cutoffKind(fund) === "liquid" ? "the previous day\u2019s" : "that day\u2019s"} NAV. After that,
-        it moves to the next working day.
-      </Notice>
-
-      <p className="mf-source">
-        Fund data, ratings and risk measures are sourced from Value Research. This data is solely and
-        exclusively owned by Value Research.
-      </p>
-    </Screen>
   );
 }
 

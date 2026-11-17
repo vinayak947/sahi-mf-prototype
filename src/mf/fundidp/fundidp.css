@@ -1,0 +1,3464 @@
+/* Fund page (IDP) styles, taken from the SAHI MF prototype source (Jeevanshu, 16 Nov).
+   Classes only this page uses are written as is; classes other screens also use are scoped to the fund page
+   with :root:has(.fund-hero), so nothing outside it changes. */
+@keyframes mf-back {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes chart-reveal {
+  from {
+    clip-path: inset(-4px 100% -4px -4px);
+  }
+
+  to {
+    clip-path: inset(-4px -4px -4px -4px);
+  }
+}
+@keyframes mf-pop {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes pf-kyro {
+  to {
+    transform: rotate(720deg);
+  }
+}
+@keyframes pf-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@keyframes mf-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes mf-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes ms-land {
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes ms-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes rl-row {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+@keyframes rl-tint {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes vb-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.6) rotate(-28deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.08) rotate(5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+@keyframes vb-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes vb-glint {
+  0% {
+    opacity: 0;
+    transform: translateX(0) skewX(-18deg);
+  }
+  25% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(34px) skewX(-18deg);
+  }
+}
+@keyframes vb-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes mf-scrim-in-idp {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes mf-scrim-out-idp {
+  to {
+    opacity: 0;
+  }
+}
+:root:has(.fund-hero) .fund-mark {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  border-radius: 8px;
+  color: var(--ink-2);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+  overflow: hidden;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  letter-spacing: 0.2px;
+}
+:root:has(.fund-hero) .fund-mark:has(img) {
+  position: relative;
+}
+:root:has(.fund-hero) .fund-mark:has(img)::after {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px var(--border-L1);
+  content: "";
+}
+:root:has(.fund-hero) .fund-mark img {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: contain;
+  background: var(--surface-L1);
+}
+:root:has(.fund-hero) .mf-stars {
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+:root:has(.fund-hero) .list-row.fund-row {
+  justify-content: flex-start;
+}
+:root:has(.fund-hero) .list-row.fund-row .row-main {
+  min-width: 0;
+  flex: 1;
+}
+:root:has(.fund-hero) .list-row.fund-row .row-main b {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+:root:has(.fund-hero) .list-row.fund-row .row-side {
+  flex: none;
+}
+.mf-screen:has(.fund-hero) {
+  display: flex;
+  width: 100%;
+  max-width: 600px;
+  min-height: 0;
+  flex-direction: column;
+  background: var(--surface-L1);
+}
+:root:has(.fund-hero) .mf-head {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 0;
+  min-height: 48px;
+  padding: 52px 16px 8px;
+  box-sizing: content-box;
+}
+:root:has(.fund-hero) .mf-head h1 {
+  margin: 0;
+  flex: 1;
+  overflow: hidden;
+  font-family: "SAHI Season Display Mix:Medium", serif;
+  font-size: 24px;
+  font-weight: 580;
+  line-height: 32px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+:root:has(.fund-hero) .mf-back {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  flex: none;
+  margin-left: -8px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+}
+:root:has(.fund-hero) .mf-head-right {
+  display: inline-flex;
+  min-width: 32px;
+  justify-content: flex-end;
+}
+:root:has(.fund-hero) .mf-body {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  padding: 8px 16px 32px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+:root:has(.fund-hero) .mf-body > * {
+  flex: none;
+}
+:root:has(.fund-hero) .mf-foot {
+  flex: none;
+  padding: 12px 16px 28px;
+  border-top: 1px solid var(--line);
+  background: var(--surface-L1);
+}
+:root:has(.fund-hero) .mf-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+:root:has(.fund-hero) .mf-btn {
+  height: 48px;
+  padding: 0 24px;
+  border: 1px solid var(--ink);
+  border-radius: 100px;
+  color: var(--ink);
+  background: transparent;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+  white-space: nowrap;
+}
+:root:has(.fund-hero) .mf-btn.solid {
+  color: var(--text-inverse);
+  background: var(--surface-inverse);
+}
+:root:has(.fund-hero) .mf-btn.wide {
+  width: 100%;
+}
+:root:has(.fund-hero) .mf-btn:disabled {
+  border-color: var(--line);
+  color: var(--ink-3);
+  background: var(--line);
+  cursor: not-allowed;
+}
+:root:has(.fund-hero) .mf-btn:active:not(:disabled) {
+  transform: scale(0.985);
+}
+:root:has(.fund-hero) .mf-lede.big {
+  margin-top: 0;
+  color: var(--ink);
+  font-family: "SAHI Season Display Mix:Medium", serif;
+  font-size: 24px;
+  font-weight: 580;
+  letter-spacing: -0.6px;
+  line-height: 28px;
+}
+:root:has(.fund-hero) .mf-small {
+  margin: 12px 0 0;
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 16px;
+}
+:root:has(.fund-hero) .mf-small.center {
+  text-align: center;
+}
+:root:has(.fund-hero) .mf-body-copy {
+  margin: 0 0 12px;
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 20px;
+}
+:root:has(.fund-hero) .mf-body-copy.bold {
+  margin-bottom: 8px;
+  color: var(--ink);
+  font-family: "SAHI Sans:Medium", sans-serif;
+}
+:root:has(.fund-hero) .mf-empty {
+  margin: 24px 0;
+  color: var(--ink-3);
+  font-size: 14px;
+  text-align: center;
+}
+:root:has(.fund-hero) .mf-foot-note,
+:root:has(.fund-hero) .mf-source,
+:root:has(.fund-hero) .mf-disclaimer {
+  margin: 16px 0 0;
+  color: var(--ink-3);
+  font-size: 11px;
+  line-height: 15px;
+}
+:root:has(.fund-hero) .mf-disclaimer {
+  margin-top: 12px;
+  color: var(--ink-2);
+}
+:root:has(.fund-hero) .mf-link {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 0 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  color: var(--ink);
+  background: transparent;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+  text-align: left;
+}
+:root:has(.fund-hero) .mf-link .icon:last-child {
+  margin-left: auto;
+  color: var(--ink-3);
+}
+:root:has(.fund-hero) .mf-kv {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  font-size: 13px;
+  line-height: 18px;
+}
+:root:has(.fund-hero) .mf-kv + .mf-kv {
+  border-top: 1px solid var(--line);
+}
+:root:has(.fund-hero) .mf-card .mf-kv + .mf-kv {
+  border-top-color: var(--line-strong);
+}
+:root:has(.fund-hero) .mf-kv > span {
+  color: var(--ink-2);
+}
+:root:has(.fund-hero) .mf-kv > span small {
+  display: block;
+  margin-top: 2px;
+  color: var(--ink-3);
+  font-size: 11px;
+}
+:root:has(.fund-hero) .mf-kv > b {
+  max-width: 62%;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-weight: 500;
+  text-align: right;
+}
+:root:has(.fund-hero) .mf-grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 24px;
+}
+:root:has(.fund-hero) .mf-grid2 .mf-kv {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+:root:has(.fund-hero) .mf-grid2 .mf-kv > b {
+  max-width: none;
+  text-align: left;
+}
+:root:has(.fund-hero) .mf-grid2 .mf-kv:nth-child(2) {
+  border-top: 0;
+}
+:root:has(.fund-hero) .mf-facts .mf-kv {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+:root:has(.fund-hero) .mf-facts .mf-kv > b {
+  max-width: none;
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-weight: 400;
+  text-align: left;
+}
+:root:has(.fund-hero) .mf-notice {
+  display: flex;
+  gap: 10px;
+  margin: 16px 0 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  color: var(--ink-2);
+  background: var(--surface);
+  font-size: 12px;
+  line-height: 17px;
+}
+:root:has(.fund-hero) .mf-notice .icon {
+  margin-top: 1px;
+  color: var(--ink-2);
+}
+:root:has(.fund-hero) .mf-notice p {
+  margin: 0;
+}
+:root:has(.fund-hero) .mf-notice b {
+  color: var(--ink);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-weight: 500;
+}
+:root:has(.fund-hero) .mf-notice.warn {
+  background: var(--warning-subtle);
+  box-shadow: inset 0 0 0 1px var(--border-L1);
+}
+:root:has(.fund-hero) .mf-notice.error {
+  color: var(--negative-text-contrast);
+  background: var(--negative-subtle);
+  box-shadow: inset 0 0 0 1px var(--negative-transparent-L2);
+}
+:root:has(.fund-hero) .mf-notice.error .icon {
+  color: var(--negative-text);
+}
+:root:has(.fund-hero) .mf-fundline > span:not(.fund-mark):not(.icon) {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+:root:has(.fund-hero) .mf-empty-card .mf-btn {
+  height: 40px;
+  font-size: 13px;
+}
+:root:has(.fund-hero) .mf-search-input {
+  display: flex;
+  height: 48px;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  border-radius: 100px;
+  color: var(--ink-3);
+  background: var(--surface);
+}
+:root:has(.fund-hero) .mf-search-input input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  color: var(--ink);
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+}
+:root:has(.fund-hero) .fund-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 8px;
+}
+:root:has(.fund-hero) .fund-hero h2 {
+  margin: 16px 0 0;
+  font-family: "SAHI Season Display Mix:Medium", serif;
+  font-size: 24px;
+  font-weight: 580;
+  letter-spacing: -0.24px;
+  line-height: 28px;
+}
+:root:has(.fund-hero) .fund-meta {
+  margin: 8px 0 0;
+  color: var(--ink-2);
+  font-size: 12px;
+  line-height: 16px;
+}
+:root:has(.fund-hero) .mf-head.has-dock-title {
+  padding-bottom: 7px;
+  border-bottom: 1px solid transparent;
+  transition: border-color 200ms ease;
+}
+:root:has(.fund-hero) .mf-head.has-dock-title.title-in {
+  border-bottom-color: var(--line);
+}
+:root:has(.fund-hero) .mf-head h1.dock-title {
+  pointer-events: none;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 20px;
+}
+:root:has(.fund-hero) .dock-title .dock-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  filter: blur(2px);
+  transform: translateY(10px);
+  transition:
+    opacity 140ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 140ms cubic-bezier(0.23, 1, 0.32, 1),
+    filter 140ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+:root:has(.fund-hero) .dock-title.in .dock-inner {
+  opacity: 1;
+  filter: blur(0);
+  transform: translateY(0);
+  transition-duration: 240ms;
+}
+:root:has(.fund-hero) .dock-title .fund-mark {
+  flex: none;
+  border-radius: 6px;
+  transform: scale(0.9);
+  transition: transform 140ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+:root:has(.fund-hero) .dock-title.in .fund-mark {
+  transform: scale(1);
+  transition-duration: 240ms;
+}
+:root:has(.fund-hero) .dock-title .dock-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (prefers-reduced-motion: reduce) {
+:root:has(.fund-hero) .dock-title .dock-inner,
+:root:has(.fund-hero) .dock-title.in .dock-inner {
+    filter: none;
+    transform: none;
+    transition: opacity 140ms ease;
+  }
+:root:has(.fund-hero) .dock-title .fund-mark,
+:root:has(.fund-hero) .dock-title.in .fund-mark {
+    transform: none;
+    transition: none;
+  }
+}
+:root:has(.fund-hero) .fund-figures {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 32px;
+}
+:root:has(.fund-hero) .fund-main,
+:root:has(.fund-hero) .fund-day {
+  display: flex;
+  align-items: baseline;
+}
+:root:has(.fund-hero) .fund-main {
+  gap: 8px;
+}
+:root:has(.fund-hero) .fund-day {
+  gap: 6px;
+}
+:root:has(.fund-hero) .fund-figures small {
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 20px;
+}
+:root:has(.fund-hero) .fund-figures strong {
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+  line-height: 32px;
+}
+:root:has(.fund-hero) .fund-day b {
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+:root:has(.fund-hero) .fund-figures em {
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 12px;
+  font-style: normal;
+}
+:root:has(.fund-hero) .mf-chart {
+  margin-top: 24px;
+}
+:root:has(.fund-hero) .fund-stats {
+  display: flex;
+  flex-wrap: wrap;
+  
+  justify-content: space-between;
+  gap: 16px 12px;
+  margin: 40px 0 0; 
+}
+:root:has(.fund-hero) .fund-stats > div {
+  display: flex;
+  min-width: 0;
+  flex: none;
+  flex-direction: column;
+  gap: 2px;
+}
+:root:has(.fund-hero) .fund-stats dt {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 16px;
+}
+:root:has(.fund-hero) .fund-stats dd {
+  margin: 0;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  white-space: nowrap;
+}
+:root:has(.fund-hero) .mf-chart-plot {
+  position: relative;
+  height: 160px;
+  
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  cursor: crosshair;
+}
+.chart-scrub {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease-out;
+}
+:root:has(.fund-hero) .chart-scrub.on {
+  opacity: 1;
+  transition-duration: 60ms;
+}
+.chart-scrub-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -0.5px;
+  width: 1px;
+  background: var(--ink-3);
+}
+.chart-scrub-dot {
+  position: absolute;
+  left: -5px;
+  width: 10px;
+  height: 10px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: var(--positive-text);
+  box-shadow: 0 0 0 2px var(--surface-L1);
+}
+:root:has(.fund-hero) .chart-scrub.down .chart-scrub-dot {
+  background: var(--negative-text-subtle);
+}
+.chart-scrub-label {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  font-size: 12px;
+  line-height: 16px;
+}
+.chart-scrub-label b {
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-weight: 500;
+  color: var(--ink);
+}
+.chart-scrub-label span {
+  color: var(--ink-3);
+}
+:root:has(.fund-hero) .mf-chart-plot svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.chart-reveal {
+  position: absolute;
+  inset: 0;
+  animation: chart-reveal 900ms 150ms cubic-bezier(0.4, 0, 0.1, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+.chart-reveal {
+    animation: none;
+  }
+}
+:root:has(.fund-hero) .chart-dots.up circle {
+  fill: var(--positive-text);
+}
+:root:has(.fund-hero) .chart-dots.down circle {
+  fill: var(--negative-text-subtle);
+}
+:root:has(.fund-hero) .mf-ranges {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+:root:has(.fund-hero) .mf-ranges button {
+  min-width: 44px;
+  height: 28px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 100px;
+  color: var(--ink-3);
+  background: transparent;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 12px;
+}
+:root:has(.fund-hero) .mf-ranges button.on {
+  color: var(--ink);
+  background: var(--surface);
+}
+:root:has(.fund-hero) .mf-section {
+  margin: 24px -16px 0;
+  padding: 24px 16px 0;
+  border-top: 1px solid var(--line);
+}
+:root:has(.fund-hero) .mf-section h3 {
+  margin: 0 0 12px;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 17px;
+}
+:root:has(.fund-hero) .mf-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+:root:has(.fund-hero) .mf-table th {
+  padding: 0 0 8px;
+  color: var(--ink-3);
+  font-size: 12px;
+  font-weight: 400;
+  text-align: right;
+}
+:root:has(.fund-hero) .mf-table td {
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+  text-align: right;
+}
+:root:has(.fund-hero) .mf-table td:first-child {
+  color: var(--ink-2);
+  text-align: left;
+}
+:root:has(.fund-hero) .mf-table b {
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-weight: 500;
+}
+:root:has(.fund-hero) .mgr-list {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 14px;
+}
+:root:has(.fund-hero) .mgr-list > small {
+  margin-bottom: 4px;
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 16px;
+}
+:root:has(.fund-hero) .mgr-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+}
+:root:has(.fund-hero) .mgr-row:active {
+  opacity: 0.7;
+}
+:root:has(.fund-hero) .mgr-row > .icon {
+  flex: none;
+  color: var(--ink-3);
+}
+:root:has(.fund-hero) .mgr-text {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+:root:has(.fund-hero) .mgr-text b {
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+:root:has(.fund-hero) .mgr-text small {
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 16px;
+}
+:root:has(.fund-hero) .mgr-avatar {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  color: var(--ink-2);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-family: "SAHI Sans:Medium", sans-serif;
+}
+:root:has(.fund-hero) .mgr-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+:root:has(.fund-hero) .fund-stats.mgr-stats {
+  margin-top: 24px;
+}
+:root:has(.fund-hero) .mf-amount-field.error {
+  color: var(--negative-text);
+}
+:root:has(.fund-hero) .mf-min.error {
+  color: var(--negative-text);
+}
+:root:has(.fund-hero) .mf-days button.on {
+  border-color: var(--ink);
+  color: var(--text-inverse);
+  background: var(--surface-inverse);
+}
+:root:has(.fund-hero) .mf-option.on .radio {
+  border: 6px solid var(--ink);
+}
+:root:has(.fund-hero) .mf-result.bad .ring {
+  background: var(--negative-surface);
+  animation: mf-pop 360ms cubic-bezier(0.2, 1.3, 0.4, 1) both;
+}
+:root:has(.fund-hero) .mf-timeline li.on::before {
+  border-color: var(--ink);
+  background: var(--surface-inverse);
+}
+:root:has(.fund-hero) .mf-split i.mf {
+  background: var(--accent-default);
+}
+:root:has(.fund-hero) .mf-split-legend u.mf {
+  background: var(--accent-default);
+}
+:root:has(.fund-hero) .holding-top > b .fund-mark {
+  margin-right: 4px;
+}
+:root:has(.fund-hero) .mf-card .mf-small {
+  padding-bottom: 12px;
+}
+:root:has(.fund-hero) .mf-search-input + .row-list {
+  margin-top: 8px;
+}
+:root:has(.fund-hero) .top-card .fund-mark {
+  background: var(--surface-L1);
+}
+:root:has(.fund-hero) .top-card .mf-stars {
+  align-self: start;
+  justify-self: end;
+  font-size: 12px;
+}
+:root:has(.fund-hero) .mf-menu button.on {
+  background: var(--surface);
+  font-family: "SAHI Sans:Medium", sans-serif;
+}
+:root:has(.fund-hero) .mf-retswitch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  border: 0;
+  color: var(--ink);
+  background: transparent;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 13px;
+}
+:root:has(.fund-hero) .mf-retswitch .icon {
+  color: var(--ink-3);
+}
+:root:has(.fund-hero) .mf-retswitch u {
+  text-decoration: none;
+}
+.mf-screen:has(.fund-hero) .mf-filterbar {
+  margin-top: 12px;
+}
+:root:has(.fund-hero) .row-list:has(.fund-row) > li + li {
+  position: relative;
+  border-top: 0;
+}
+:root:has(.fund-hero) .row-list:has(.fund-row) > li + li::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 52px;
+  height: 1px;
+  background: var(--line);
+  content: "";
+}
+.mf-screen:has(.fund-hero) .mf-filterbar {
+  margin-top: 26px;
+}
+.mf-screen:has(.fund-hero) .mf-sortbar {
+  margin-top: 12px;
+}
+.mf-screen:has(.fund-hero) .mf-filterbar .chip {
+  height: 34px;
+  border: 1px solid var(--border-L1);
+  border-radius: 16px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 16.8px;
+}
+.mf-screen:has(.fund-hero) .mf-filterbar .chip.active {
+  border: 1px solid var(--ink);
+  color: var(--ink);
+}
+.mf-screen:has(.fund-hero) .mf-filterbar .chip .icon {
+  width: 16px;
+  height: 16px;
+  margin-left: 4px;
+}
+.mf-screen:has(.fund-hero) .mf-menu {
+  top: 42px;
+}
+:root:has(.fund-hero) .rc {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 16px;
+  border: 1px solid var(--border-L1);
+  border-radius: 16px;
+}
+:root:has(.fund-hero) .rc-label {
+  margin-top: 24px;
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 14px;
+  text-align: center;
+}
+:root:has(.fund-hero) .rc-amount {
+  margin-top: 4px;
+  font-family: "SAHI Season Display Mix:Medium", serif;
+  font-size: 28px;
+  font-weight: 580;
+  letter-spacing: -0.28px;
+  line-height: 32px;
+  text-align: center;
+}
+:root:has(.fund-hero) .rc-dial {
+  position: relative;
+  margin: 16px -16px 0;
+}
+:root:has(.fund-hero) .rc-ruler {
+  display: flex;
+  height: 54px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  cursor: grab;
+  outline: none;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 18%, #000 82%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 18%, #000 82%, transparent);
+}
+:root:has(.fund-hero) .rc-ruler::-webkit-scrollbar {
+  display: none;
+}
+:root:has(.fund-hero) .rc-ruler.dragging {
+  cursor: grabbing;
+  scroll-snap-type: none;
+  user-select: none;
+}
+:root:has(.fund-hero) .rc-pad {
+  display: flex;
+  flex: 0 0 calc(50% - 4.5px);
+  height: 13.5px;
+  overflow: hidden;
+}
+:root:has(.fund-hero) .rc-pad.start {
+  justify-content: flex-end;
+}
+:root:has(.fund-hero) .rc-pad i {
+  flex: 0 0 9px;
+  background: linear-gradient(var(--surface-L3), var(--surface-L3)) center top / 1.5px var(--h) no-repeat;
+}
+:root:has(.fund-hero) .rc-tick {
+  position: relative;
+  flex: 0 0 9px;
+  height: 100%;
+  scroll-snap-align: center;
+}
+:root:has(.fund-hero) .rc-tick::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 3.75px;
+  width: 1.5px;
+  height: 13.5px;
+  border-radius: 2px;
+  background: var(--surface-L4);
+}
+:root:has(.fund-hero) .rc-tick.mid::before {
+  height: 19.5px;
+  background: var(--transparent-L4);
+}
+:root:has(.fund-hero) .rc-tick.major::before {
+  height: 25.5px;
+  background: var(--text-tertiary);
+}
+:root:has(.fund-hero) .rc-tick.major::after {
+  content: attr(data-label);
+  position: absolute;
+  top: 33px;
+  left: 50%;
+  color: var(--ink-3);
+  font-size: 10px;
+  line-height: 14px;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+:root:has(.fund-hero) .rc-mark {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2.25px;
+  height: 31.5px;
+  border-radius: 3px;
+  background: var(--surface-inverse);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+:root:has(.fund-hero) .rc-ruler:focus-visible + .rc-mark {
+  box-shadow: 0 0 0 3px var(--transparent-L3);
+}
+:root:has(.fund-hero) .rc-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+:root:has(.fund-hero) .rc-dot.in {
+  background: var(--surface-L3);
+}
+:root:has(.fund-hero) .rc-dot.out.up {
+  background: var(--positive-surface);
+}
+:root:has(.fund-hero) .rc-dot.out.down {
+  background: var(--negative-surface);
+}
+.roll-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-section {
+  margin: 24px -16px 0;
+  padding: 24px 16px 0;
+  border-top: 1px solid var(--line);
+}
+:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-section:has(+ .mf-source) {
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-section + .mf-small.mf-source {
+  margin-top: 16px;
+}
+:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-section h3 {
+  margin: 0 0 16px;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 20px;
+}
+:root:has(.fund-hero) .mf-body:has(.fund-hero) .fold h3 {
+  margin: 0;
+  transition: margin-bottom 0.24s cubic-bezier(0.2, 0, 0, 1);
+}
+:root:has(.fund-hero) .mf-body:has(.fund-hero) .fold.open h3 {
+  margin-bottom: 16px;
+}
+.fold-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  margin: -12px 0;
+  padding: 12px 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.fold-end {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.fold-summary {
+  color: var(--ink-3);
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  transition: opacity 160ms ease-out;
+}
+.fold-summary b {
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-weight: 500;
+}
+:root:has(.fund-hero) .fold-summary .up {
+  color: var(--up);
+}
+:root:has(.fund-hero) .fold-summary .down {
+  color: var(--down);
+}
+:root:has(.fund-hero) .fold.open .fold-summary {
+  opacity: 0;
+}
+:root:has(.fund-hero) .fold-head .icon {
+  flex: none;
+  color: var(--ink-3);
+  transform: rotate(0deg);
+  transition: transform 0.24s cubic-bezier(0.2, 0, 0, 1);
+}
+:root:has(.fund-hero) .fold.open .fold-head .icon {
+  transform: rotate(180deg);
+}
+.fold-head:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.fold-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.24s cubic-bezier(0.2, 0, 0, 1);
+}
+:root:has(.fund-hero) .fold.open .fold-body {
+  grid-template-rows: 1fr;
+}
+.fold-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+@media (prefers-reduced-motion: reduce) {
+:root:has(.fund-hero) .mf-body:has(.fund-hero) .fold h3,
+:root:has(.fund-hero) .fold-head .icon,
+.fold-body {
+    transition: none;
+  }
+}
+:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-grid2 {
+  gap: 20px 24px;
+}
+:root:has(.fund-hero) .mf-body:has(.fund-hero) .about-facts {
+  margin: 4px 0 20px;
+}
+:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-kv > b .age {
+  color: var(--ink-3);
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-weight: 400;
+}
+:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-facts {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-kv {
+  padding: 0;
+  border-top: 0;
+  font-size: 12px;
+  line-height: 16px;
+}
+:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-kv > span {
+  color: var(--ink-3);
+}
+:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-grid2 .mf-kv > b {
+  font-size: 14px;
+  line-height: 20px;
+}
+:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-facts .mf-kv > b {
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 20px;
+}
+:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-grid2 .mf-kv:nth-child(2) {
+  border-top: 0;
+}
+:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-table {
+  font-size: 14px;
+}
+:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-table td {
+  padding: 12px 0;
+}
+:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-link {
+  margin-top: 4px;
+  padding: 0;
+  border-top: 0;
+}
+:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-small {
+  margin-top: 16px;
+}
+:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-disclaimer {
+  margin-top: 48px;
+}
+:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-small.mf-source {
+  margin-top: 48px;
+}
+:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-source + .mf-disclaimer {
+  margin-top: 4px;
+}
+.mf-screen.has-hero:has(.fund-hero) {
+  position: relative;
+}
+.mf-screen.has-hero:has(.fund-hero) .mf-body {
+  padding-top: 0;
+}
+:root:has(.fund-hero) .mf-head.over {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  right: 0;
+  left: 0;
+  color: var(--fixed-white);
+  border-bottom: 1px solid transparent;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+:root:has(.fund-hero) .mf-head.over.solid {
+  border-bottom-color: var(--line);
+  background: var(--surface-L1);
+  color: var(--text-primary);
+}
+:root:has(.fund-hero) .mf-head.over h1 {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+:root:has(.fund-hero) .mf-head.over.solid h1 {
+  opacity: 1;
+}
+:root:has(.fund-hero) .mf-head.over .mf-back,
+:root:has(.fund-hero) .mf-head.over .mf-share-icon {
+  color: inherit;
+}
+:root:has(.fund-hero) .bucket-hero {
+  position: relative;
+  height: 259px;
+  margin: 0 -16px;
+  overflow: hidden;
+  background: var(--fixed-black);
+  text-align: left;
+}
+:root:has(.fund-hero) .bucket-hero h2 {
+  margin: 0;
+  color: var(--fixed-white);
+  font-family: "SAHI Season Display Mix:Medium", serif;
+  font-size: 24px;
+  font-weight: 580;
+  letter-spacing: -0.24px;
+  line-height: 28px;
+}
+:root:has(.fund-hero) .bucket-hero p {
+  margin: 0;
+  color: var(--fixed-white-secondary);
+  font-size: 14px;
+  line-height: 16.8px;
+}
+:root:has(.fund-hero) .est-input .rc-amount {
+  margin-top: 8px;
+}
+:root:has(.fund-hero) .est-input .rc-dial {
+  margin-top: 8px;
+}
+.mf-screen:has(.fund-hero) .mf-dock {
+  position: sticky;
+  z-index: 2;
+  top: -16px;
+  margin: 26px -16px 0;
+  padding: 0 16px 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-L1);
+}
+.mf-screen:has(.mf-dock):has(.fund-hero) .mf-head {
+  padding-bottom: 0;
+}
+.mf-screen:not(.has-hero):has(.mf-dock):has(.fund-hero) .mf-body {
+  padding-top: 16px;
+}
+.mf-screen.has-hero:has(.fund-hero) .mf-dock {
+  top: 101px;
+}
+.mf-screen:has(.fund-hero) .mf-dock .mf-filterbar {
+  margin-top: 0;
+}
+.mf-screen:has(.fund-hero) .mf-dock .mf-sortbar {
+  margin-bottom: 0;
+}
+.mf-screen:has(.mf-dock):has(.mf-lede):has(.fund-hero) .mf-body,
+.mf-screen:has(.mf-dock):has(.bucket-intro):has(.fund-hero) .mf-body {
+  padding-top: 0;
+}
+.mf-screen:has(.mf-dock):has(.mf-lede):has(.fund-hero) .mf-dock,
+.mf-screen:has(.mf-dock):has(.bucket-intro):has(.fund-hero) .mf-dock {
+  top: 0;
+}
+.mf-screen:has(.mf-dock):has(.fund-hero) .mf-lede {
+  margin: 0;
+}
+.mf-screen:has(.mf-dock):has(.fund-hero) .mf-lede + .mf-dock {
+  margin-top: 24px;
+}
+.mf-screen:has(.mf-dock):has(.fund-hero) .bucket-intro {
+  margin-top: 6px;
+}
+.mf-screen:has(.mf-dock):not(:has(.mf-lede)):not(:has(.bucket-intro)):not(.has-hero):has(.fund-hero) .mf-body {
+  padding-top: 0;
+}
+.mf-screen:has(.mf-dock):not(:has(.mf-lede)):not(:has(.bucket-intro)):not(.has-hero):has(.fund-hero) .mf-dock {
+  top: 0;
+  margin-top: 0;
+}
+.mf-screen:has(.mf-dock[data-sector]):not(:has(.mf-lede)):not(:has(.bucket-intro)):not(.has-hero):has(.fund-hero) .mf-dock {
+  margin-top: 24px;
+}
+:root:has(.fund-hero) .mf-head.over.solid.docked {
+  border-bottom-color: transparent;
+}
+.mf-screen.has-hero:has(.fund-hero) .mf-list-title + .mf-dock {
+  margin-top: 0;
+}
+:root:has(.fund-hero) .rco .rc-lead {
+  margin: 0 0 16px;
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 16px;
+}
+:root:has(.fund-hero) .rc-rows {
+  display: flex;
+  flex-direction: column;
+  margin: 20px 0 0;
+  padding-top: 4px;
+  border-top: 1px dashed var(--line-strong);
+}
+:root:has(.fund-hero) .rc-rows > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+}
+:root:has(.fund-hero) .rc-rows dt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-2);
+  font-size: 13px;
+}
+:root:has(.fund-hero) .rc-rows dd {
+  margin: 0;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+}
+:root:has(.fund-hero) .rc-rows dd.up {
+  color: var(--up);
+}
+:root:has(.fund-hero) .rc-rows dd.down {
+  color: var(--down);
+}
+:root:has(.fund-hero) .rc-rows .rc-total {
+  margin-top: 4px;
+  padding: 10px 0 0;
+  border-top: 1px dashed var(--line-strong);
+}
+.tick-num {
+  font-variant-numeric: tabular-nums;
+}
+:root:has(.fund-hero) .mx-x.up {
+  color: var(--up);
+}
+:root:has(.fund-hero) .mx-x.down {
+  color: var(--down);
+}
+.mx {
+  margin-top: 24px;
+}
+.mx-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.mx-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 12px;
+  border: 1px solid var(--border-L1);
+  border-radius: 14px;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  transition: background-color 160ms ease-out, border-color 160ms ease-out, transform 160ms ease-out;
+}
+:root:has(.fund-hero) .mx-card.on {
+  border-color: var(--line-strong);
+  background: var(--surface);
+}
+.mx-card:active {
+  transform: scale(0.97);
+}
+.mx-label {
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 16px;
+}
+:root:has(.fund-hero) .mx-card.on .mx-label {
+  color: var(--ink);
+  font-family: "SAHI Sans:Medium", sans-serif;
+}
+:root:has(.fund-hero) .mx-x {
+  font-family: "SAHI Season Display Mix:Medium", serif;
+  font-size: 24px;
+  font-weight: 580;
+  letter-spacing: -0.24px;
+  line-height: 32px;
+  opacity: 0.55;
+  transition: opacity 160ms ease-out;
+}
+:root:has(.fund-hero) .mx-card.on .mx-x {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+.mx-card {
+    transition: none;
+  }
+}
+.seg {
+  position: relative;
+  display: grid;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
+  align-self: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 100px;
+  background: var(--surface-L3);
+}
+:root:has(.fund-hero) .seg.wide {
+  align-self: stretch;
+}
+.seg-pill {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  left: 2px;
+  width: calc((100% - 4px - (var(--n) - 1) * 2px) / var(--n));
+  border-radius: 100px;
+  background: var(--surface-L1);
+  transform: translateX(calc(var(--i) * (100% + 2px)));
+  transition: transform 240ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.seg button {
+  position: relative;
+  height: 29px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 100px;
+  color: var(--text-secondary);
+  background: transparent;
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 14px;
+  line-height: 16.8px;
+  white-space: nowrap;
+  transition: color 160ms ease-out, transform 160ms ease-out;
+}
+.seg button:active {
+  transform: scale(0.97);
+}
+:root:has(.fund-hero) .seg button.on {
+  color: var(--text-primary);
+  font-family: "SAHI Sans:Medium", sans-serif;
+}
+:root:has(.fund-hero) .seg-returns {
+  margin-bottom: 16px;
+}
+@media (prefers-reduced-motion: reduce) {
+.seg-pill {
+    transition: none;
+  }
+}
+.pf-asof {
+  margin: 0 0 16px;
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 16px;
+}
+:root:has(.fund-hero) .mf-body:has(.fund-hero) .fold.open h3:has(+ .fold-body .pf-asof) {
+  margin-bottom: 8px;
+}
+.pf-sec + .pf-sec {
+  margin-top: 24px;
+}
+.pf-card {
+  padding: 16px;
+  border: 1px solid var(--border-L1);
+  border-radius: 16px;
+}
+.pf-sub {
+  margin: 0 0 12px;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+.pf-mixbar {
+  display: flex;
+  height: 12px;
+  gap: 2px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--surface-L2);
+  clip-path: inset(0 0 0 0 round 6px);
+  transition: clip-path 700ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.pf-mixbar i {
+  min-width: 3px;
+  flex-basis: 0;
+}
+.pf-mixbar i.pfc0,
+.pf-legend i.pfc0 {
+  background: var(--mix-0);
+}
+.pf-mixbar i.pfc1,
+.pf-legend i.pfc1 {
+  background: var(--mix-1);
+}
+.pf-mixbar i.pfc2,
+.pf-legend i.pfc2 {
+  background: var(--mix-2);
+}
+.pf-mixbar i.pfc3,
+.pf-legend i.pfc3 {
+  background: var(--mix-3);
+}
+:root:has(.fund-hero) .pf-mixbar i.pad {
+  background: transparent;
+}
+.pf-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between; 
+  gap: 8px 16px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.pf-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-3);
+  font-size: 13px;
+  line-height: 18px;
+}
+.pf-legend li i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.pf-legend b {
+  color: var(--ink);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-weight: 500;
+}
+:root:has(.fund-hero) .pf-insight {
+  position: relative;
+  margin: 16px 0 8px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--surface);
+}
+.pf-insight-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.pf-insight-tag {
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+:root:has(.fund-hero) .pf-insight-by {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  color: var(--ink-2);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 12px;
+  line-height: 16px;
+}
+:root:has(.fund-hero) .pf-insight-by img {
+  flex: none;
+}
+:root:has(.fund-hero) .pf-insight p {
+  margin: 8px 0 0;
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 20px;
+  text-wrap: pretty;
+}
+:root:has(.fund-hero) .pf-insight-by {
+  display: inline-flex;
+  margin-left: auto;
+  transform-origin: center;
+  transition: transform 600ms cubic-bezier(0.77, 0, 0.175, 1);
+}
+:root:has(.fund-hero) .pf-insight-by img {
+  display: block;
+}
+:root:has(.fund-hero) .pf-insight.think .pf-insight-by {
+  transform: translate(var(--dx, 0), var(--dy, 0)) scale(2);
+  transition: none;
+}
+:root:has(.fund-hero) .fold.open .pf-insight.think .pf-insight-by {
+  animation: mf-fade 320ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+:root:has(.fund-hero) .fold.open .pf-insight.think .pf-insight-by img {
+  animation: pf-kyro 1100ms cubic-bezier(0.77, 0, 0.175, 1) both;
+}
+:root:has(.fund-hero) .pf-insight.think .pf-insight-tag,
+:root:has(.fund-hero) .pf-insight.think p {
+  opacity: 0;
+}
+:root:has(.fund-hero) .pf-insight.reveal .pf-insight-tag {
+  animation: mf-rise 320ms 300ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+:root:has(.fund-hero) .pf-insight.reveal .w {
+  display: inline-block;
+  animation: mf-rise 320ms calc(380ms + var(--w) * 40ms) cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+:root:has(.fund-hero) .pf-insight.swap {
+  animation: mf-fade 180ms ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+:root:has(.fund-hero) .pf-insight.think .pf-insight-by {
+    transform: none;
+  }
+:root:has(.fund-hero) .pf-insight-by {
+    transition: none;
+  }
+:root:has(.fund-hero) .pf-insight.think .pf-insight-tag,
+:root:has(.fund-hero) .pf-insight.think p {
+    opacity: 1;
+  }
+:root:has(.fund-hero) .fold.open .pf-insight.think .pf-insight-by,
+:root:has(.fund-hero) .fold.open .pf-insight.think .pf-insight-by img,
+:root:has(.fund-hero) .pf-insight.reveal .pf-insight-tag,
+:root:has(.fund-hero) .pf-insight.reveal .w {
+    animation: none;
+  }
+}
+.seg-portfolio {
+  margin: 0;
+}
+.pf-list {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.pf-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+  line-height: 20px;
+  animation: pf-in 260ms calc(min(var(--k), 10) * 28ms) cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+.pf-list li:first-child {
+  border-top: 0;
+}
+.pf-name {
+  min-width: 0;
+}
+.pf-name small {
+  display: block;
+  margin-top: 2px;
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 16px;
+}
+.pf-num {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.pf-num b {
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-weight: 500;
+}
+.pf-chg {
+  margin-top: 2px;
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 16px;
+  font-variant-numeric: tabular-nums;
+}
+:root:has(.fund-hero) .pf-chg.up {
+  color: var(--up);
+}
+:root:has(.fund-hero) .pf-chg.down {
+  color: var(--down);
+}
+:root:has(.fund-hero) .pf-chg.new {
+  color: var(--accent-text);
+  font-family: "SAHI Sans:Medium", sans-serif;
+}
+:root:has(.fund-hero) .fold:not(.open) .pf-mixbar {
+  clip-path: inset(0 100% 0 0 round 6px);
+  transition: clip-path 0s linear 260ms;
+}
+.pf-all {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding: 0;
+  border: 0;
+  color: var(--text-primary);
+  background: transparent;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  text-align: left;
+}
+:root:has(.fund-hero) .pf-all .icon {
+  flex: none;
+  color: var(--ink-3);
+}
+.pf-page-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0 16px;
+}
+.pf-page-head > div {
+  min-width: 0;
+}
+.pf-page-title {
+  margin: 0 0 2px;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 20px;
+}
+.pf-page-sub {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 16px;
+}
+.pf-search {
+  margin-bottom: 12px;
+}
+.pf-screen .pf-card {
+  margin: 16px 0 0;
+}
+.pf-screen .pf-card + .pf-cap {
+  margin-top: 24px;
+}
+.pf-cap {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 16px 0 4px;
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 16px;
+}
+.pf-cap-r {
+  text-align: right;
+  white-space: nowrap;
+}
+@media (prefers-reduced-motion: reduce) {
+.pf-list li {
+    animation: none;
+  }
+.pf-mixbar {
+    transition: none;
+  }
+}
+:root:has(.fund-hero) .risk {
+  display: flex;
+  flex-direction: column;
+}
+.rg {
+  --rg-band: var(--surface-recessed);
+  --rg-ring: var(--surface-L4);
+  position: relative;
+  width: 260px;
+  height: 232px;
+  align-self: center;
+}
+:root[data-theme="dark"] .rg {
+  --rg-band: var(--surface-L3);
+}
+.rg svg {
+  display: block;
+  overflow: visible;
+}
+.rg-ring {
+  fill: var(--rg-ring);
+}
+.rg-seg {
+  fill: var(--rg-band);
+}
+.rg-lit {
+  fill: var(--c);
+  opacity: 0;
+  transition:
+    opacity 240ms ease-out,
+    fill 240ms ease-out;
+}
+:root:has(.fund-hero) .rg-lit.on {
+  opacity: 1;
+}
+.rg-lit.tip {
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--c) 55%, transparent));
+}
+.rg-tick {
+  stroke: var(--surface-L1);
+  stroke-width: 1.2;
+}
+:root:has(.fund-hero) .fold:not(.open) .rg-lit {
+  opacity: 0;
+  transition: opacity 0s linear 260ms;
+}
+:root:has(.fund-hero) .sheet-root.enter .rg-lit {
+  opacity: 0;
+  transition: none;
+}
+.rg-center {
+  position: absolute;
+  top: 130px;
+  left: 50%;
+  display: flex;
+  width: 120px;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  transform: translate(-50%, -50%);
+}
+.rg-center b {
+  font-family: "SAHI Season Display Mix:Medium", serif;
+  font-size: 32px;
+  font-weight: 580;
+  letter-spacing: -0.32px;
+  line-height: 36px;
+}
+:root:has(.fund-hero) .rg-center b.long {
+  font-size: 26px;
+  line-height: 30px;
+}
+.rg-center span {
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 16.8px;
+}
+:root:has(.fund-hero) .risk-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.rg.md {
+  width: 200px;
+  height: 178px;
+  align-self: center;
+}
+.rg.md svg {
+  width: 100%;
+  height: 100%;
+}
+.rg.md .rg-center {
+  top: 56%;
+  width: auto;
+  gap: 0;
+}
+.rg.md .rg-center b {
+  font-size: 40px;
+  letter-spacing: 0;
+  line-height: 42px;
+}
+.rg.md .rg-center span {
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 16px;
+}
+:root:has(.fund-hero) .rg.sm {
+  width: 132px;
+  height: 118px;
+  flex: none;
+}
+:root:has(.fund-hero) .rg.sm svg {
+  width: 100%;
+  height: 100%;
+}
+:root:has(.fund-hero) .rg.sm .rg-center {
+  top: 56%;
+  width: auto;
+}
+:root:has(.fund-hero) .rg.sm .rg-center {
+  gap: 0;
+}
+:root:has(.fund-hero) .rg.sm .rg-center b {
+  font-size: 28px;
+  letter-spacing: 0;
+  line-height: 30px;
+}
+:root:has(.fund-hero) .rg.sm .rg-center span {
+  color: var(--ink-3);
+  font-size: 11px;
+  line-height: 14px;
+}
+:root:has(.fund-hero) .risk-text {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+}
+:root:has(.fund-hero) .risk-text b {
+  font-family: "SAHI Season Display Mix:Medium", serif;
+  font-size: 24px;
+  font-weight: 580;
+  line-height: 28px;
+}
+.risk-sub {
+  margin: 24px 0 12px;
+}
+.risk-behaved {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 24px 0 12px;
+}
+.risk-behaved .risk-sub {
+  margin: 0;
+}
+.risk-note {
+  margin: 12px 0 0;
+}
+:root:has(.fund-hero) .risk-why {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 20px;
+  text-wrap: pretty;
+}
+.risk-bar {
+  position: relative;
+  height: 8px;
+  margin: 16px 0 10px;
+  border-radius: 100px;
+  background: var(--surface-L3);
+}
+.risk-bar i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+.risk-bar i.neg {
+  border-radius: 100px 0 0 100px;
+  background: var(--negative-surface);
+}
+:root:has(.fund-hero) .risk-bar i.pos {
+  border-radius: 0 100px 100px 0;
+  background: var(--positive-surface);
+}
+:root:has(.fund-hero) .risk-bar i.pos.alone {
+  border-radius: 100px;
+}
+.risk-bar i,
+:root:has(.fund-hero) .risk-bar em.dot,
+.risk-bar u.zero {
+  transition: left 320ms cubic-bezier(0.23, 1, 0.32, 1), width 320ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+.risk-bar i,
+:root:has(.fund-hero) .risk-bar em.dot,
+.risk-bar u.zero {
+    transition: none;
+  }
+}
+.risk-bar u.zero {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 1px;
+  background: var(--ink-3);
+}
+:root:has(.fund-hero) .risk-bar em.dot {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border: 3px solid var(--surface-L1);
+  border-radius: 50%;
+  background: var(--ink);
+  transform: translate(-50%, -50%);
+}
+.risk-three {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 0;
+}
+.risk-three dt {
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 16px;
+}
+.risk-three dd {
+  margin: 0;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+.risk-three dd small {
+  color: var(--ink-3);
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+}
+:root:has(.fund-hero) .risk-three dd.down {
+  color: var(--down);
+}
+.risk-three > div:nth-child(2) {
+  text-align: center;
+}
+.risk-three > div:nth-child(3) {
+  text-align: right;
+}
+@media (prefers-reduced-motion: reduce) {
+.rg-lit {
+    transition: none;
+  }
+}
+:root:has(.fund-hero) .msheet-root {
+  position: fixed;
+  z-index: 60;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+:root:has(.fund-hero) .msheet-scrim {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  background: var(--transparent-scrim);
+  cursor: default;
+  opacity: 0;
+  transition: opacity 240ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+:root:has(.fund-hero) .msheet-root.open .msheet-scrim {
+  opacity: 1;
+  transition-duration: 360ms;
+}
+:root:has(.fund-hero) .msheet {
+  position: relative;
+  display: flex;
+  width: 100%;
+  max-width: 600px;
+  
+  height: min(82dvh, 720px);
+  flex-direction: column;
+  border-radius: 24px 24px 0 0;
+  background: var(--surface-L1);
+  box-shadow: 0 -8px 40px var(--shadow-overlay);
+  outline: none;
+  transform: translateY(100%);
+  transition: transform 280ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+:root:has(.fund-hero) .msheet-root.open .msheet {
+  transform: none;
+  transition-duration: 440ms;
+}
+:root:has(.fund-hero) .msheet.dragging {
+  transition: none;
+}
+:root:has(.fund-hero) .msheet.leaving {
+  transition: transform 260ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+:root:has(.fund-hero) .msheet-top {
+  flex: none;
+  padding: 0 16px;
+  touch-action: none;
+  user-select: none;
+}
+:root:has(.fund-hero) .msheet-grab {
+  display: flex;
+  align-items: flex-start; 
+  width: 100%;
+  height: 36px; 
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: grab;
+}
+:root:has(.fund-hero) .msheet-grab i {
+  display: block;
+  width: 36px;
+  height: 4px;
+  margin: 12px auto 0;
+  border-radius: 2px;
+  background: var(--line-strong);
+}
+:root:has(.fund-hero) .msheet-pick {
+  display: flex;
+  gap: 8px;
+  padding-bottom: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+:root:has(.fund-hero) .msheet-pick button {
+  display: inline-flex;
+  height: 36px;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px 0 4px;
+  border: 1px solid var(--border-L1);
+  border-radius: 100px;
+  color: var(--text-secondary);
+  background: transparent;
+  font-size: 14px;
+  line-height: 20px;
+  transition: border-color 200ms ease-out, background-color 200ms ease-out, color 200ms ease-out, transform 160ms ease-out;
+}
+:root:has(.fund-hero) .msheet-pick button.on {
+  border-color: var(--border-L2);
+  color: var(--text-primary);
+  background: var(--surface);
+  font-family: "SAHI Sans:Medium", sans-serif;
+}
+:root:has(.fund-hero) .msheet-pick button:active {
+  transform: scale(0.97);
+}
+:root:has(.fund-hero) .msheet-body {
+  min-height: 0;
+  flex: 1;
+  padding: 4px 16px calc(24px + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+:root:has(.fund-hero) .ms-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 8px;
+  text-align: center;
+}
+:root:has(.fund-hero) .ms-avatar {
+  display: inline-grid;
+}
+:root:has(.fund-hero) .ms-hero h2 {
+  margin: 16px 0 4px;
+  font-family: "SAHI Season Display Mix:Medium", serif;
+  font-size: 28px;
+  font-weight: 580;
+  letter-spacing: -0.4px;
+  line-height: 32px;
+}
+:root:has(.fund-hero) .ms-hero p {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 20px;
+}
+:root:has(.fund-hero) .ms-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+  margin: 24px 0 0;
+}
+:root:has(.fund-hero) .ms-stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 16px;
+  border: 1px solid var(--border-L1);
+  border-radius: 16px;
+}
+:root:has(.fund-hero) .ms-stats dt {
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 16px;
+}
+:root:has(.fund-hero) .ms-stats dd {
+  margin: 0;
+  font-family: "SAHI Season Display Mix:Medium", serif;
+  font-size: 22px;
+  font-weight: 580;
+  letter-spacing: -0.2px;
+  line-height: 28px;
+}
+:root:has(.fund-hero) .msheet-body section {
+  margin-top: 24px;
+}
+:root:has(.fund-hero) .msheet-body h3 {
+  margin: 0 0 8px;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+:root:has(.fund-hero) .ms-edu {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+:root:has(.fund-hero) .ms-edu li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+:root:has(.fund-hero) .ms-edu li:first-child {
+  border-top: 0;
+  padding-top: 2px;
+}
+:root:has(.fund-hero) .ms-edu b {
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+}
+:root:has(.fund-hero) .ms-edu small {
+  color: var(--ink-3);
+  font-size: 13px;
+  line-height: 18px;
+}
+:root:has(.fund-hero) .ms-bg {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 20px;
+  text-wrap: pretty;
+}
+:root:has(.fund-hero) .ms-source {
+  margin: 24px 0 0;
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 16px;
+}
+:root:has(.fund-hero) .ms-avatar,
+:root:has(.fund-hero) .ms-hero h2,
+:root:has(.fund-hero) .ms-hero p,
+:root:has(.fund-hero) .ms-stats,
+:root:has(.fund-hero) .msheet-body section {
+  opacity: 0;
+}
+:root:has(.fund-hero) .msheet-root:not(.enter) .ms-hero h2,
+:root:has(.fund-hero) .msheet-root:not(.enter) .ms-hero p,
+:root:has(.fund-hero) .msheet-root:not(.enter) .ms-stats,
+:root:has(.fund-hero) .msheet-root:not(.enter) .msheet-body section {
+  animation: ms-rise 320ms calc(220ms + var(--k) * 45ms) cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+:root:has(.fund-hero) .msheet-root:not(.enter) .ms-avatar {
+  animation: ms-land 360ms 160ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+:root:has(.fund-hero) .msheet-root.again:not(.enter) .ms-hero h2,
+:root:has(.fund-hero) .msheet-root.again:not(.enter) .ms-hero p,
+:root:has(.fund-hero) .msheet-root.again:not(.enter) .ms-stats,
+:root:has(.fund-hero) .msheet-root.again:not(.enter) .msheet-body section {
+  animation: ms-rise 260ms calc(var(--k) * 30ms) cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+:root:has(.fund-hero) .msheet-root.again:not(.enter) .ms-avatar {
+  animation: ms-land 280ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+:root:has(.fund-hero) .msheet,
+:root:has(.fund-hero) .msheet-root.open .msheet {
+    transform: none;
+    opacity: 0;
+    transition: opacity 150ms ease-out;
+  }
+:root:has(.fund-hero) .msheet-root.open .msheet {
+    opacity: 1;
+  }
+:root:has(.fund-hero) .ms-avatar,
+:root:has(.fund-hero) .ms-hero h2,
+:root:has(.fund-hero) .ms-hero p,
+:root:has(.fund-hero) .ms-stats,
+:root:has(.fund-hero) .msheet-body section {
+    opacity: 1;
+    animation: none !important;
+  }
+}
+:root:has(.fund-hero) .sheet-root {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.sheet-scrim {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  background: var(--transparent-scrim);
+  cursor: default;
+  opacity: 0;
+  transition: opacity 280ms ease-out;
+}
+:root:has(.fund-hero) .sheet {
+  position: relative;
+  display: flex;
+  width: 100%;
+  max-width: 640px;
+  height: 95%;
+  flex-direction: column;
+  border-radius: 16px 16px 0 0;
+  background: var(--surface-L1);
+  outline: 0;
+  transform: translateY(100%);
+  transition: transform 280ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+:root:has(.fund-hero) .sheet-root.open .sheet-scrim {
+  opacity: 1;
+  transition-duration: 440ms;
+}
+:root:has(.fund-hero) .sheet-root.open .sheet {
+  transform: none;
+  transition-duration: 440ms;
+}
+:root:has(.fund-hero) .sheet.dragging {
+  transition: none;
+}
+.sheet-head {
+  display: flex;
+  flex: none;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 16px 12px;
+  touch-action: none; 
+}
+.sheet-title {
+  min-width: 0;
+  flex: 1;
+}
+.sheet-title h2 {
+  margin: 0;
+  font-family: "SAHI Season Display Mix:Medium", serif;
+  font-size: 24px;
+  font-weight: 580;
+  line-height: 28px;
+}
+.sheet-title p {
+  margin: 2px 0 0;
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 16px;
+}
+.sheet-x {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  color: var(--ink);
+  background: var(--transparent-L1);
+}
+.sheet-x:active {
+  transform: scale(0.96);
+}
+.sheet-body {
+  min-height: 0;
+  flex: 1;
+  padding: 4px 16px 12px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+@media (prefers-reduced-motion: reduce) {
+:root:has(.fund-hero) .sheet {
+    opacity: 0;
+    transform: none;
+    transition: opacity 150ms ease;
+  }
+:root:has(.fund-hero) .sheet-root.open .sheet {
+    opacity: 1;
+  }
+}
+.rlc {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: 16px;
+  color: inherit;
+  background: var(--surface);
+  text-align: left;
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.rlc:active {
+  transform: scale(0.98);
+}
+.rlc-scale {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 3px;
+}
+.rlc-scale i {
+  width: 8px;
+  height: 6px;
+  border-radius: 3px;
+  opacity: 0.35;
+}
+.rlc-scale i.here {
+  height: 12px;
+  opacity: 1;
+}
+:root:has(.fund-hero) .rlc-scale i.up {
+  background: var(--positive-surface);
+}
+:root:has(.fund-hero) .rlc-scale i.warn {
+  background: var(--warning-surface);
+}
+:root:has(.fund-hero) .rlc-scale i.down {
+  background: var(--negative-surface);
+}
+.rlc-text {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+.rlc-text b {
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+.rlc-text small {
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 16px;
+}
+:root:has(.fund-hero) .rlc > .icon {
+  flex: none;
+  color: var(--ink-3);
+}
+:root:has(.fund-hero) .sheet.fit {
+  height: auto;
+  max-height: 95%;
+}
+.rl-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0 0 12px;
+  list-style: none;
+}
+.rl-list li {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+}
+.rl-list li::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--surface);
+  content: "";
+  opacity: 0;
+}
+.rl-list li.here::before {
+  opacity: 1;
+}
+.rl-list li > i {
+  display: flex;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  margin-top: -2px;
+  border-radius: 50%;
+  color: var(--fixed-white);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 14.4px;
+  font-variant-numeric: tabular-nums;
+}
+:root:has(.fund-hero) .rl-list li > i.up {
+  background: var(--positive-surface);
+}
+:root:has(.fund-hero) .rl-list li > i.warn {
+  background: var(--warning-surface);
+}
+:root:has(.fund-hero) .rl-list li > i.down {
+  background: var(--negative-surface);
+}
+.rl-list li > span {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+.rl-list b {
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+.rl-list small {
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 20px;
+  text-wrap: pretty;
+}
+.rl-list em {
+  display: inline-flex;
+  height: 24px;
+  flex: none;
+  align-items: center;
+  padding: 0 8px;
+  border-radius: 100px;
+  color: var(--ink-2);
+  background: var(--surface-L3);
+  font-size: 12px;
+  font-style: normal;
+  line-height: 14.4px;
+}
+:root:has(.fund-hero) .sheet-root.open .rl-list li {
+  animation: rl-row 320ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation-delay: calc(120ms + var(--k) * 40ms);
+}
+:root:has(.fund-hero) .sheet-root.open .rl-list li.here::before {
+  animation: rl-tint 280ms ease-out both;
+  animation-delay: 520ms;
+}
+@media (prefers-reduced-motion: reduce) {
+:root:has(.fund-hero) .sheet-root.open .rl-list li,
+:root:has(.fund-hero) .sheet-root.open .rl-list li.here::before {
+    animation: none;
+  }
+}
+.mf-screen.tight:has(.fund-hero) .mf-head {
+  padding-bottom: 0;
+}
+.mf-screen.tight:has(.fund-hero) .mf-body {
+  padding-top: 0;
+}
+:root:has(.fund-hero) .bk-stack .fund-mark {
+  box-shadow: inset 0 0 0 1px var(--line), 0 0 0 2px var(--surface-L1);
+}
+:root:has(.fund-hero) .bk-card .fund-mark {
+  background: var(--surface-L1);
+}
+:root:has(.fund-hero) .bk-risk + .risk-why {
+  margin-top: 16px;
+}
+:root:has(.fund-hero) .bk-split li > span:not(.fund-mark) {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  font-size: 14px;
+  line-height: 20px;
+}
+:root:has(.fund-hero) .bi-panel-all .row-list {
+  min-height: calc(5 * 68px);
+}
+:root:has(.fund-hero) .bi-panel .row-list > li {
+  animation: mf-rise 220ms calc(var(--i, 0) * 30ms) cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+:root:has(.fund-hero) .bi-panel .row-list > li {
+    animation: mf-fade 150ms both;
+  }
+}
+:root:has(.fund-hero) .bkc-legend i.b {
+  background: var(--accent-text);
+}
+:root:has(.fund-hero) .bkc-legend i.n {
+  background: repeating-linear-gradient(90deg, var(--ink-3) 0 4px, transparent 4px 6px);
+}
+:root:has(.fund-hero) .ms-hero p.vb-line {
+  justify-content: center;
+}
+:root:has(.fund-hero) .fold.open .vbadge.anim {
+  --vb-delay: 140ms;
+}
+:root:has(.fund-hero) .msheet-root:not(.enter) .vbadge.anim {
+  --vb-delay: 560ms;
+}
+:root:has(.fund-hero) .fold.open .vbadge.anim .vbadge-seal,
+:root:has(.fund-hero) .msheet-root:not(.enter) .vbadge.anim .vbadge-seal {
+  animation: vb-pop 420ms var(--vb-delay) cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+:root:has(.fund-hero) .fold.open .vbadge.anim .vbadge-check,
+:root:has(.fund-hero) .msheet-root:not(.enter) .vbadge.anim .vbadge-check {
+  animation: vb-draw 260ms calc(var(--vb-delay) + 180ms) cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+:root:has(.fund-hero) .fold.open .vbadge.anim .vbadge-glint,
+:root:has(.fund-hero) .msheet-root:not(.enter) .vbadge.anim .vbadge-glint {
+  animation: vb-glint 520ms calc(var(--vb-delay) + 560ms) cubic-bezier(0.77, 0, 0.175, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+:root:has(.fund-hero) .fold.open .vbadge.anim .vbadge-seal,
+:root:has(.fund-hero) .msheet-root:not(.enter) .vbadge.anim .vbadge-seal {
+    animation: vb-fade 200ms var(--vb-delay) ease-out both;
+  }
+:root:has(.fund-hero) .fold.open .vbadge.anim .vbadge-check,
+:root:has(.fund-hero) .fold.open .vbadge.anim .vbadge-glint,
+:root:has(.fund-hero) .msheet-root:not(.enter) .vbadge.anim .vbadge-check,
+:root:has(.fund-hero) .msheet-root:not(.enter) .vbadge.anim .vbadge-glint {
+    animation: none;
+  }
+}
+.mf-screen.vflow:has(.fund-hero) .mf-back::before {
+  position: absolute;
+  inset: -10px;
+  content: "";
+}
+:root:has(.fund-hero) .pay-check .mf-back {
+  visibility: hidden;
+}
+:root:has(.fund-hero) .mf-seg button.on {
+  color: var(--text-inverse);
+  background: var(--surface-inverse);
+}
+:root:has(.fund-hero) .mf-seg.wide {
+  display: flex;
+  margin: 12px 0 0;
+}
+:root:has(.fund-hero) .mf-seg.wide button {
+  flex: 1;
+  height: 32px;
+}
+:root:has(.fund-hero) .mf-sheet.sip-date {
+  padding-top: 24px;
+  background: var(--surface-L1);
+}
+:root:has(.fund-hero) .mf-sheet.sip-date h2 {
+  padding: 0 16px;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 24px;
+  text-align: center;
+}
+:root:has(.fund-hero) .mf-sheet.sip-date .mf-sheet-body {
+  gap: 16px;
+  padding: 16px 16px 0;
+}
+:root:has(.fund-hero) .mf-sheet.sip-date .mf-sheet-foot {
+  padding: 16px 16px 24px;
+}
+.mf-screen.vflow:has(.fund-hero) .mf-days button:disabled {
+  color: var(--text-tertiary);
+  opacity: 0.5;
+  cursor: default;
+}
+.mf-screen.pad:has(.fund-hero) .mf-head {
+  gap: 16px;
+}
+.mf-screen.pad:has(.fund-hero) .mf-head .mf-fundline {
+  flex: 1;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+}
+.mf-screen.pad:has(.fund-hero) .mf-head .mf-fundline b {
+  line-height: 16.8px;
+}
+.mf-screen.pad:has(.fund-hero) .mf-head .mf-fundline small {
+  color: var(--text-primary);
+  line-height: 14.4px;
+}
+.mf-screen.pad:has(.fund-hero) .mf-body {
+  padding-bottom: 0;
+}
+:root:has(.fund-hero) .mf-pad-amount.error .mf-pad-figure {
+  color: var(--negative-text);
+}
+:root:has(.fund-hero) .mf-quick.pad {
+  margin: 30px 0 0;
+}
+:root:has(.fund-hero) .mf-quick.pad button {
+  padding: 0 12px;
+  border-color: var(--border-L1);
+  border-radius: 16px;
+  color: var(--text-primary);
+  background: var(--surface-L1);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 16.8px;
+}
+:root:has(.fund-hero) .mf-sheet-layer {
+  position: fixed;
+  z-index: 45;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+:root:has(.fund-hero) .mf-sheet-scrim {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  background: var(--transparent-scrim);
+  cursor: default;
+  animation: mf-scrim-in-idp 240ms ease-out both;
+}
+:root:has(.fund-hero) .mf-sheet-layer.closing .mf-sheet-scrim {
+  animation: mf-scrim-out-idp 220ms ease-in both;
+}
+:root:has(.fund-hero) .mf-sheet {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  padding-top: 24px;
+  border-radius: 16px 16px 0 0;
+  background: var(--surface-L2);
+  animation: sheet-in 300ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+:root:has(.fund-hero) .mf-sheet-layer.closing .mf-sheet {
+  animation: sheet-out 220ms ease-in both;
+}
+:root:has(.fund-hero) .mf-sheet h2 {
+  margin: 0;
+  padding: 8px 16px 0;
+  color: var(--text-primary);
+  font-family: "SAHI Season Display Mix:Medium", serif;
+  font-size: 24px;
+  font-weight: 580;
+  letter-spacing: -0.24px;
+  line-height: 28px;
+}
+:root:has(.fund-hero) .mf-sheet-body {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px 16px 8px;
+}
+:root:has(.fund-hero) .mf-sheet-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  color: var(--text-primary);
+}
+:root:has(.fund-hero) .mf-sheet-line p {
+  margin: 0;
+  max-width: 276px;
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 14px;
+  line-height: 16.8px;
+}
+:root:has(.fund-hero) .mf-sheet-foot {
+  padding: 16px 16px 28px;
+}
+:root:has(.fund-hero) .mf-sheet .mf-sheet-foot .mf-btn {
+  border-radius: 48px;
+  font-size: 14px;
+  line-height: 16.8px;
+}
+:root:has(.fund-hero) .mf-keypad.pad {
+  grid-template-rows: repeat(4, 49px);
+  gap: 13px 12px;
+  margin: 0 -16px;
+  padding: 16px 7px;
+}
+:root:has(.fund-hero) .mf-keypad.pad button {
+  height: auto;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  color: var(--text-primary);
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.24px;
+  line-height: 28px;
+}
+:root:has(.fund-hero) .mf-keypad.pad button.dot {
+  font-family: "SAHI Season Display Mix:Medium", serif;
+}
+:root:has(.fund-hero) .mf-keypad.pad .icon {
+  vertical-align: middle;
+}
+.mf-screen.pad:has(.fund-hero) .mf-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 0;
+  border-radius: 16px 16px 0 0;
+}
+.mf-screen.pad:has(.fund-hero) .mf-foot .mf-btn {
+  font-size: 16px;
+  line-height: 19.2px;
+}
+:root:has(.fund-hero) .mf-sip-date + .mf-keypad.pad {
+  margin-top: auto;
+}
+:root:has(.fund-hero) .mf-split i.debt,
+:root:has(.fund-hero) .mf-split-legend u.debt {
+  background: var(--accent-default);
+}
+.mf-screen.pm:has(.fund-hero) .mf-body {
+  padding-top: 0;
+}
+:root:has(.fund-hero) .pm-row-wrap.on .pm-expand {
+  grid-template-rows: 1fr;
+}
+:root:has(.fund-hero) .pm-row-wrap.on .pm-expand > div {
+  padding-bottom: 16px;
+  opacity: 1;
+}
+:root:has(.fund-hero) .pm-expand .mf-btn {
+  height: 40px;
+  font-size: 14px;
+}
+:root:has(.fund-hero) .pm-account.on {
+  border-color: var(--text-primary);
+}
+:root:has(.fund-hero) .pm-field.error .mf-text {
+  border-color: var(--negative-border);
+}
+:root:has(.fund-hero) .pm-seg button.on {
+  color: var(--text-primary);
+  background: var(--surface-L1);
+  box-shadow: 0 1px 3px var(--shadow-raised);
+}
+.mf-screen.st:has(.fund-hero) {
+  background: var(--st-bg);
+}
+.mf-screen.st.ok:has(.fund-hero) {
+  --st-bg: var(--positive-surface);
+  --st-mark: var(--positive-surface);
+}
+.mf-screen.st.bad:has(.fund-hero) {
+  --st-bg: var(--negative-surface);
+  --st-mark: var(--negative-surface);
+}
+.mf-screen.st.wait:has(.fund-hero) {
+  --st-bg: var(--warning-surface);
+  --st-mark: var(--warning-surface);
+}
+:root:has(.fund-hero) .pm .mf-notice {
+  margin-top: 16px;
+}
+.mf-screen.pad:has(.fund-hero) {
+  position: relative;
+  isolation: isolate;
+}
+:root:has(.fund-hero) .mf-dotfield.off {
+  opacity: 0;
+}
+.mf-screen.pad:has(.fund-hero) .mf-keypad {
+  margin-inline: -16px;
+  padding-inline: 16px;
+  background: var(--surface-L1);
+}
+.mf-screen.pad:has(.fund-hero) .mf-strip {
+  background: var(--surface-L1);
+}
+.mf-screen.pad:has(.fund-hero) .mf-strip + .mf-keypad {
+  margin-top: 0;
+}
+.mf-screen.pad:has(.fund-hero) .mf-foot {
+  position: relative;
+}
+.mf-screen.pad:has(.fund-hero) .mf-foot::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: -1;
+  height: 16px;
+  background: var(--surface-L1);
+}
+:root:has(.fund-hero) .pm .mf-notice.warn,
+:root:has(.fund-hero) .pm-sheet .mf-notice.warn {
+  width: 100%;
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  box-sizing: border-box;
+  color: var(--warning-text);
+  box-shadow: none;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: left;
+}
+:root:has(.fund-hero) .pm .mf-notice.warn .icon,
+:root:has(.fund-hero) .pm-sheet .mf-notice.warn .icon {
+  margin-top: 2px;
+  color: var(--warning-text);
+}
+.mf-screen.vflow:has(.fund-hero) .mf-head {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 0 16px 8px;
+  box-sizing: content-box;
+}
+.mf-screen.vflow:has(.fund-hero) .mf-head h1 {
+  margin: 0;
+  flex: 1;
+  overflow: hidden;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mf-screen.vflow:has(.fund-hero) .mf-back {
+  position: relative;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  margin-left: -4px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  color: var(--ink);
+  background: transparent;
+}
+.mf-screen.vflow:has(.fund-hero) .mf-days {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+.mf-screen.vflow:has(.fund-hero) .mf-days button {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 22px;
+  color: var(--text-primary);
+  background: transparent;
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 18px;
+  line-height: 21.6px;
+}
+.mf-screen.vflow:has(.fund-hero) .mf-days button.on {
+  color: var(--text-inverse);
+  background: var(--surface-inverse);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 16px;
+  line-height: 19.2px;
+}
+.mf-screen.vflow:has(.fund-hero) .mf-btn {
+  border-width: 1.5px;
+}
+:root:has(.fund-hero) .so-line.in .so-w {
+  opacity: 1;
+  filter: none;
+  transform: none;
+}
+:root:has(.fund-hero) .so-line.in .so-w3 {
+  transition-delay: 380ms;
+}
+:root:has(.fund-hero) .so-line.in .so-mark {
+  opacity: 1;
+  filter: none;
+  transform: none;
+  transition-duration: 380ms;
+  transition-delay: 260ms;
+  transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+}
+:root:has(.fund-hero) .mf-alert.bad {
+  background: var(--negative-subtle);
+  box-shadow: inset 0 0 0 1px var(--negative-transparent-L2);
+}
+:root:has(.fund-hero) .mf-alert.bad > .icon {
+  color: var(--negative-text);
+}
+:root:has(.fund-hero) .mf-btn.sm {
+  height: 36px;
+  padding: 0 16px;
+  font-size: 13px;
+}
+:root:has(.fund-hero) .mf-alert-dots i.on {
+  width: 16px;
+  background: var(--ink);
+}
+.mf-screen:has(.fund-hero) .mf-filterbar .chip.fchip .icon {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+:root:has(.fund-hero) .mf-sheet.mf-fsheet {
+  display: flex;
+  flex-direction: column;
+  height: min(86dvh, 640px);
+  padding-top: 0;
+  background: var(--surface-L1);
+}
+:root:has(.fund-hero) .mf-sheet.mf-fsheet h2 {
+  padding: 0;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 19.2px;
+}
+:root:has(.fund-hero) .mf-fseg button.on {
+  color: var(--text-inverse);
+  background: var(--surface-inverse);
+  font-family: "SAHI Sans:Medium", sans-serif;
+}
+:root:has(.fund-hero) .mf-frail button.on {
+  color: var(--text-primary);
+  background: var(--surface-L2);
+  font-family: "SAHI Sans:Medium", sans-serif;
+}
+:root:has(.fund-hero) .mf-frail button.on::after {
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 6px);
+  width: 6px;
+  height: 13px;
+  background: var(--surface-L2);
+  clip-path: polygon(100% 0, 0 50%, 100% 100%);
+  content: "";
+  transform: translateY(-50%);
+}
+:root:has(.fund-hero) .mf-fpanel.wide {
+  margin-right: 0;
+}
+:root:has(.fund-hero) .mf-fopt.on {
+  color: var(--text-primary);
+  font-family: "SAHI Sans:Medium", sans-serif;
+}
+:root:has(.fund-hero) .mf-fmark.radio.on {
+  border-color: var(--surface-inverse);
+}
+:root:has(.fund-hero) .mf-fmark.radio.on::after {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--surface-inverse);
+  content: "";
+}
+:root:has(.fund-hero) .mf-fmark.check.on {
+  border-color: var(--surface-inverse);
+  color: var(--text-inverse);
+  background: var(--surface-inverse);
+}
+:root:has(.fund-hero) .mf-fsheet-foot .mf-btn {
+  flex: 1;
+  border-radius: 48px;
+  font-size: 14px;
+  line-height: 16.8px;
+}
+:root:has(.fund-hero) .mf-table tr.mf-row-blank td {
+  visibility: hidden;
+}
+.chg {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 8px;
+}
+.chg-group {
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--surface-L2);
+}
+.chg-group h4 {
+  margin: 0;
+  color: var(--ink);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 16.8px;
+}
+.chg-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.chg-rows li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 16.8px;
+}
+.chg-rows b {
+  color: var(--ink);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+.chg-rows b.nil {
+  color: var(--positive-text);
+}
+.chg-note {
+  margin: 16px 0 0;
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 16px;
+}
+.mf-screen:has(.fund-hero) .mf-head.has-dock-title {
+  padding-bottom: 8px;
+}
+.mf-screen:has(.fund-hero) .dock-title .fund-mark {
+  border-radius: 4px;
+}
+.mf-screen:has(.fund-hero) .mf-head h1.dock-title {
+  line-height: 19px;
+}
+.mf-screen:has(.fund-hero) .fund-hero h2 {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 500;
+}
+.mf-screen:has(.fund-hero) .fund-meta {
+  line-height: 14px;
+}
+.mf-screen:has(.fund-hero) .fund-figures strong {
+  font-family: "SAHI Season Display Mix:Medium", serif;
+  font-size: 28px;
+  line-height: 34px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+.mf-screen:has(.fund-hero) .fund-figures small {
+  line-height: 14px;
+}
+.mf-screen:has(.fund-hero) .fund-day {
+  row-gap: 4px;
+  column-gap: 4px;
+}
+.mf-screen:has(.fund-hero) .fund-day b {
+  line-height: 17px;
+}
+.mf-screen:has(.fund-hero) .chart-scrub-label {
+  line-height: 14px;
+}
+.mf-screen:has(.fund-hero) .mf-ranges button {
+  height: 24px;
+  min-width: 40px;
+  line-height: 14px;
+}
+.mf-screen:has(.fund-hero) .fund-stats {
+  margin-top: 32px;
+}
+.mf-screen:has(.fund-hero) .fund-stats dt {
+  line-height: 14px;
+}
+.mf-screen:has(.fund-hero) .fund-stats dd {
+  line-height: 17px;
+}
+.mf-screen:has(.fund-hero) .fold-head {
+  line-height: 19px;
+}
+.mf-screen:has(.fund-hero) .fold-summary {
+  line-height: 17px;
+}
+.mf-screen:has(.fund-hero) .mf-table th {
+  line-height: 14px;
+}
+.mf-screen:has(.fund-hero) .mf-table td {
+  line-height: 17px;
+}
+.mf-screen:has(.fund-hero) .mf-small {
+  line-height: 14px;
+}
+.mf-screen:has(.fund-hero) .rco .rc-lead {
+  line-height: 14px;
+}
+.mf-screen:has(.fund-hero) .rc-amount {
+  line-height: 34px;
+  font-weight: 500;
+}
+.mf-screen:has(.fund-hero) .mx-card {
+  border-radius: 12px;
+}
+.mf-screen:has(.fund-hero) .mx-label {
+  line-height: 14px;
+}
+.mf-screen:has(.fund-hero) .mx-x {
+  font-weight: 500;
+}
+.mf-screen:has(.fund-hero) .rc-rows {
+  margin-top: 16px;
+}
+.mf-screen:has(.fund-hero) .rc-rows > div {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+.mf-screen:has(.fund-hero) .rc-rows dt {
+  font-size: 14px;
+  line-height: 17px;
+}
+.mf-screen:has(.fund-hero) .rc-rows dd {
+  line-height: 17px;
+}
+.mf-screen:has(.fund-hero) .rc-rows .rc-total {
+  padding-top: 8px;
+}
+.mf-screen:has(.fund-hero) .pf-asof {
+  line-height: 14px;
+}
+.mf-screen:has(.fund-hero) .pf-sub {
+  line-height: 17px;
+}
+.mf-screen:has(.fund-hero) .pf-legend li {
+  font-size: 12px;
+  line-height: 14px;
+  row-gap: 4px;
+  column-gap: 4px;
+}
+.mf-screen:has(.fund-hero) .pf-insight-tag {
+  line-height: 17px;
+}
+.mf-screen:has(.fund-hero) .pf-insight-by {
+  row-gap: 4px;
+  column-gap: 4px;
+}
+.mf-screen:has(.fund-hero) .pf-insight p {
+  line-height: 17px;
+}
+.mf-screen:has(.fund-hero) .pf-list li {
+  line-height: 17px;
+}
+.mf-screen:has(.fund-hero) .pf-name small {
+  line-height: 14px;
+}
+.mf-screen:has(.fund-hero) .pf-all {
+  line-height: 17px;
+}
+.mf-screen:has(.fund-hero) .mf-body-copy {
+  line-height: 17px;
+}
+.mf-screen:has(.fund-hero) .mf-body:has(.fund-hero) .about-facts {
+  margin-bottom: 16px;
+}
+.mf-screen:has(.fund-hero) .mf-body:has(.fund-hero) .mf-grid2 {
+  row-gap: 16px;
+}
+.mf-screen:has(.fund-hero) .mf-body:has(.fund-hero) .mf-kv {
+  line-height: 14px;
+}
+.mf-screen:has(.fund-hero) .mf-body:has(.fund-hero) .mf-grid2 .mf-kv > b {
+  line-height: 17px;
+}
+.mf-screen:has(.fund-hero) .mgr-list {
+  margin-bottom: 12px;
+}
+.mf-screen:has(.fund-hero) .mgr-list > small {
+  line-height: 14px;
+}
+.mf-screen:has(.fund-hero) .mgr-text b {
+  line-height: 17px;
+}
+.mf-screen:has(.fund-hero) .mgr-text small {
+  line-height: 14px;
+}
+.mf-screen:has(.fund-hero) .mf-link {
+  line-height: 17px;
+}
+.mf-screen:has(.fund-hero) .chg-note {
+  line-height: 14px;
+}
+.mf-screen:has(.fund-hero) .mf-source {
+  line-height: 13px;
+}
+.mf-screen:has(.fund-hero) .mf-disclaimer {
+  line-height: 13px;
+}
+.mf-screen:has(.fund-hero) .mf-foot {
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+}
+.mf-screen:has(.fund-hero) .mf-foot .mf-btn {
+  line-height: 17px;
+}
+:root:has(.fund-hero) .msheet-root .msheet {
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+:root:has(.fund-hero) .msheet-root .msheet-grab {
+  height: 16px;
+}
+:root:has(.fund-hero) .msheet-root .msheet-grab i {
+  display: none;
+}
+:root:has(.fund-hero) .msheet-root .msheet-pick button {
+  line-height: 17px;
+  padding-right: 12px;
+}
+:root:has(.fund-hero) .msheet-root .ms-hero h2 {
+  line-height: 34px;
+  font-weight: 500;
+}
+:root:has(.fund-hero) .msheet-root .ms-hero p {
+  line-height: 17px;
+}
+:root:has(.fund-hero) .msheet-root .ms-stats dt {
+  line-height: 14px;
+}
+:root:has(.fund-hero) .msheet-root .ms-stats dd {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 500;
+}
+:root:has(.fund-hero) .msheet-root .msheet-body h3 {
+  line-height: 17px;
+}
+:root:has(.fund-hero) .msheet-root .ms-edu li {
+  padding: 8px 0;
+}
+:root:has(.fund-hero) .msheet-root .ms-edu li:first-child {
+  padding-top: 2px;
+}
+:root:has(.fund-hero) .msheet-root .ms-edu b {
+  line-height: 17px;
+}
+:root:has(.fund-hero) .msheet-root .ms-edu small {
+  font-size: 12px;
+  line-height: 14px;
+}
+:root:has(.fund-hero) .msheet-root .ms-bg {
+  line-height: 17px;
+}
+:root:has(.fund-hero) .msheet-root .ms-source {
+  line-height: 14px;
+}
+:root:has(.fund-hero) .sheet-root:has(.pf-list) .sheet-title h2 {
+  line-height: 32px;
+  font-weight: 500;
+}
+:root:has(.fund-hero) .sheet-root:has(.pf-list) .sheet-title p {
+  line-height: 14px;
+}
+:root:has(.fund-hero) .sheet-root:has(.pf-list) .mf-search-input {
+  row-gap: 8px;
+  column-gap: 8px;
+}
+:root:has(.fund-hero) .sheet-root:has(.pf-list) .pf-cap {
+  line-height: 14px;
+}
+:root:has(.fund-hero) .sheet-root:has(.pf-list) .pf-list li {
+  line-height: 17px;
+}
+:root:has(.fund-hero) .sheet-root:has(.pf-list) .pf-name small {
+  line-height: 14px;
+}
+:root:has(.fund-hero) .sheet-root:has(.pf-list) .pf-chg {
+  line-height: 14px;
+}
+:root:has(.fund-hero) .sheet-root:has(.pf-list) .pf-sub {
+  line-height: 17px;
+}
+:root:has(.fund-hero) .sheet-root:has(.pf-list) .pf-legend li {
+  font-size: 12px;
+  line-height: 14px;
+  row-gap: 4px;
+  column-gap: 4px;
+}
+.mf-screen:has(.fund-hero) .mf-notice {
+  padding-right: 12px;
+  padding-left: 12px;
+  row-gap: 8px;
+  column-gap: 8px;
+  line-height: 14px;
+}
+.mf-screen:has(.fund-hero) .mgr-avatar,
+:root:has(.fund-hero) .msheet-root .mgr-avatar {
+  font-size: 12px;
+  line-height: 14px;
+}
+.mf-screen:has(.fund-hero) .fund-hero h2,
+.mf-screen:has(.fund-hero) .mx-x,
+.mf-screen:has(.fund-hero) .rc-amount,
+:root:has(.fund-hero) .msheet-root .ms-hero h2,
+:root:has(.fund-hero) .msheet-root .ms-stats dd {
+  letter-spacing: 0;
+}
+:root:has(.fund-hero) .mf-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+:root:has(.fund-hero) .mf-stars .icon {
+  width: 12px;
+  height: 12px;
+}
+:root:has(.fund-hero) .mf-foot-note {
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: 12px;
+  color: var(--text-primary);
+  background: var(--surface-L2);
+  font-size: 14px;
+  line-height: 17px;
+}
