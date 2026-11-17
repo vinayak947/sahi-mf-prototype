@@ -3999,3 +3999,13 @@
   margin-top: 12px;
   padding-bottom: 8px;
 }
+
+/* Fund header in text/primary: the plan · category · stars · risk line (star included), and the labels beside the
+   returns ("3Y annualised", "1D"). The return figures keep their green / red. */
+.mf-screen:has(.fund-hero) .fund-meta-idp,
+.mf-screen:has(.fund-hero) .fund-meta-idp .mf-stars-idp,
+.mf-screen:has(.fund-hero) .fund-meta-idp .icon,
+.mf-screen:has(.fund-hero) .fund-figures-idp .fund-main small,
+.mf-screen:has(.fund-hero) .fund-figures-idp .fund-day small {
+  color: var(--text-primary);
+}
