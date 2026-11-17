@@ -1391,24 +1391,3 @@
   color: var(--ink-3);
 }
 
-/* Folder-style basket cards (Base Design System node 6813:75725). The shape is an SVG drawn behind the content
-   (FolderShape in Baskets.tsx); the card itself loses its border and keeps the tab's 17px above its padding. */
-.bk-card {
-  border: 0;
-  border-radius: 0;
-  padding-top: calc(17px + 16px);
-  overflow: visible;
-}
-.bk-card[data-tint] { overflow: visible; }
-.bk-folder {
-  position: absolute;
-  inset: 0;
-  z-index: -2;
-  overflow: visible;
-  pointer-events: none;
-}
-.bk-folder-back { fill: var(--surface-L0); }
-.bk-folder-front { fill: var(--surface-L1); stroke: var(--border-L1); stroke-width: 1px; }
-:root[data-theme=dark] .bk-folder-back { fill: var(--surface-L3); }
-/* the dotted tint sits on the front sheet only, under its rounded top */
-.bk-card[data-tint]:before { top: 17px; border-radius: 16px 16px 19px 19px; }
