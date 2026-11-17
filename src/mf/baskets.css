@@ -1460,13 +1460,14 @@
    w = (screen − 28) / 1.2; the carousel's content box is the screen less 32, hence (100% + 4px) / 1.2. */
 .hscroll .bk-card { width: calc((100% + 4px) / 1.2); }
 
-/* "3 funds" sits under the basket name as a quiet caption; no arrow, the whole card is the tap target */
+/* "Starter mix • 3 funds": the count follows the name on its line, quieter; no arrow, the whole card is the tap target */
+.bk-title { display: flex; align-items: baseline; gap: 6px; margin-top: 16px; min-width: 0; }
+.bk-title .bk-name { margin: 0; flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bk-card .bk-count {
-  margin: 2px 0 0;
+  flex: none;
+  margin: 0;
   font-family: "SAHI Sans:Regular", sans-serif;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 400;
-  line-height: 16px;
   color: var(--text-secondary);
 }
-.bk-card .bk-count + .bk-who { margin-top: 8px; }

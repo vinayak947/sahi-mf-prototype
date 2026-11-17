@@ -106,8 +106,10 @@ function BasketCard({ basket, tint }: { basket: Basket; tint: number }) {
       <span className="bk-top">
         <FundStack basket={basket} size={28} />
       </span>
-      <b className="bk-name">{basket.name}</b>
-      <span className="bk-count">{basket.funds.length} funds</span>
+      <span className="bk-title">
+        <b className="bk-name">{basket.name}</b>
+        <span className="bk-count">• {basket.funds.length} funds</span>
+      </span>
       <span className="bk-who">{basket.who}</span>
       <span className="bk-stats">
         <span>
