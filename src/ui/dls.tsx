@@ -174,3 +174,48 @@ export function DlsBottomSheet({
     </div>
   );
 }
+
+
+// ---- Number field (DlsNumberField, Size=xLarge · State default / focused / error · Align=center) ---------------------
+// Display-only here: the order pads feed it from their own keypad, so "focused" is set by the pad, with a blinking caret.
+export function DlsNumberField({
+  value,
+  prefix,
+  suffix,
+  hint,
+  message,
+  error,
+  focused = false,
+  size = "xLarge",
+  align = "center",
+  label,
+  caretKey,
+}: {
+  value: string;
+  prefix?: ReactNode;
+  suffix?: ReactNode;
+  hint?: string; // shown in the value's style while the value is empty
+  message?: ReactNode; // helper caption under the field; hidden while an error is set
+  error?: string | null; // any string (even "") puts the field in the error state
+  focused?: boolean;
+  size?: "xxLarge" | "xLarge" | "large" | "medium" | "small"; // xxLarge is custom (64 / 24), not in the DLS
+  align?: "start" | "center" | "end";
+  label: string;
+  caretKey?: string; // changes when the value does, so the caret restarts its blink
+}) {
+  const state = error != null ? "error" : focused ? "focused" : "default";
+  const caption = error ? error : error == null ? message : null;
+  return (
+    <div className={`dls-nf ${size} ${align}`} data-state={state}>
+      <div className="dls-nf-field" role="textbox" aria-readonly="true" aria-label={label} aria-invalid={error != null}>
+        {prefix != null && <span className="dls-nf-affix">{prefix}</span>}
+        <span className="dls-nf-value">
+          {value ? value : <span className="dls-nf-hint">{hint}</span>}
+        </span>
+        {suffix != null && <span className="dls-nf-affix">{suffix}</span>}
+        {focused && <i key={caretKey} className="dls-nf-caret" aria-hidden="true" />}
+      </div>
+      {caption ? <p className={`dls-nf-message${error ? " error" : ""}`}>{caption}</p> : null}
+    </div>
+  );
+}

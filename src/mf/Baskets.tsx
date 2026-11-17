@@ -51,6 +51,7 @@ import {
   Row,
   Screen,
   Stars,
+  Segmented,
 } from "./parts";
 import { ReturnCalculator } from "./ReturnCalculator";
 import { useMf } from "./store";
@@ -148,37 +149,6 @@ function Fold({
   );
 }
 
-// Pill switch with a sliding thumb.
-function Segmented<T extends string>({
-  label,
-  value,
-  onChange,
-  options,
-  className,
-}: {
-  label: string;
-  value: T;
-  onChange: (next: T) => void;
-  options: [T, string][];
-  className?: string;
-}) {
-  const index = Math.max(0, options.findIndex(([key]) => key === value));
-  return (
-    <div
-      className={`bk-seg wide${className ? ` ${className}` : ""}`}
-      role="tablist"
-      aria-label={label}
-      style={{ "--i": index, "--n": options.length } as CSSProperties}
-    >
-      <i className="bk-seg-pill" aria-hidden="true" />
-      {options.map(([key, text]) => (
-        <button key={key} role="tab" aria-selected={value === key} className={value === key ? "on" : ""} onClick={() => onChange(key)}>
-          {text}
-        </button>
-      ))}
-    </div>
-  );
-}
 
 // ---- Researchers ------------------------------------------------------------------------------
 

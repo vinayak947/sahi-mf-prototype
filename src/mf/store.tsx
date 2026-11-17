@@ -112,6 +112,8 @@ type Store = {
   closeAll: () => void;
   segment: Segment;
   setSegment: (segment: Segment) => void;
+  orderPad2: boolean; // dev switch: the order pads use the DLS Number field
+  setOrderPad2: (on: boolean) => void;
   holdings: Holding[];
   basketPositions: BasketPosition[]; // Order 2.0: what is held through baskets
   addBasketPosition: (basketId: string, amount: number, sip?: { amount: number; day: number }) => void;
@@ -163,6 +165,7 @@ export function MfProvider({
   onOpenPage: (page: "orders" | "sip") => void;
 }) {
   const [stack, setStack] = useState<Route[]>([]);
+  const [orderPad2, setOrderPad2] = useState(true); // Order Pad 2.0 is the default; the dev switch turns it off
   const invested = false; // the prototype always opens in the non-invested flow; the dev panel switches it for the visit
   const [segment, setSegmentState] = useState<Segment>(invested ? "holdings" : "new");
   const [holdings, setHoldings] = useState<Holding[]>(invested ? sampleHoldings : []);
@@ -472,6 +475,8 @@ export function MfProvider({
       isVerified,
       verifyBank,
       mfSeen,
+      orderPad2,
+      setOrderPad2,
       markSeen: () => setMfSeen(true),
       placeLump,
       placeSip,
@@ -508,6 +513,7 @@ export function MfProvider({
       isVerified,
       verifyBank,
       mfSeen,
+      orderPad2,
       jump,
       placeLump,
       placeSip,

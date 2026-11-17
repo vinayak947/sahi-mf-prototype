@@ -1,5 +1,6 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "../ui/Icon";
+import { DlsNumberField } from "../ui/dls";
 import { asset } from "../assets";
 import {
   categories,
@@ -58,6 +59,7 @@ import {
   sortFunds,
   Stars,
   useFundView,
+  Segmented,
 } from "./parts";
 import { DotField } from "./DotField";
 import { GoalHero } from "./GoalArt";
@@ -664,7 +666,7 @@ const UPI_AUTOPAY_MAX = 100000;
 const FLIP_MS = 240;
 
 function AmountPad({ fundId, initialMode, preset }: { fundId: string; initialMode: "lump" | "sip"; preset?: number }) {
-  const { pop, push, payMethod, holdings } = useMf();
+  const { pop, push, payMethod, holdings, orderPad2 } = useMf();
   const fund = fundById(fundId);
   const [mode, setMode] = useState(initialMode);
   const [switched, setSwitched] = useState(false); // true after the first flip, so the first paint does not animate twice
@@ -742,107 +744,85 @@ function AmountPad({ fundId, initialMode, preset }: { fundId: string; initialMod
     else push({ name: "checkout", fundId, amount });
   }
 
-  return (
-    <Screen
-      onBack={pop}
-      className="pad"
-      backdrop={<DotField active={!typed} />}
-      heading={<PadHeading fund={fund} />}
-      footer={
+  const payRow = (
+    <div className={`mf-paywith${swap}`} key={mode}>
+      {sip ? (
         <>
-          <div className={`mf-paywith${swap}`} key={mode}>
-            {sip ? (
-              <>
-                <span className="mf-paywith-mode">
-                  <span className="mf-paywith-logo mandate">
-                    <img src={asset("mandate-hdfc.png")} alt="" />
-                  </span>
-                  Pay via Mandate
-                  <Icon name="chevron-down" size={16} />
-                </span>
-                <span>{accountLabel(account)}</span>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={() => !low && push({ name: "paymode", fundId, amount })}
-                  disabled={low}
-                  aria-label="Change payment method"
-                >
-                  <span className={`mf-paywith-logo${method.filled ? " filled" : ""}`}>
-                    <img src={asset(method.logo)} alt="" />
-                  </span>
-                  {method.title}
-                  <Icon name="chevron-down" size={16} />
-                </button>
-                <span>{method.sub}</span>
-              </>
-            )}
-          </div>
-          <button className="mf-btn solid wide" disabled={low} onClick={go}>
-            Invest
-          </button>
+          <span className="mf-paywith-mode">
+            <span className="mf-paywith-logo mandate">
+              <img src={asset("mandate-hdfc.png")} alt="" />
+            </span>
+            Pay via Mandate
+            <Icon name="chevron-down" size={16} />
+          </span>
+          <span>{accountLabel(account)}</span>
         </>
-      }
-    >
-      <div ref={amountRef} className={`mf-pad-amount${low && amount > 0 ? " error" : ""}`}>
-        <div className="mf-pad-label">
-          <p key={mode} className={swap.trim()}>
-            {sip ? "Monthly SIP amount" : "One time amount"}
-          </p>
-          <PadModeSwitch
-            oneTime={!sip}
-            onSwitch={switchMode}
-            blocked={sip ? fund.buy !== undefined : fund.buy === "halted"}
-          />
-        </div>
-        <div className="mf-pad-figure" data-digits={digits.split(".")[0].length}>
-          <b>
-            <span className="rupee">₹</span>
-            {digits ? <RollingAmount value={digits} /> : <em>0</em>}
-          </b>
-          <i className="caret" />
-          <ClearAmount show={digits !== ""} onClear={() => { setTyped(true); setDigits(""); }} />
-        </div>
-        <span className="mf-pad-words">{rupeesInWords(amount)}</span>
-        {low && <small>{problem}</small>}
-      </div>
-      <div ref={quickRef} className="mf-quick pad">
-        {PAD_QUICK.map((q) => (
+      ) : (
+        <>
           <button
-            key={q}
-            onClick={() => {
-              setTyped(true);
-              setDigits(String(Math.round((amount + q) * 100) / 100));
-            }}
+            onClick={() => !low && push({ name: "paymode", fundId, amount })}
+            disabled={low}
+            aria-label="Change payment method"
           >
-            + {inr(q)}
+            <span className={`mf-paywith-logo${method.filled ? " filled" : ""}`}>
+              <img src={asset(method.logo)} alt="" />
+            </span>
+            {method.title}
+            <Icon name="chevron-down" size={16} />
           </button>
-        ))}
-      </div>
-
-      {sip && (
-        <button
-          className={`mf-sip-date${swap}`}
-          onClick={() => {
-            setDraft(day);
-            setPicking(true);
-          }}
-          aria-haspopup="dialog"
-        >
-          <Icon name="calendar" size={20} />
-          <span className="mf-sip-date-label">Monthly SIP on {ordinal(day)}</span>
-          <Icon name="chevron-down-solid" size={16} />
-        </button>
+          <span>{method.sub}</span>
+        </>
       )}
-
-      <Keypad
-        onKey={(k) => {
-          setTyped(true);
-          setDigits((d) => applyKey(d, k));
-        }}
+    </div>
+  );
+  const investBtn = (
+    <button className="mf-btn solid wide" disabled={low} onClick={go}>
+      Invest
+    </button>
+  );
+  const labelRow = (
+    <div className="mf-pad-label">
+      <p key={mode} className={swap.trim()}>
+        {sip ? "Monthly SIP amount" : "One time amount"}
+      </p>
+      <PadModeSwitch
+        oneTime={!sip}
+        onSwitch={switchMode}
+        blocked={sip ? fund.buy !== undefined : fund.buy === "halted"}
       />
-
+    </div>
+  );
+  const quickRow = (
+    <div ref={quickRef} className="mf-quick pad">
+      {PAD_QUICK.map((q) => (
+        <button
+          key={q}
+          onClick={() => {
+            setTyped(true);
+            setDigits(String(Math.round((amount + q) * 100) / 100));
+          }}
+        >
+          + {inr(q)}
+        </button>
+      ))}
+    </div>
+  );
+  const dateBtn = sip && (
+    <button
+      className={`mf-sip-date${swap}`}
+      onClick={() => {
+        setDraft(day);
+        setPicking(true);
+      }}
+      aria-haspopup="dialog"
+    >
+      <Icon name="calendar" size={20} />
+      <span className="mf-sip-date-label">Monthly SIP on {ordinal(day)}</span>
+      <Icon name="chevron-down-solid" size={16} />
+    </button>
+  );
+  const sheets = (
+    <>
       {sip && picking && (
         <Sheet
           title="Choose SIP instalment date"
@@ -879,6 +859,83 @@ function AmountPad({ fundId, initialMode, preset }: { fundId: string; initialMod
         </Sheet>
       )}
       {sip && picking && explain && <SipDatesInfo day={draft} amount={amount} onClose={() => setExplain(false)} />}
+    </>
+  );
+  const onKey = (k: string) => {
+    setTyped(true);
+    setDigits((d) => applyKey(d, k));
+  };
+
+  // Order Pad 2.0 (dev switch): the amount is a DLS Number field, the way the Figma order pad draws it, with the
+  // payment row and Invest above the keypad.
+  if (orderPad2)
+    return (
+      <Screen onBack={pop} className="pad v2" heading={<PadHeading fund={fund} />}>
+        <div className="mf-pad2-center">
+        <div ref={amountRef} className="mf-pad2-amount">
+          <Segmented
+            label="Order type"
+            value={mode}
+            onChange={(next) => next !== mode && switchMode()}
+            options={[
+              ["lump", "Lumpsum", sip && fund.buy !== undefined],
+              ["sip", "SIP", !sip && fund.buy === "halted"],
+            ]}
+          />
+          <DlsNumberField
+            size="xxLarge"
+            label={sip ? "Monthly SIP amount" : "One time amount"}
+            prefix="₹"
+            value={digits}
+            hint="0"
+            focused
+            caretKey={digits}
+            error={low && amount > 0 ? problem : null}
+            message={rupeesInWords(amount) || "Enter an amount"}
+          />
+        </div>
+        {quickRow}
+        {dateBtn}
+        </div>
+        <div className="mf-pad2-pay">
+          {payRow}
+          {investBtn}
+        </div>
+        <Keypad decimal onKey={onKey} />
+        {sheets}
+      </Screen>
+    );
+
+  return (
+    <Screen
+      onBack={pop}
+      className="pad"
+      backdrop={<DotField active={!typed} />}
+      heading={<PadHeading fund={fund} />}
+      footer={
+        <>
+          {payRow}
+          {investBtn}
+        </>
+      }
+    >
+      <div ref={amountRef} className={`mf-pad-amount${low && amount > 0 ? " error" : ""}`}>
+        {labelRow}
+        <div className="mf-pad-figure" data-digits={digits.split(".")[0].length}>
+          <b>
+            <span className="rupee">₹</span>
+            {digits ? <RollingAmount value={digits} /> : <em>0</em>}
+          </b>
+          <i className="caret" />
+          <ClearAmount show={digits !== ""} onClear={() => { setTyped(true); setDigits(""); }} />
+        </div>
+        <span className="mf-pad-words">{rupeesInWords(amount)}</span>
+        {low && <small>{problem}</small>}
+      </div>
+      {quickRow}
+      {dateBtn}
+      <Keypad onKey={onKey} />
+      {sheets}
     </Screen>
   );
 }
@@ -1147,7 +1204,7 @@ function lastNavDay(now: Date): Date {
 }
 
 export function RedeemScreen({ fundId }: { fundId: string }) {
-  const { pop, replace, holdings, placeRedeem } = useMf();
+  const { pop, replace, holdings, placeRedeem, orderPad2 } = useMf();
   const fund = fundById(fundId);
   const holding = holdings.find((h) => h.fundId === fundId);
   const [by, setBy] = useState<RedeemBy>("amount");
@@ -1268,6 +1325,32 @@ export function RedeemScreen({ fundId }: { fundId: string }) {
         </Notice>
       ) : (
         <>
+          {orderPad2 ? (
+            <div className="mf-pad2-amount">
+              <div className="mf-pad-label">
+                <p>{by === "amount" ? "Redemption amount" : "Units to redeem"}</p>
+              </div>
+              <DlsNumberField
+                size="xxLarge"
+                label={by === "amount" ? "Redemption amount" : "Units to redeem"}
+                prefix={by === "amount" ? "₹" : undefined}
+                value={digits}
+                hint="0"
+                focused
+                caretKey={digits}
+                error={problem ?? null}
+                message={
+                  by === "amount" && n > 0 ? (
+                    <>
+                      {rupeesInWords(n)} · {helper}
+                    </>
+                  ) : (
+                    helper
+                  )
+                }
+              />
+            </div>
+          ) : (
           <div className={`mf-pad-amount${problem ? " error" : ""}`}>
             <p>{by === "amount" ? "Redemption amount" : "Units to redeem"}</p>
             <div className="mf-pad-figure" data-digits={digits.split(".")[0].length}>
@@ -1281,6 +1364,8 @@ export function RedeemScreen({ fundId }: { fundId: string }) {
             {by === "amount" && <span className="mf-pad-words">{rupeesInWords(n)}</span>}
             {problem ? <small>{problem}</small> : <small className="hint">{helper}</small>}
           </div>
+
+          )}
 
           <label className={`mf-redeem-all${all ? " on" : ""}`}>
             <input type="checkbox" checked={all} onChange={toggleAll} />

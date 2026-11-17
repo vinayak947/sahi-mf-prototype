@@ -432,3 +432,104 @@ button.dls-kv {
   pointer-events: none;
 }
 
+
+
+/* ---- Number field (SAHI Components · DLS "Number field") ---------------------------------------------------------
+   Height 56/48/40/32, padding 16·14 / 12·10 / 8·6, radius 12, affix gap 8 (4 small), border 1 (1.5 focused / error),
+   focus ring 3 outside at 12% of the active stroke. Border border/brand-secondary, active icon/brand, error
+   icon/negative; value text/primary, message text/secondary, error text/negative. */
+.dls-nf {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.dls-nf-field {
+  --nf-border: 1px;
+  --nf-stroke: var(--border-L2);
+  position: relative;
+  display: flex;
+  height: 56px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: calc(14px - var(--nf-border)) calc(16px - var(--nf-border));
+  border: var(--nf-border) solid var(--nf-stroke);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 24px;
+  white-space: nowrap;
+}
+
+/* xxLarge: custom size above the DLS xLarge, for the order pad amount. Not a DLS size. */
+.dls-nf.xxLarge .dls-nf-field { height: 64px; font-size: 24px; line-height: 28.8px; }
+.dls-nf.large .dls-nf-field { height: 48px; }
+.dls-nf.medium .dls-nf-field { height: 40px; padding: calc(10px - var(--nf-border)) calc(12px - var(--nf-border)); font-size: 16px; line-height: 19.2px; }
+.dls-nf.small .dls-nf-field { height: 32px; gap: 4px; padding: calc(6px - var(--nf-border)) calc(8px - var(--nf-border)); font-size: 14px; line-height: 16.8px; }
+.dls-nf.start .dls-nf-field { justify-content: flex-start; }
+.dls-nf.end .dls-nf-field { justify-content: flex-end; }
+
+.dls-nf[data-state="focused"] .dls-nf-field {
+  --nf-border: 1.5px;
+  --nf-stroke: var(--accent-default);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-default) 12%, transparent);
+}
+
+.dls-nf[data-state="error"] .dls-nf-field {
+  --nf-border: 1.5px;
+  --nf-stroke: var(--negative-border);
+}
+
+.dls-nf-affix {
+  flex: none;
+  color: var(--text-secondary);
+}
+
+.dls-nf-value {
+  min-width: 0;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+}
+
+.dls-nf-hint {
+  color: var(--text-tertiary);
+}
+
+.dls-nf-caret {
+  flex: none;
+  width: 1.5px;
+  height: 1.2em;
+  margin-left: -4px;
+  background: var(--accent-default);
+  animation: mf-blink 1s steps(2, jump-none) infinite;
+}
+
+.dls-nf-message {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 14.4px;
+  text-align: center;
+}
+
+.dls-nf.start .dls-nf-message { text-align: left; }
+.dls-nf.end .dls-nf-message { text-align: right; }
+
+.dls-nf-message.error {
+  color: var(--negative-text);
+}
+
+.dls-nf-message b {
+  color: var(--text-primary);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-weight: 500;
+}

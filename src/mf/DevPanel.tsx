@@ -10,7 +10,7 @@ type DevToggle = {
 
 // Prototype-only switches, opened from the ₹ button on home. Add a row to `toggles` for each new switch.
 export function DevPanel({ onClose }: { onClose: () => void }) {
-  const { segment, setSegment } = useMf();
+  const { segment, setSegment, orderPad2, setOrderPad2 } = useMf();
 
   const toggles: DevToggle[] = [
     {
@@ -18,6 +18,12 @@ export function DevPanel({ onClose }: { onClose: () => void }) {
       sub: "The user already holds funds: holdings, past orders and running SIPs.",
       on: segment === "holdings",
       onChange: (on) => setSegment(on ? "holdings" : "new"),
+    },
+    {
+      label: "Order Pad 2.0",
+      sub: "Order pads use the DLS Number field: outlined, focused, with the amount in words below.",
+      on: orderPad2,
+      onChange: setOrderPad2,
     },
   ];
 

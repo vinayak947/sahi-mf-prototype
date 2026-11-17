@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { asset } from "../assets";
 import { Icon, type IconName } from "../ui/Icon";
 import { riskLevels, type CategoryKey, type Fund, type Risk } from "./data";
@@ -639,5 +639,37 @@ export function CategoryIcon({ cat, big = false }: { cat: IconKey; big?: boolean
         {ICON_PATHS[cat]}
       </svg>
     </span>
+  );
+}
+
+// Pill switch with a sliding thumb.
+export function Segmented<T extends string>({
+  label,
+  value,
+  onChange,
+  options,
+  className,
+}: {
+  label: string;
+  value: T;
+  onChange: (next: T) => void;
+  options: [T, string, boolean?][]; // [key, label, disabled]
+  className?: string;
+}) {
+  const index = Math.max(0, options.findIndex(([key]) => key === value));
+  return (
+    <div
+      className={`bk-seg wide${className ? ` ${className}` : ""}`}
+      role="tablist"
+      aria-label={label}
+      style={{ "--i": index, "--n": options.length } as CSSProperties}
+    >
+      <i className="bk-seg-pill" aria-hidden="true" />
+      {options.map(([key, text, off]) => (
+        <button key={key} role="tab" aria-selected={value === key} className={value === key ? "on" : ""} disabled={off} onClick={() => onChange(key)}>
+          {text}
+        </button>
+      ))}
+    </div>
   );
 }

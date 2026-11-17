@@ -5096,3 +5096,51 @@ em.amo.st-failed {
     }
   }
 }
+
+
+/* ---- Order Pad 2.0 (default; the dev switch turns it off): DLS Number field, Figma order pad layout ------------- */
+
+/* Plain surface: no drifting dots behind the field. */
+.mf-screen.pad.v2 {
+  background: var(--surface-L1);
+}
+
+/* The whole order block (label, field, chips, date) sits centred between the header and the payment row. */
+.mf-pad2-center {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  margin-block: auto;
+}
+
+.mf-pad2-amount {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.mf-pad2-amount .mf-pad-label {
+  align-self: center;
+}
+
+.mf-pad2-pay {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.mf-pad2-pay .mf-btn {
+  font-size: 16px;
+  line-height: 19.2px;
+}
+
+.mf-screen.pad.v2 .mf-keypad {
+  margin-top: 8px;
+}
+
+/* Redeem pad: the field is centred between the header and the keypad, as the old figure was. */
+.mf-screen.pad.redeem .mf-pad2-amount {
+  margin-top: auto;
+}
