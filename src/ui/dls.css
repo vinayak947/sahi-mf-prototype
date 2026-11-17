@@ -491,6 +491,12 @@ button.dls-kv {
   color: var(--text-secondary);
 }
 
+/* xxLarge (order pad): the rupee sign matches the amount's size but in Regular weight. */
+.dls-nf.xxLarge .dls-nf-affix {
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-weight: 400;
+}
+
 .dls-nf-value {
   min-width: 0;
   overflow: hidden;
