@@ -1,9 +1,10 @@
 import "./idp-vars.css";
 import "./fundidp.css";
+import "./charges.css";
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { asset } from "../../assets";
 import { Icon } from "./Icon";
-import { cutoffKind, fundById, riskLevels, type Fund } from "../data";
+import { cutoffKind, fundById, funds, riskLevels, type Fund } from "../data";
 import {
   afterCutoff,
   cutoffLabel,
@@ -54,9 +55,9 @@ import { useMf } from "../store";
 export function FundRow({ fund, basis = "3Y" }: { fund: Fund; basis?: ReturnBasis }) {
   const { push } = useMf();
   return (
-    <button className="list-row fund-row" onClick={() => push({ name: "fund", fundId: fund.id })}>
+    <button className="list-row-idp fund-row-idp" onClick={() => push({ name: "fund", fundId: fund.id })}>
       <FundMark fund={fund} />
-      <span className="row-main">
+      <span className="row-main-idp">
         <b>{fund.name}</b>
         <small>
           {fundCategory(fund)} • <Stars n={fund.stars} />
@@ -135,9 +136,9 @@ function NavChart({ fund, range, onRange, navOn }: { fund: Fund; range: Range; o
   }, [scrub.x, scrub.nav, scrub.on, w]);
 
   return (
-    <div className="mf-chart">
+    <div className="mf-chart-idp">
       <div
-        className="mf-chart-plot"
+        className="mf-chart-plot-idp"
         ref={plot}
         onPointerDown={(e) => {
           try {
@@ -186,7 +187,7 @@ function NavChart({ fund, range, onRange, navOn }: { fund: Fund; range: Range; o
           </div>
         </div>
       </div>
-      <div className="mf-ranges" role="tablist" aria-label="Chart range">
+      <div className="mf-ranges-idp" role="tablist" aria-label="Chart range">
         {ranges.map((r) => (
           <button key={r} className={r === range ? "on" : ""} onClick={() => onRange(r)}>
             {r}
@@ -385,7 +386,7 @@ function RiskWidget({ fund }: { fund: Fund }) {
         <Icon name="caret-right" size={16} />
       </button>
       {levelsOpen && <RiskLevelsSheet fund={fund} onClose={() => setLevelsOpen(false)} />}
-      <p className="mf-small risk-note">
+      <p className="mf-small-idp risk-note">
         Your principal will be at {fund.risk.toLowerCase()} risk. The fund house reviews this level every month against the actual portfolio.
       </p>
     </div>
@@ -605,69 +606,48 @@ const dayWord = (days: number) =>
   days % 365 === 0 ? `${days / 365} ${days === 365 ? "year" : "years"}` : days === 30 ? "1 month" : days % 30 === 0 && days < 365 ? `${days / 30} months` : `${days} ${days === 1 ? "day" : "days"}`;
 const pctWord = (v: number) => `${Number(v.toFixed(3))}%`;
 
-function ChargeRow({ label, value, nil }: { label: string; value: ReactNode; nil?: boolean }) {
+function ChargeRow({ title, note, value }: { title: string; note: ReactNode; value?: ReactNode }) {
   return (
-    <li>
-      <span>{label}</span>
-      <b className={nil ? "nil" : undefined}>{value}</b>
+    <li className="chg-row">
+      <div className="chg-text">
+        <span className="chg-title">{title}</span>
+        <span className="chg-note">{note}</span>
+      </div>
+      {value ? <b>{value}</b> : null}
     </li>
   );
 }
 
 function ChargesAndTax({ fund }: { fund: Fund }) {
-  // Exit load: one row per step, then "Nil". A day-by-day scale (liquid funds) collapses to its longest window and top rate.
   const steps = [...fund.loads].sort((x, y) => x.days - y.days);
+  const last = steps[steps.length - 1];
+  // Tax comes in three kinds: equity (20% under a year, 12.5% after, first ₹1.25 lakh free), gold and silver (slab under two years, 12.5% after), and debt (slab rate always).
+  // Prototype: the kind rotates through the fund list so every state can be seen on the funds page, whatever the category.
+  const taxKind = (["equity", "gold", "debt"] as const)[Math.max(0, funds.findIndex((f) => f.id === fund.id)) % 3];
+  const tax =
+    taxKind === "debt"
+      ? "Returns are taxed as per your Income Tax slab."
+      : taxKind === "gold"
+        ? "If you redeem within two years, returns are taxed as per your Income Tax slab. If you redeem after two years, returns are taxed at 12.5%."
+        : "If you redeem within one year, returns are taxed at 20%. If you redeem after one year, returns exceeding ₹1.25 lakh in a financial year are taxed at 12.5%.";
+  // Exit load: Nil, a lock-in, one step, a ladder of steps, or a day-by-day scale (liquid funds).
   const scale = steps.length > 3;
-  const tiers = scale ? [{ days: steps[steps.length - 1].days + 1, pct: Math.max(...steps.map((t) => t.pct)) }] : steps;
-  const debt = fund.cat === "debt" || fund.cat === "liquid";
+  const exitLoad = fund.lockIn
+    ? `Nil. Units are locked in for ${fund.lockIn}, so they can't be redeemed before that.`
+    : !last
+      ? "Nil"
+      : scale
+        ? `${pctWord(steps[0].pct)} if redeemed on day ${steps[0].days}, reducing to ${pctWord(last.pct)} by day ${last.days}. Nil after that.`
+        : steps.length === 1
+          ? `${pctWord(last.pct)} if you redeem within ${dayWord(last.days)}. Nothing after that.`
+          : `${steps.map((t) => `${pctWord(t.pct)} within ${dayWord(t.days)}`).join(", ")}. Nothing after that.`;
+  const exitText = fund.loadFree && last && !fund.lockIn ? `${exitLoad} The first ${Math.round(fund.loadFree * 100)}% of units each year are free.` : exitLoad;
   return (
-    <div className="chg">
-      <section className="chg-group">
-        <h4>Yearly cost</h4>
-        <ul className="chg-rows">
-          <ChargeRow label="Expense ratio" value={`${fund.expense}% a year`} />
-          <ChargeRow label="On ₹1 lakh invested" value={`${inr(Math.round(fund.expense * 1000))} a year`} />
-        </ul>
-        <p className="chg-note">Taken daily from the NAV. You never pay it separately.</p>
-      </section>
-
-      <section className="chg-group">
-        <h4>If you sell early</h4>
-        <ul className="chg-rows">
-          {fund.lockIn ? (
-            <>
-              <ChargeRow label={`Within ${fund.lockIn}`} value="Can't sell" />
-              <ChargeRow label={`After ${fund.lockIn}`} value="Nil" nil />
-            </>
-          ) : (
-            <>
-              {fund.loadFree ? <ChargeRow label={`First ${Math.round(fund.loadFree * 100)}% of units each year`} value="Nil" nil /> : null}
-              {tiers.map((t) => (
-                <ChargeRow key={t.days} label={`Within ${scale ? dayWord(steps[steps.length - 1].days) : dayWord(t.days)}`} value={`${scale ? "Up to " : ""}${pctWord(t.pct)}`} />
-              ))}
-              <ChargeRow label={tiers.length ? `After ${scale ? dayWord(steps[steps.length - 1].days) : dayWord(tiers[tiers.length - 1].days)}` : "Exit load"} value="Nil" nil />
-            </>
-          )}
-        </ul>
-      </section>
-
-      <section className="chg-group">
-        <h4>Tax on gains</h4>
-        <ul className="chg-rows">
-          {debt ? (
-            <ChargeRow label="Added to your income" value="Your slab rate" />
-          ) : (
-            <>
-              <ChargeRow label="Sold within 12 months" value="20%" />
-              <ChargeRow label="Sold after 12 months" value="12.5%" />
-            </>
-          )}
-        </ul>
-        <p className="chg-note">
-          {debt ? "Assumes no other capital gains. Your own rate may differ." : "After 12 months, the first ₹1.25 lakh of gains each financial year is tax-free. Assumes no other capital gains; your own rate may differ."}
-        </p>
-      </section>
-    </div>
+    <ul className="chg">
+      <ChargeRow title="Expense ratio" note="Inclusive of GST and statutory charges" value={`${fund.expense}% a year`} />
+      <ChargeRow title="Exit load" note={exitText} />
+      <ChargeRow title="Tax implication" note={tax} />
+    </ul>
   );
 }
 
@@ -719,7 +699,7 @@ export function FundScreen({ fundId }: { fundId: string }) {
           </button>
         ) : fund.buy === "restricted" ? (
           // A fund this person can't buy (like Groww, but with no dead buttons): the bottom bar says why and offers nothing to tap.
-          <p className="mf-foot-note">{fund.buyNote}</p>
+          <p className="mf-foot-note-idp">{fund.buyNote}</p>
         ) : fund.buy === "sip-only" ? (
           <button className="mf-btn solid wide" onClick={() => push({ name: "amount", fundId, mode: "sip" })}>
             Start SIP
@@ -739,13 +719,13 @@ export function FundScreen({ fundId }: { fundId: string }) {
       <div className="fund-hero">
         <FundMark fund={fund} size={48} />
         <h2 data-dock-anchor>{fund.name}</h2>
-        <p className="fund-meta">
+        <p className="fund-meta-idp">
           {fundCategory(fund)} • <Stars n={fund.stars} /> • {riskText}
         </p>
       </div>
       {fund.buyNote && fund.buy !== "restricted" && <Notice tone="warn">{fund.buyNote}</Notice>}
 
-      <div className="fund-figures">
+      <div className="fund-figures-idp">
         <div className="fund-main">
           <strong className={rangeChange >= 0 ? "up" : "down"}>
             <Ticker value={rangeChange} format={(v) => pct(v, 1)} armed={counting} ms={700} />
@@ -796,7 +776,7 @@ export function FundScreen({ fundId }: { fundId: string }) {
             ["sip", "SIP"],
           ]}
         />
-        <table className="mf-table">
+        <table className="mf-table-idp">
           <thead>
             <tr>
               <th />
@@ -823,7 +803,7 @@ export function FundScreen({ fundId }: { fundId: string }) {
             </tr>
           </tbody>
         </table>
-        <p className="mf-small">
+        <p className="mf-small-idp">
           {retMode === "lump" ? "Annualised, for a lumpsum held the whole period." : "Annualised (XIRR), for a monthly SIP over the period."} Past
           performance does not predict future returns.
         </p>
@@ -835,9 +815,9 @@ export function FundScreen({ fundId }: { fundId: string }) {
 
 
       <Fold title="About the fund" summary={ageText(fund.launched) ?? undefined} defaultOpen={false}>
-        <p className="mf-body-copy">{fund.aim}</p>
+        <p className="mf-body-copy-idp">{fund.aim}</p>
         {/* the facts that are not shown anywhere else on the page: AUM and Min. SIP are in the top row, the expense ratio is under Charges and tax */}
-        <div className="mf-grid2 about-facts">
+        <div className="mf-grid2-idp about-facts">
           <Row label="Minimum one-time" value={fund.buy === "restricted" ? "Not available" : fund.buy ? "Not open" : inr(fund.minLump)} />
           <Row label="Launched" value={<>{fund.launched}{launchedAge(fund.launched)}</>} />
         </div>
@@ -867,7 +847,7 @@ export function FundScreen({ fundId }: { fundId: string }) {
             renderOthers={(who) => {
               const list = otherFunds(who, fund.id);
               return list.length ? (
-                <ul className="row-list">
+                <ul className="row-list-idp">
                   {list.map((other) => (
                     <li key={other.id}>
                       <FundRow fund={other} />
@@ -878,7 +858,7 @@ export function FundScreen({ fundId }: { fundId: string }) {
             }}
           />
         )}
-        <button className="mf-link">
+        <button className="mf-link-idp">
           <Icon name="file-text-fill" size={16} />
           Scheme Information Document
           <Icon name="caret-right" size={16} />
@@ -897,7 +877,7 @@ export function FundScreen({ fundId }: { fundId: string }) {
       )}
 
       {/* PRD dependency: fund data provider. The star rating comes from Value Research; keep this line until compliance says whether the licence needs it. */}
-      <p className="mf-small mf-source">Star ratings by Value Research.</p>
+      <p className="mf-small-idp mf-source-idp">Star ratings by Value Research.</p>
       <Disclaimer />
     </Screen>
   );

@@ -15,7 +15,7 @@ function Pad({ side }: { side: "start" | "end" }) {
   ));
   // k = 0 is the tick next to the first/last value; on the start side it sits on the right.
   return (
-    <span className={`rc-pad ${side}`} aria-hidden="true">
+    <span className={`rc-pad-idp ${side}`} aria-hidden="true">
       {side === "start" ? ticks.reverse() : ticks}
     </span>
   );
@@ -62,10 +62,10 @@ export function Dial({
   };
 
   return (
-    <div className="rc-dial">
+    <div className="rc-dial-idp">
       <div
         ref={ref}
-        className="rc-ruler"
+        className="rc-ruler-idp"
         role="slider"
         tabIndex={0}
         aria-label={label}
@@ -101,11 +101,11 @@ export function Dial({
         {Array.from({ length: count }, (_, i) => {
           const v = min + i * step;
           const kind = v % (step * 10) === 0 ? "major" : v % (step * 5) === 0 ? "mid" : "";
-          return <span key={v} className={`rc-tick ${kind}`} data-label={kind === "major" ? short(v) : undefined} />;
+          return <span key={v} className={`rc-tick-idp ${kind}`} data-label={kind === "major" ? short(v) : undefined} />;
         })}
         <Pad side="end" />
       </div>
-      <i className="rc-mark" aria-hidden="true" />
+      <i className="rc-mark-idp" aria-hidden="true" />
     </div>
   );
 }

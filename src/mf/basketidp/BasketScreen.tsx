@@ -1,5 +1,4 @@
 import "../fundidp/fundidp.css";
-import "./basketidp.css";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { asset } from "../../assets";
 import { Icon } from "../fundidp/Icon";
@@ -24,12 +23,12 @@ export function LogoStack({ basket, size }: { basket: Basket; size: number }) {
   const list = basketFunds(basket);
   const shown = list.slice(0, 3);
   return (
-    <span className="bk-stack" aria-hidden="true">
+    <span className="bk-stack-idp" aria-hidden="true">
       {shown.map(({ fund }, i) => (
         <FundMark key={`${fund.id}-${i}`} fund={fund} size={size} />
       ))}
       {list.length > shown.length && (
-        <span className="bk-more" style={{ width: size, height: size }}>
+        <span className="bk-more-idp" style={{ width: size, height: size }}>
           +{list.length - shown.length}
         </span>
       )}
@@ -40,7 +39,7 @@ export function LogoStack({ basket, size }: { basket: Basket; size: number }) {
 // The mark of the team that picked it. No people yet: the team is the author.
 function TeamMark({ size = 24 }: { size?: number }) {
   return (
-    <span className="bk-team-mark" style={{ width: size, height: size }} aria-hidden="true">
+    <span className="bk-team-mark-idp" style={{ width: size, height: size }} aria-hidden="true">
       <img src={asset("37c13.svg")} alt="" draggable={false} style={{ width: size * 0.58, height: size * 0.58 }} />
     </span>
   );
@@ -49,7 +48,7 @@ function TeamMark({ size = 24 }: { size?: number }) {
 
 function ReviewedBy({ className, action }: { className?: string; action?: ReactNode }) {
   return (
-    <div className={className ?? "bk-sub"}>
+    <div className={className ?? "bk-sub-idp"}>
       <Icon name="shield-check" size={14} />
       <span>{REVIEWED}</span>
       {action}
@@ -101,13 +100,13 @@ function BasketCompare({ basket, range, onRange }: { basket: Basket; range: CmpR
           ["5Y", "5Y"],
         ]}
       />
-      <div className="bkc-chart">
+      <div className="bkc-chart-idp">
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-          <path className="bkc-nifty" d={paths.nifty} vectorEffect="non-scaling-stroke" />
-          <path className="bkc-basket" d={paths.basket} vectorEffect="non-scaling-stroke" />
+          <path className="bkc-nifty-idp" d={paths.nifty} vectorEffect="non-scaling-stroke" />
+          <path className="bkc-basket-idp" d={paths.basket} vectorEffect="non-scaling-stroke" />
         </svg>
       </div>
-      <div className="bkc-legend">
+      <div className="bkc-legend-idp">
         <span>
           <i className="b" />
           {basket.name}
@@ -117,7 +116,7 @@ function BasketCompare({ basket, range, onRange }: { basket: Basket; range: CmpR
           {NIFTY50.name}
         </span>
       </div>
-      <table className="mf-table bkc-table">
+      <table className="mf-table-idp bkc-table-idp">
         <thead>
           <tr>
             <th />
@@ -142,10 +141,10 @@ function BasketCompare({ basket, range, onRange }: { basket: Basket; range: CmpR
           </tr>
         </tbody>
       </table>
-      <p className="bkc-verdict">
+      <p className="bkc-verdict-idp">
         <b className={ahead >= 0 ? "up" : "down"}>{pct(Math.abs(ahead), 1).replace("+", "")} a year {ahead >= 0 ? "ahead of" : "behind"}</b> the {NIFTY50.name} over {years === 1 ? "1 year" : `${years} years`}.
       </p>
-      <p className="mf-small">
+      <p className="mf-small-idp">
         The {NIFTY50.name} is India&rsquo;s 50 biggest companies, with dividends added back. Annualised. A basket holds more than company shares, so it
         can move differently. Past performance does not predict future returns.
       </p>
@@ -242,7 +241,7 @@ export function BasketScreen({ basketId }: { basketId: string }) {
       <div className="fund-hero">
         <LogoStack basket={basket} size={48} />
         <h2 data-dock-anchor>{basket.name}</h2>
-        <p className="fund-meta">{basket.who}</p>
+        <p className="fund-meta-idp">{basket.who}</p>
       </div>
       {buy.fund && buy.state === "paused" && (
         <Notice tone="warn">{buy.fund.name} is not taking new money right now, so this basket can't be started until it reopens.</Notice>
@@ -251,7 +250,7 @@ export function BasketScreen({ basketId }: { basketId: string }) {
         <Notice tone="warn">{buy.fund.name} has stopped one-time investments, so this basket can only be started as a SIP.</Notice>
       )}
 
-      <div className="fund-figures">
+      <div className="fund-figures-idp">
         <div className="fund-main">
           <strong className={r3 >= 0 ? "up" : "down"}>
             <Ticker value={r3} format={(v) => pct(v, 1).replace("+", "")} armed={counting} ms={700} />
@@ -264,7 +263,7 @@ export function BasketScreen({ basketId }: { basketId: string }) {
         </div>
       </div>
 
-      <dl className="fund-stats bk-stats-page">
+      <dl className="fund-stats bk-stats-page-idp">
         <div>
           <dt>Funds</dt>
           <dd>{basket.funds.length}</dd>
@@ -280,23 +279,23 @@ export function BasketScreen({ basketId }: { basketId: string }) {
       </dl>
 
       <Fold title="What&rsquo;s inside" summary={`${basket.funds.length} funds`} defaultOpen>
-        <div className="bk-bar" aria-hidden="true">
+        <div className="bk-bar-idp" aria-hidden="true">
           {list.map((f, i) => (
             <i key={`${f.fund.id}-${i}`} style={{ flexGrow: f.weight, background: SHADES[i % SHADES.length] }} />
           ))}
         </div>
-        <ul className="bk-rows">
+        <ul className="bk-rows-idp">
           {list.map(({ fund, weight }, i) => (
             <li key={`${fund.id}-${i}`}>
-              <button className="bk-row" onClick={() => push({ name: "fund", fundId: fund.id })}>
+              <button className="bk-row-idp" onClick={() => push({ name: "fund", fundId: fund.id })}>
                 <FundMark fund={fund} size={40} />
-                <span className="bk-row-text">
+                <span className="bk-row-text-idp">
                   <b>{fund.name}</b>
                   <small>
                     {fundCategory(fund)} • <Stars n={fund.stars} />
                   </small>
                 </span>
-                <span className="bk-weight">
+                <span className="bk-weight-idp">
                   <i style={{ background: SHADES[i % SHADES.length] }} />
                   {weight}%
                 </span>
@@ -304,11 +303,11 @@ export function BasketScreen({ basketId }: { basketId: string }) {
             </li>
           ))}
         </ul>
-        <p className="mf-small">Tap a fund to see it. Direct plans, with no commission on any fund here.</p>
+        <p className="mf-small-idp">Tap a fund to see it. Direct plans, with no commission on any fund here.</p>
       </Fold>
 
       <Fold title="Why this basket?" summary={basket.whyShort} defaultOpen={false}>
-        <div className="bk-pick-head">
+        <div className="bk-pick-head-idp">
           <TeamMark size={32} />
           <span>
             <b>SAHI Research</b>
@@ -317,7 +316,7 @@ export function BasketScreen({ basketId }: { basketId: string }) {
             </small>
           </span>
         </div>
-        <ul className="bk-how">
+        <ul className="bk-how-idp">
           {basket.how.map((line) => (
             <li key={line}>
               <Icon name="check-circle" size={16} />
@@ -329,9 +328,9 @@ export function BasketScreen({ basketId }: { basketId: string }) {
 
       {/* Suitability, after why it was picked. The title is a question, so the closed header is its one-line answer (whoShort), like "Why this basket?" above. */}
       <Fold title="Who is this for" summary={basket.whoShort} defaultOpen={false}>
-        <ul className="bk-fit-list">
+        <ul className="bk-fit-list-idp">
           <li>
-            <span className="bk-fit-icon" style={{ color: riskColour }}>
+            <span className="bk-fit-icon-idp" style={{ color: riskColour }}>
               <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M4.5 16.5a8.5 8.5 0 1 1 15 0" />
                 <path d="M12 14.5l3.2-4.2" />
@@ -343,12 +342,12 @@ export function BasketScreen({ basketId }: { basketId: string }) {
             </p>
           </li>
           <li>
-            <span className="bk-fit-icon" style={{ color: "var(--accent-text)" }}>
+            <span className="bk-fit-icon-idp" style={{ color: "var(--accent-text)" }}>
               <Icon name="clock" size={22} />
             </span>
             <p>
               Suggested holding period: {basket.years}+ {basket.years === 1 ? "year" : "years"}
-              <span className="bk-fit-note"> · {lockIn ? `${lockIn} lock-in` : "No lock-in period"}</span>
+              <span className="bk-fit-note-idp"> · {lockIn ? `${lockIn} lock-in` : "No lock-in period"}</span>
             </p>
           </li>
         </ul>
@@ -374,7 +373,7 @@ export function BasketScreen({ basketId }: { basketId: string }) {
             ["sip", "SIP"],
           ]}
         />
-        <table className="mf-table">
+        <table className="mf-table-idp">
           <thead>
             <tr>
               <th />
@@ -400,7 +399,7 @@ export function BasketScreen({ basketId }: { basketId: string }) {
             </tr>
           </tbody>
         </table>
-        <p className="mf-small">
+        <p className="mf-small-idp">
           {retMode === "lump" ? "Annualised, for a lumpsum held the whole period." : "Annualised (XIRR), for a monthly SIP over the period."} Each figure is the
           funds&rsquo; own, weighted by their share. Past performance does not predict future returns.
         </p>
@@ -473,24 +472,24 @@ export function BasketScreen({ basketId }: { basketId: string }) {
             )}
           />
         )}
-        <p className="mf-small">
+        <p className="mf-small-idp">
           Reviewed {REVIEWED}, next review {NEXT_REVIEW}. A basket is the research team&rsquo;s view, not advice made for you.
         </p>
       </Fold>
 
       <Fold title="Charges" summary={`${basketCost(basket).toFixed(2)}% a year`} defaultOpen={false}>
-        <div className="mf-facts">
+        <div className="mf-facts-idp">
           <Row label="Minimum one-time" value={inr(basketMin(basket, "lump"))} />
           <Row label="Cost a year" value={`${basketCost(basket).toFixed(2)}%, each fund's own cost weighted by its share. Charged daily from each fund's NAV.`} />
           {list.map(({ fund }, i) => (
             <Row key={`${fund.id}-${i}`} label={`Exit load, ${fund.name}`} value={fund.exitLoad} />
           ))}
         </div>
-        <p className="mf-small">The minimum is the smallest amount that meets every fund&rsquo;s own minimum at these shares.</p>
+        <p className="mf-small-idp">The minimum is the smallest amount that meets every fund&rsquo;s own minimum at these shares.</p>
       </Fold>
 
       <Fold title="Riskometer" summary={risk} defaultOpen={false}>
-        <div className="risk-top bk-risk">
+        <div className="risk-top bk-risk-idp">
           <Riskometer risk={risk} compact />
           <div className="risk-text">
             <b>{risk}</b>
@@ -501,8 +500,8 @@ export function BasketScreen({ basketId }: { basketId: string }) {
         </p>
       </Fold>
 
-      <p className="mf-small mf-source">Star ratings by Value Research.</p>
-      <p className="mf-small bk-limits">
+      <p className="mf-small-idp mf-source-idp">Star ratings by Value Research.</p>
+      <p className="mf-small-idp bk-limits-idp">
         A basket is a set of funds our research team chose to sit together. It isn&rsquo;t advice made for you, so check that it fits your goal and how much
         risk you can take. Past returns aren&rsquo;t a promise. The past 3 years is each fund&rsquo;s own figure, weighted by its share.
       </p>

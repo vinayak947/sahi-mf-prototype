@@ -1,4 +1,4 @@
-/* Fund page (IDP) styles, taken from the SAHI MF prototype source (Jeevanshu, 16 Nov).
+/* Fund page (IDP) styles, taken from the SAHI MF prototype source (fund and basket pages, Jeevanshu, 16 Nov).
    Classes only this page uses are written as is; classes other screens also use are scoped to the fund page
    with :root:has(.fund-hero), so nothing outside it changes. */
 @keyframes mf-back {
@@ -81,6 +81,11 @@
     opacity: 0;
   }
 }
+@keyframes bk-bar-in-idp {
+  from {
+    transform: scaleX(0);
+  }
+}
 @keyframes vb-pop {
   0% {
     opacity: 0;
@@ -134,7 +139,105 @@
     opacity: 0;
   }
 }
-:root:has(.fund-hero) .fund-mark {
+:root:has(.idp) .hscroll.dragging {
+  cursor: grabbing;
+  scroll-snap-type: none;
+  user-select: none;
+}
+:root:has(.idp) .chip-row {
+  display: flex;
+  gap: 8px;
+  margin: 16px -16px 0;
+  padding: 0 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+:root:has(.idp) .chip-row::-webkit-scrollbar {
+  display: none;
+}
+:root:has(.idp) .chart-line {
+  fill: none;
+  stroke-linejoin: round;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+:root:has(.idp) .chart-line.up {
+  stroke: var(--positive-text);
+}
+:root:has(.idp) .chart-line.down {
+  stroke: var(--negative-text-subtle);
+}
+:root:has(.idp) .chart-area.up {
+  fill: var(--positive-transparent-L3);
+}
+:root:has(.idp) .chart-area.down {
+  fill: var(--negative-transparent-L3);
+}
+:root:has(.idp) .chart-badge.up {
+  background: var(--positive-surface);
+}
+:root:has(.idp) .chart-badge.down {
+  background: var(--negative-surface);
+}
+:root:has(.idp) .row-list-idp {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+:root:has(.idp) .row-list-idp > li + li {
+  border-top: 1px solid var(--line);
+}
+.list-row-idp {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 0;
+  border: 0;
+  text-align: left;
+  background: transparent;
+}
+.row-main-idp b,
+.row-side-idp b {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 16.8px;
+}
+.row-side-idp b {
+  justify-content: flex-end;
+}
+.row-main-idp small,
+.row-side-idp small {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 14.4px;
+}
+.row-main-idp small {
+  color: var(--ink-3);
+}
+.row-side-idp {
+  text-align: right;
+}
+:root:has(.idp) .list-row-idp.with-art img {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  object-fit: contain;
+}
+:root:has(.idp) .list-row-idp.with-art .row-main-idp {
+  flex: 1;
+}
+:root:has(.idp) .order-qty i.sell {
+  color: var(--negative-text);
+  background: var(--negative-subtle);
+}
+:root:has(.idp) .fund-mark {
   display: inline-grid;
   flex: none;
   place-items: center;
@@ -146,44 +249,44 @@
   font-family: "SAHI Sans:Medium", sans-serif;
   letter-spacing: 0.2px;
 }
-:root:has(.fund-hero) .fund-mark:has(img) {
+:root:has(.idp) .fund-mark:has(img) {
   position: relative;
 }
-:root:has(.fund-hero) .fund-mark:has(img)::after {
+:root:has(.idp) .fund-mark:has(img)::after {
   position: absolute;
   inset: 0;
   border-radius: inherit;
   box-shadow: inset 0 0 0 1px var(--border-L1);
   content: "";
 }
-:root:has(.fund-hero) .fund-mark img {
+:root:has(.idp) .fund-mark img {
   width: 100%;
   height: 100%;
   max-width: none;
   object-fit: contain;
   background: var(--surface-L1);
 }
-:root:has(.fund-hero) .mf-stars {
+.mf-stars-idp {
   color: var(--ink-2);
   white-space: nowrap;
 }
-:root:has(.fund-hero) .list-row.fund-row {
+.list-row-idp.fund-row-idp {
   justify-content: flex-start;
 }
-:root:has(.fund-hero) .list-row.fund-row .row-main {
+.list-row-idp.fund-row-idp .row-main-idp {
   min-width: 0;
   flex: 1;
 }
-:root:has(.fund-hero) .list-row.fund-row .row-main b {
+.list-row-idp.fund-row-idp .row-main-idp b {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-:root:has(.fund-hero) .list-row.fund-row .row-side {
+.list-row-idp.fund-row-idp .row-side-idp {
   flex: none;
 }
-.mf-screen:has(.fund-hero) {
+.mf-screen.idp {
   display: flex;
   width: 100%;
   max-width: 600px;
@@ -191,7 +294,7 @@
   flex-direction: column;
   background: var(--surface-L1);
 }
-:root:has(.fund-hero) .mf-head {
+:root:has(.idp) .mf-head {
   display: flex;
   flex: none;
   align-items: center;
@@ -200,7 +303,7 @@
   padding: 52px 16px 8px;
   box-sizing: content-box;
 }
-:root:has(.fund-hero) .mf-head h1 {
+:root:has(.idp) .mf-head h1 {
   margin: 0;
   flex: 1;
   overflow: hidden;
@@ -211,7 +314,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-:root:has(.fund-hero) .mf-back {
+:root:has(.idp) .mf-back {
   display: grid;
   width: 48px;
   height: 48px;
@@ -223,12 +326,12 @@
   border-radius: 50%;
   background: transparent;
 }
-:root:has(.fund-hero) .mf-head-right {
+:root:has(.idp) .mf-head-right {
   display: inline-flex;
   min-width: 32px;
   justify-content: flex-end;
 }
-:root:has(.fund-hero) .mf-body {
+:root:has(.idp) .mf-body {
   display: flex;
   min-height: 0;
   flex: 1;
@@ -237,21 +340,21 @@
   overflow-y: auto;
   overscroll-behavior: contain;
 }
-:root:has(.fund-hero) .mf-body > * {
+:root:has(.idp) .mf-body > * {
   flex: none;
 }
-:root:has(.fund-hero) .mf-foot {
+:root:has(.idp) .mf-foot {
   flex: none;
   padding: 12px 16px 28px;
   border-top: 1px solid var(--line);
   background: var(--surface-L1);
 }
-:root:has(.fund-hero) .mf-actions {
+:root:has(.idp) .mf-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
-:root:has(.fund-hero) .mf-btn {
+:root:has(.idp) .mf-btn {
   height: 48px;
   padding: 0 24px;
   border: 1px solid var(--ink);
@@ -262,23 +365,29 @@
   font-size: 14px;
   white-space: nowrap;
 }
-:root:has(.fund-hero) .mf-btn.solid {
+:root:has(.idp) .mf-btn.solid {
   color: var(--text-inverse);
   background: var(--surface-inverse);
 }
-:root:has(.fund-hero) .mf-btn.wide {
+:root:has(.idp) .mf-btn.wide {
   width: 100%;
 }
-:root:has(.fund-hero) .mf-btn:disabled {
+:root:has(.idp) .mf-btn:disabled {
   border-color: var(--line);
   color: var(--ink-3);
   background: var(--line);
   cursor: not-allowed;
 }
-:root:has(.fund-hero) .mf-btn:active:not(:disabled) {
+:root:has(.idp) .mf-btn:active:not(:disabled) {
   transform: scale(0.985);
 }
-:root:has(.fund-hero) .mf-lede.big {
+:root:has(.idp) .mf-lede {
+  margin: 8px 0 12px;
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 20px;
+}
+:root:has(.idp) .mf-lede.big {
   margin-top: 0;
   color: var(--ink);
   font-family: "SAHI Season Display Mix:Medium", serif;
@@ -287,45 +396,45 @@
   letter-spacing: -0.6px;
   line-height: 28px;
 }
-:root:has(.fund-hero) .mf-small {
+.mf-small-idp {
   margin: 12px 0 0;
   color: var(--ink-3);
   font-size: 12px;
   line-height: 16px;
 }
-:root:has(.fund-hero) .mf-small.center {
+:root:has(.idp) .mf-small-idp.center {
   text-align: center;
 }
-:root:has(.fund-hero) .mf-body-copy {
+.mf-body-copy-idp {
   margin: 0 0 12px;
   color: var(--ink-2);
   font-size: 14px;
   line-height: 20px;
 }
-:root:has(.fund-hero) .mf-body-copy.bold {
+:root:has(.idp) .mf-body-copy-idp.bold {
   margin-bottom: 8px;
   color: var(--ink);
   font-family: "SAHI Sans:Medium", sans-serif;
 }
-:root:has(.fund-hero) .mf-empty {
+:root:has(.idp) .mf-empty {
   margin: 24px 0;
   color: var(--ink-3);
   font-size: 14px;
   text-align: center;
 }
-:root:has(.fund-hero) .mf-foot-note,
-:root:has(.fund-hero) .mf-source,
-:root:has(.fund-hero) .mf-disclaimer {
+.mf-foot-note-idp,
+.mf-source-idp,
+.mf-disclaimer-idp {
   margin: 16px 0 0;
   color: var(--ink-3);
   font-size: 11px;
   line-height: 15px;
 }
-:root:has(.fund-hero) .mf-disclaimer {
+.mf-disclaimer-idp {
   margin-top: 12px;
   color: var(--ink-2);
 }
-:root:has(.fund-hero) .mf-link {
+.mf-link-idp {
   display: flex;
   width: 100%;
   align-items: center;
@@ -339,11 +448,11 @@
   font-size: 14px;
   text-align: left;
 }
-:root:has(.fund-hero) .mf-link .icon:last-child {
+:root:has(.idp) .mf-link-idp .icon:last-child {
   margin-left: auto;
   color: var(--ink-3);
 }
-:root:has(.fund-hero) .mf-kv {
+.mf-kv-idp {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -352,56 +461,56 @@
   font-size: 13px;
   line-height: 18px;
 }
-:root:has(.fund-hero) .mf-kv + .mf-kv {
+.mf-kv-idp + .mf-kv-idp {
   border-top: 1px solid var(--line);
 }
-:root:has(.fund-hero) .mf-card .mf-kv + .mf-kv {
+:root:has(.idp) .mf-card .mf-kv-idp + .mf-kv-idp {
   border-top-color: var(--line-strong);
 }
-:root:has(.fund-hero) .mf-kv > span {
+.mf-kv-idp > span {
   color: var(--ink-2);
 }
-:root:has(.fund-hero) .mf-kv > span small {
+.mf-kv-idp > span small {
   display: block;
   margin-top: 2px;
   color: var(--ink-3);
   font-size: 11px;
 }
-:root:has(.fund-hero) .mf-kv > b {
+.mf-kv-idp > b {
   max-width: 62%;
   font-family: "SAHI Sans:Medium", sans-serif;
   font-weight: 500;
   text-align: right;
 }
-:root:has(.fund-hero) .mf-grid2 {
+.mf-grid2-idp {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0 24px;
 }
-:root:has(.fund-hero) .mf-grid2 .mf-kv {
+.mf-grid2-idp .mf-kv-idp {
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
 }
-:root:has(.fund-hero) .mf-grid2 .mf-kv > b {
+.mf-grid2-idp .mf-kv-idp > b {
   max-width: none;
   text-align: left;
 }
-:root:has(.fund-hero) .mf-grid2 .mf-kv:nth-child(2) {
+.mf-grid2-idp .mf-kv-idp:nth-child(2) {
   border-top: 0;
 }
-:root:has(.fund-hero) .mf-facts .mf-kv {
+.mf-facts-idp .mf-kv-idp {
   flex-direction: column;
   align-items: flex-start;
   gap: 4px;
 }
-:root:has(.fund-hero) .mf-facts .mf-kv > b {
+.mf-facts-idp .mf-kv-idp > b {
   max-width: none;
   font-family: "SAHI Sans:Regular", sans-serif;
   font-weight: 400;
   text-align: left;
 }
-:root:has(.fund-hero) .mf-notice {
+.mf-notice-idp {
   display: flex;
   gap: 10px;
   margin: 16px 0 0;
@@ -412,42 +521,51 @@
   font-size: 12px;
   line-height: 17px;
 }
-:root:has(.fund-hero) .mf-notice .icon {
+:root:has(.idp) .mf-notice-idp .icon {
   margin-top: 1px;
   color: var(--ink-2);
 }
-:root:has(.fund-hero) .mf-notice p {
+.mf-notice-idp p {
   margin: 0;
 }
-:root:has(.fund-hero) .mf-notice b {
+.mf-notice-idp b {
   color: var(--ink);
   font-family: "SAHI Sans:Medium", sans-serif;
   font-weight: 500;
 }
-:root:has(.fund-hero) .mf-notice.warn {
+:root:has(.idp) .mf-notice-idp.warn {
   background: var(--warning-subtle);
   box-shadow: inset 0 0 0 1px var(--border-L1);
 }
-:root:has(.fund-hero) .mf-notice.error {
+:root:has(.idp) .mf-notice-idp.error {
   color: var(--negative-text-contrast);
   background: var(--negative-subtle);
   box-shadow: inset 0 0 0 1px var(--negative-transparent-L2);
 }
-:root:has(.fund-hero) .mf-notice.error .icon {
+:root:has(.idp) .mf-notice-idp.error .icon {
   color: var(--negative-text);
 }
-:root:has(.fund-hero) .mf-fundline > span:not(.fund-mark):not(.icon) {
+:root:has(.idp) .mf-fundline-idp > span:not(.fund-mark):not(.icon) {
   display: flex;
   min-width: 0;
   flex: 1;
   flex-direction: column;
   gap: 2px;
 }
-:root:has(.fund-hero) .mf-empty-card .mf-btn {
+:root:has(.idp) .mf-sortbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 16px 0 4px;
+  color: var(--ink-3);
+  font-size: 12px;
+}
+:root:has(.idp) .mf-empty-card .mf-btn {
   height: 40px;
   font-size: 13px;
 }
-:root:has(.fund-hero) .mf-search-input {
+:root:has(.idp) .mf-search-input {
   display: flex;
   height: 48px;
   align-items: center;
@@ -457,7 +575,7 @@
   color: var(--ink-3);
   background: var(--surface);
 }
-:root:has(.fund-hero) .mf-search-input input {
+:root:has(.idp) .mf-search-input input {
   min-width: 0;
   flex: 1;
   border: 0;
@@ -467,13 +585,13 @@
   font: inherit;
   font-size: 14px;
 }
-:root:has(.fund-hero) .fund-hero {
+:root:has(.idp) .fund-hero {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   margin-top: 8px;
 }
-:root:has(.fund-hero) .fund-hero h2 {
+:root:has(.idp) .fund-hero h2 {
   margin: 16px 0 0;
   font-family: "SAHI Season Display Mix:Medium", serif;
   font-size: 24px;
@@ -481,28 +599,28 @@
   letter-spacing: -0.24px;
   line-height: 28px;
 }
-:root:has(.fund-hero) .fund-meta {
+.fund-meta-idp {
   margin: 8px 0 0;
   color: var(--ink-2);
   font-size: 12px;
   line-height: 16px;
 }
-:root:has(.fund-hero) .mf-head.has-dock-title {
+:root:has(.idp) .mf-head.has-dock-title {
   padding-bottom: 7px;
   border-bottom: 1px solid transparent;
   transition: border-color 200ms ease;
 }
-:root:has(.fund-hero) .mf-head.has-dock-title.title-in {
+:root:has(.idp) .mf-head.has-dock-title.title-in {
   border-bottom-color: var(--line);
 }
-:root:has(.fund-hero) .mf-head h1.dock-title {
+:root:has(.idp) .mf-head h1.dock-title {
   pointer-events: none;
   font-family: "SAHI Sans:Medium", sans-serif;
   font-size: 16px;
   font-weight: 500;
   line-height: 20px;
 }
-:root:has(.fund-hero) .dock-title .dock-inner {
+.dock-title .dock-inner {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -514,84 +632,84 @@
     transform 140ms cubic-bezier(0.23, 1, 0.32, 1),
     filter 140ms cubic-bezier(0.23, 1, 0.32, 1);
 }
-:root:has(.fund-hero) .dock-title.in .dock-inner {
+:root:has(.idp) .dock-title.in .dock-inner {
   opacity: 1;
   filter: blur(0);
   transform: translateY(0);
   transition-duration: 240ms;
 }
-:root:has(.fund-hero) .dock-title .fund-mark {
+:root:has(.idp) .dock-title .fund-mark {
   flex: none;
   border-radius: 6px;
   transform: scale(0.9);
   transition: transform 140ms cubic-bezier(0.23, 1, 0.32, 1);
 }
-:root:has(.fund-hero) .dock-title.in .fund-mark {
+:root:has(.idp) .dock-title.in .fund-mark {
   transform: scale(1);
   transition-duration: 240ms;
 }
-:root:has(.fund-hero) .dock-title .dock-name {
+.dock-title .dock-name {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 @media (prefers-reduced-motion: reduce) {
-:root:has(.fund-hero) .dock-title .dock-inner,
-:root:has(.fund-hero) .dock-title.in .dock-inner {
+.dock-title .dock-inner,
+:root:has(.idp) .dock-title.in .dock-inner {
     filter: none;
     transform: none;
     transition: opacity 140ms ease;
   }
-:root:has(.fund-hero) .dock-title .fund-mark,
-:root:has(.fund-hero) .dock-title.in .fund-mark {
+:root:has(.idp) .dock-title .fund-mark,
+:root:has(.idp) .dock-title.in .fund-mark {
     transform: none;
     transition: none;
   }
 }
-:root:has(.fund-hero) .fund-figures {
+.fund-figures-idp {
   display: flex;
   flex-direction: column;
   gap: 4px;
   margin-top: 32px;
 }
-:root:has(.fund-hero) .fund-main,
-:root:has(.fund-hero) .fund-day {
+.fund-main,
+.fund-day {
   display: flex;
   align-items: baseline;
 }
-:root:has(.fund-hero) .fund-main {
+.fund-main {
   gap: 8px;
 }
-:root:has(.fund-hero) .fund-day {
+.fund-day {
   gap: 6px;
 }
-:root:has(.fund-hero) .fund-figures small {
+.fund-figures-idp small {
   color: var(--ink-3);
   font-size: 12px;
   line-height: 20px;
 }
-:root:has(.fund-hero) .fund-figures strong {
+.fund-figures-idp strong {
   font-family: "SAHI Sans:Medium", sans-serif;
   font-size: 28px;
   font-weight: 500;
   letter-spacing: -0.5px;
   line-height: 32px;
 }
-:root:has(.fund-hero) .fund-day b {
+.fund-day b {
   font-family: "SAHI Sans:Medium", sans-serif;
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
 }
-:root:has(.fund-hero) .fund-figures em {
+.fund-figures-idp em {
   font-family: "SAHI Sans:Regular", sans-serif;
   font-size: 12px;
   font-style: normal;
 }
-:root:has(.fund-hero) .mf-chart {
+.mf-chart-idp {
   margin-top: 24px;
 }
-:root:has(.fund-hero) .fund-stats {
+.fund-stats {
   display: flex;
   flex-wrap: wrap;
   
@@ -599,19 +717,19 @@
   gap: 16px 12px;
   margin: 40px 0 0; 
 }
-:root:has(.fund-hero) .fund-stats > div {
+.fund-stats > div {
   display: flex;
   min-width: 0;
   flex: none;
   flex-direction: column;
   gap: 2px;
 }
-:root:has(.fund-hero) .fund-stats dt {
+.fund-stats dt {
   color: var(--text-tertiary);
   font-size: 12px;
   line-height: 16px;
 }
-:root:has(.fund-hero) .fund-stats dd {
+.fund-stats dd {
   margin: 0;
   font-family: "SAHI Sans:Medium", sans-serif;
   font-size: 14px;
@@ -619,7 +737,7 @@
   line-height: 20px;
   white-space: nowrap;
 }
-:root:has(.fund-hero) .mf-chart-plot {
+.mf-chart-plot-idp {
   position: relative;
   height: 160px;
   
@@ -638,7 +756,7 @@
   pointer-events: none;
   transition: opacity 150ms ease-out;
 }
-:root:has(.fund-hero) .chart-scrub.on {
+:root:has(.idp) .chart-scrub.on {
   opacity: 1;
   transition-duration: 60ms;
 }
@@ -660,7 +778,7 @@
   background: var(--positive-text);
   box-shadow: 0 0 0 2px var(--surface-L1);
 }
-:root:has(.fund-hero) .chart-scrub.down .chart-scrub-dot {
+:root:has(.idp) .chart-scrub.down .chart-scrub-dot {
   background: var(--negative-text-subtle);
 }
 .chart-scrub-label {
@@ -683,7 +801,7 @@
 .chart-scrub-label span {
   color: var(--ink-3);
 }
-:root:has(.fund-hero) .mf-chart-plot svg {
+.mf-chart-plot-idp svg {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -700,18 +818,18 @@
     animation: none;
   }
 }
-:root:has(.fund-hero) .chart-dots.up circle {
+:root:has(.idp) .chart-dots.up circle {
   fill: var(--positive-text);
 }
-:root:has(.fund-hero) .chart-dots.down circle {
+:root:has(.idp) .chart-dots.down circle {
   fill: var(--negative-text-subtle);
 }
-:root:has(.fund-hero) .mf-ranges {
+.mf-ranges-idp {
   display: flex;
   justify-content: space-between;
   margin-top: 12px;
 }
-:root:has(.fund-hero) .mf-ranges button {
+.mf-ranges-idp button {
   min-width: 44px;
   height: 28px;
   padding: 0 12px;
@@ -722,59 +840,59 @@
   font-family: "SAHI Sans:Medium", sans-serif;
   font-size: 12px;
 }
-:root:has(.fund-hero) .mf-ranges button.on {
+:root:has(.idp) .mf-ranges-idp button.on {
   color: var(--ink);
   background: var(--surface);
 }
-:root:has(.fund-hero) .mf-section {
+.mf-section-idp {
   margin: 24px -16px 0;
   padding: 24px 16px 0;
   border-top: 1px solid var(--line);
 }
-:root:has(.fund-hero) .mf-section h3 {
+.mf-section-idp h3 {
   margin: 0 0 12px;
   font-family: "SAHI Sans:Medium", sans-serif;
   font-size: 14px;
   font-weight: 500;
   line-height: 17px;
 }
-:root:has(.fund-hero) .mf-table {
+.mf-table-idp {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
 }
-:root:has(.fund-hero) .mf-table th {
+.mf-table-idp th {
   padding: 0 0 8px;
   color: var(--ink-3);
   font-size: 12px;
   font-weight: 400;
   text-align: right;
 }
-:root:has(.fund-hero) .mf-table td {
+.mf-table-idp td {
   padding: 12px 0;
   border-top: 1px solid var(--line);
   text-align: right;
 }
-:root:has(.fund-hero) .mf-table td:first-child {
+.mf-table-idp td:first-child {
   color: var(--ink-2);
   text-align: left;
 }
-:root:has(.fund-hero) .mf-table b {
+.mf-table-idp b {
   font-family: "SAHI Sans:Medium", sans-serif;
   font-weight: 500;
 }
-:root:has(.fund-hero) .mgr-list {
+.mgr-list {
   display: flex;
   flex-direction: column;
   margin-bottom: 14px;
 }
-:root:has(.fund-hero) .mgr-list > small {
+.mgr-list > small {
   margin-bottom: 4px;
   color: var(--ink-3);
   font-size: 12px;
   line-height: 16px;
 }
-:root:has(.fund-hero) .mgr-row {
+.mgr-row {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -785,31 +903,31 @@
   background: transparent;
   text-align: left;
 }
-:root:has(.fund-hero) .mgr-row:active {
+.mgr-row:active {
   opacity: 0.7;
 }
-:root:has(.fund-hero) .mgr-row > .icon {
+:root:has(.idp) .mgr-row > .icon {
   flex: none;
   color: var(--ink-3);
 }
-:root:has(.fund-hero) .mgr-text {
+.mgr-text {
   display: flex;
   min-width: 0;
   flex: 1;
   flex-direction: column;
 }
-:root:has(.fund-hero) .mgr-text b {
+.mgr-text b {
   font-family: "SAHI Sans:Medium", sans-serif;
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
 }
-:root:has(.fund-hero) .mgr-text small {
+.mgr-text small {
   color: var(--ink-3);
   font-size: 12px;
   line-height: 16px;
 }
-:root:has(.fund-hero) .mgr-avatar {
+.mgr-avatar {
   display: inline-grid;
   flex: none;
   place-items: center;
@@ -820,65 +938,80 @@
   box-shadow: inset 0 0 0 1px var(--line);
   font-family: "SAHI Sans:Medium", sans-serif;
 }
-:root:has(.fund-hero) .mgr-avatar img {
+.mgr-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center top;
 }
-:root:has(.fund-hero) .fund-stats.mgr-stats {
+.fund-stats.mgr-stats {
   margin-top: 24px;
 }
-:root:has(.fund-hero) .mf-amount-field.error {
+:root:has(.idp) .mf-amount-field.error {
   color: var(--negative-text);
 }
-:root:has(.fund-hero) .mf-min.error {
+:root:has(.idp) .mf-min.error {
   color: var(--negative-text);
 }
-:root:has(.fund-hero) .mf-days button.on {
+:root:has(.idp) .mf-days button.on {
   border-color: var(--ink);
   color: var(--text-inverse);
   background: var(--surface-inverse);
 }
-:root:has(.fund-hero) .mf-option.on .radio {
+:root:has(.idp) .mf-option.on .radio {
   border: 6px solid var(--ink);
 }
-:root:has(.fund-hero) .mf-result.bad .ring {
+:root:has(.idp) .mf-result.bad .ring {
   background: var(--negative-surface);
   animation: mf-pop 360ms cubic-bezier(0.2, 1.3, 0.4, 1) both;
 }
-:root:has(.fund-hero) .mf-timeline li.on::before {
+:root:has(.idp) .mf-timeline li.on::before {
   border-color: var(--ink);
   background: var(--surface-inverse);
 }
-:root:has(.fund-hero) .mf-split i.mf {
+:root:has(.idp) .mf-split i.mf {
   background: var(--accent-default);
 }
-:root:has(.fund-hero) .mf-split-legend u.mf {
+:root:has(.idp) .mf-split-legend u.mf {
   background: var(--accent-default);
 }
-:root:has(.fund-hero) .holding-top > b .fund-mark {
+:root:has(.idp) .holding-top > b .fund-mark {
   margin-right: 4px;
 }
-:root:has(.fund-hero) .mf-card .mf-small {
+:root:has(.idp) .mf-card .mf-small-idp {
   padding-bottom: 12px;
 }
-:root:has(.fund-hero) .mf-search-input + .row-list {
+:root:has(.idp) .mf-search-input + .row-list-idp {
   margin-top: 8px;
 }
-:root:has(.fund-hero) .top-card .fund-mark {
+:root:has(.idp) .top-card .fund-mark {
   background: var(--surface-L1);
 }
-:root:has(.fund-hero) .top-card .mf-stars {
+:root:has(.idp) .top-card .mf-stars-idp {
   align-self: start;
   justify-self: end;
   font-size: 12px;
 }
-:root:has(.fund-hero) .mf-menu button.on {
+:root:has(.idp) .mf-filterbar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+:root:has(.idp) .mf-filterbar .chip-row {
+  min-width: 0;
+  flex: 1;
+  margin: 0 -16px 0 0;
+  padding: 0 16px 0 0;
+}
+:root:has(.idp) .mf-filterbar .chip .icon {
+  margin-left: 6px;
+}
+:root:has(.idp) .mf-menu button.on {
   background: var(--surface);
   font-family: "SAHI Sans:Medium", sans-serif;
 }
-:root:has(.fund-hero) .mf-retswitch {
+:root:has(.idp) .mf-retswitch {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -889,20 +1022,20 @@
   font-family: "SAHI Sans:Medium", sans-serif;
   font-size: 13px;
 }
-:root:has(.fund-hero) .mf-retswitch .icon {
+:root:has(.idp) .mf-retswitch .icon {
   color: var(--ink-3);
 }
-:root:has(.fund-hero) .mf-retswitch u {
+:root:has(.idp) .mf-retswitch u {
   text-decoration: none;
 }
-.mf-screen:has(.fund-hero) .mf-filterbar {
+.mf-screen.idp .mf-filterbar {
   margin-top: 12px;
 }
-:root:has(.fund-hero) .row-list:has(.fund-row) > li + li {
+:root:has(.idp) .row-list-idp:has(.fund-row-idp) > li + li {
   position: relative;
   border-top: 0;
 }
-:root:has(.fund-hero) .row-list:has(.fund-row) > li + li::before {
+:root:has(.idp) .row-list-idp:has(.fund-row-idp) > li + li::before {
   position: absolute;
   top: 0;
   right: 0;
@@ -911,13 +1044,23 @@
   background: var(--line);
   content: "";
 }
-.mf-screen:has(.fund-hero) .mf-filterbar {
+:root:has(.idp) .mf-list-title {
+  margin: 32px 0 16px;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 20px;
+}
+.mf-screen.idp .mf-filterbar {
   margin-top: 26px;
 }
-.mf-screen:has(.fund-hero) .mf-sortbar {
+.mf-screen.idp .mf-sortbar {
   margin-top: 12px;
 }
-.mf-screen:has(.fund-hero) .mf-filterbar .chip {
+:root:has(.idp) .mf-list-title + .mf-filterbar {
+  margin-top: 0;
+}
+.mf-screen.idp .mf-filterbar .chip {
   height: 34px;
   border: 1px solid var(--border-L1);
   border-radius: 16px;
@@ -925,19 +1068,28 @@
   font-size: 14px;
   line-height: 16.8px;
 }
-.mf-screen:has(.fund-hero) .mf-filterbar .chip.active {
+.mf-screen.idp .mf-filterbar .chip.active {
   border: 1px solid var(--ink);
   color: var(--ink);
 }
-.mf-screen:has(.fund-hero) .mf-filterbar .chip .icon {
+.mf-screen.idp .mf-filterbar .chip .icon {
   width: 16px;
   height: 16px;
   margin-left: 4px;
 }
-.mf-screen:has(.fund-hero) .mf-menu {
+.mf-screen.idp .mf-menu {
   top: 42px;
 }
-:root:has(.fund-hero) .rc {
+:root:has(.idp) .mf-share {
+  height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 100px;
+  background: transparent;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 13px;
+}
+.rc-idp {
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -945,14 +1097,14 @@
   border: 1px solid var(--border-L1);
   border-radius: 16px;
 }
-:root:has(.fund-hero) .rc-label {
+.rc-label-idp {
   margin-top: 24px;
   color: var(--ink-3);
   font-size: 12px;
   line-height: 14px;
   text-align: center;
 }
-:root:has(.fund-hero) .rc-amount {
+.rc-amount-idp {
   margin-top: 4px;
   font-family: "SAHI Season Display Mix:Medium", serif;
   font-size: 28px;
@@ -961,11 +1113,11 @@
   line-height: 32px;
   text-align: center;
 }
-:root:has(.fund-hero) .rc-dial {
+.rc-dial-idp {
   position: relative;
   margin: 16px -16px 0;
 }
-:root:has(.fund-hero) .rc-ruler {
+.rc-ruler-idp {
   display: flex;
   height: 54px;
   overflow-x: auto;
@@ -977,34 +1129,34 @@
   -webkit-mask-image: linear-gradient(to right, transparent, #000 18%, #000 82%, transparent);
   mask-image: linear-gradient(to right, transparent, #000 18%, #000 82%, transparent);
 }
-:root:has(.fund-hero) .rc-ruler::-webkit-scrollbar {
+.rc-ruler-idp::-webkit-scrollbar {
   display: none;
 }
-:root:has(.fund-hero) .rc-ruler.dragging {
+:root:has(.idp) .rc-ruler-idp.dragging {
   cursor: grabbing;
   scroll-snap-type: none;
   user-select: none;
 }
-:root:has(.fund-hero) .rc-pad {
+.rc-pad-idp {
   display: flex;
   flex: 0 0 calc(50% - 4.5px);
   height: 13.5px;
   overflow: hidden;
 }
-:root:has(.fund-hero) .rc-pad.start {
+:root:has(.idp) .rc-pad-idp.start {
   justify-content: flex-end;
 }
-:root:has(.fund-hero) .rc-pad i {
+.rc-pad-idp i {
   flex: 0 0 9px;
   background: linear-gradient(var(--surface-L3), var(--surface-L3)) center top / 1.5px var(--h) no-repeat;
 }
-:root:has(.fund-hero) .rc-tick {
+.rc-tick-idp {
   position: relative;
   flex: 0 0 9px;
   height: 100%;
   scroll-snap-align: center;
 }
-:root:has(.fund-hero) .rc-tick::before {
+.rc-tick-idp::before {
   content: "";
   position: absolute;
   top: 0;
@@ -1014,15 +1166,15 @@
   border-radius: 2px;
   background: var(--surface-L4);
 }
-:root:has(.fund-hero) .rc-tick.mid::before {
+:root:has(.idp) .rc-tick-idp.mid::before {
   height: 19.5px;
   background: var(--transparent-L4);
 }
-:root:has(.fund-hero) .rc-tick.major::before {
+:root:has(.idp) .rc-tick-idp.major::before {
   height: 25.5px;
   background: var(--text-tertiary);
 }
-:root:has(.fund-hero) .rc-tick.major::after {
+:root:has(.idp) .rc-tick-idp.major::after {
   content: attr(data-label);
   position: absolute;
   top: 33px;
@@ -1033,7 +1185,7 @@
   white-space: nowrap;
   transform: translateX(-50%);
 }
-:root:has(.fund-hero) .rc-mark {
+.rc-mark-idp {
   position: absolute;
   top: 0;
   left: 50%;
@@ -1044,21 +1196,21 @@
   transform: translateX(-50%);
   pointer-events: none;
 }
-:root:has(.fund-hero) .rc-ruler:focus-visible + .rc-mark {
+.rc-ruler-idp:focus-visible + .rc-mark-idp {
   box-shadow: 0 0 0 3px var(--transparent-L3);
 }
-:root:has(.fund-hero) .rc-dot {
+.rc-dot-idp {
   width: 8px;
   height: 8px;
   border-radius: 50%;
 }
-:root:has(.fund-hero) .rc-dot.in {
+:root:has(.idp) .rc-dot-idp.in {
   background: var(--surface-L3);
 }
-:root:has(.fund-hero) .rc-dot.out.up {
+:root:has(.idp) .rc-dot-idp.out.up {
   background: var(--positive-surface);
 }
-:root:has(.fund-hero) .rc-dot.out.down {
+:root:has(.idp) .rc-dot-idp.out.down {
   background: var(--negative-surface);
 }
 .roll-sr {
@@ -1069,30 +1221,30 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
-:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-section {
+:root:has(.idp) .mf-body:has(.fund-hero) .mf-section-idp {
   margin: 24px -16px 0;
   padding: 24px 16px 0;
   border-top: 1px solid var(--line);
 }
-:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-section:has(+ .mf-source) {
+:root:has(.idp) .mf-body:has(.fund-hero) .mf-section-idp:has(+ .mf-source-idp) {
   padding-bottom: 24px;
   border-bottom: 1px solid var(--line);
 }
-:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-section + .mf-small.mf-source {
+:root:has(.idp) .mf-body:has(.fund-hero) .mf-section-idp + .mf-small-idp.mf-source-idp {
   margin-top: 16px;
 }
-:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-section h3 {
+:root:has(.idp) .mf-body:has(.fund-hero) .mf-section-idp h3 {
   margin: 0 0 16px;
   font-family: "SAHI Sans:Medium", sans-serif;
   font-size: 16px;
   font-weight: 500;
   line-height: 20px;
 }
-:root:has(.fund-hero) .mf-body:has(.fund-hero) .fold h3 {
+:root:has(.idp) .mf-body:has(.fund-hero) .fold h3 {
   margin: 0;
   transition: margin-bottom 0.24s cubic-bezier(0.2, 0, 0, 1);
 }
-:root:has(.fund-hero) .mf-body:has(.fund-hero) .fold.open h3 {
+:root:has(.idp) .mf-body:has(.fund-hero) .fold.open h3 {
   margin-bottom: 16px;
 }
 .fold-head {
@@ -1128,22 +1280,22 @@
   font-family: "SAHI Sans:Medium", sans-serif;
   font-weight: 500;
 }
-:root:has(.fund-hero) .fold-summary .up {
+:root:has(.idp) .fold-summary .up {
   color: var(--up);
 }
-:root:has(.fund-hero) .fold-summary .down {
+:root:has(.idp) .fold-summary .down {
   color: var(--down);
 }
-:root:has(.fund-hero) .fold.open .fold-summary {
+:root:has(.idp) .fold.open .fold-summary {
   opacity: 0;
 }
-:root:has(.fund-hero) .fold-head .icon {
+:root:has(.idp) .fold-head .icon {
   flex: none;
   color: var(--ink-3);
   transform: rotate(0deg);
   transition: transform 0.24s cubic-bezier(0.2, 0, 0, 1);
 }
-:root:has(.fund-hero) .fold.open .fold-head .icon {
+:root:has(.idp) .fold.open .fold-head .icon {
   transform: rotate(180deg);
 }
 .fold-head:focus-visible {
@@ -1156,7 +1308,7 @@
   grid-template-rows: 0fr;
   transition: grid-template-rows 0.24s cubic-bezier(0.2, 0, 0, 1);
 }
-:root:has(.fund-hero) .fold.open .fold-body {
+:root:has(.idp) .fold.open .fold-body {
   grid-template-rows: 1fr;
 }
 .fold-inner {
@@ -1164,79 +1316,79 @@
   overflow: hidden;
 }
 @media (prefers-reduced-motion: reduce) {
-:root:has(.fund-hero) .mf-body:has(.fund-hero) .fold h3,
-:root:has(.fund-hero) .fold-head .icon,
+:root:has(.idp) .mf-body:has(.fund-hero) .fold h3,
+:root:has(.idp) .fold-head .icon,
 .fold-body {
     transition: none;
   }
 }
-:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-grid2 {
+:root:has(.idp) .mf-body:has(.fund-hero) .mf-grid2-idp {
   gap: 20px 24px;
 }
-:root:has(.fund-hero) .mf-body:has(.fund-hero) .about-facts {
+:root:has(.idp) .mf-body:has(.fund-hero) .about-facts {
   margin: 4px 0 20px;
 }
-:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-kv > b .age {
+:root:has(.idp) .mf-body:has(.fund-hero) .mf-kv-idp > b .age {
   color: var(--ink-3);
   font-family: "SAHI Sans:Regular", sans-serif;
   font-weight: 400;
 }
-:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-facts {
+:root:has(.idp) .mf-body:has(.fund-hero) .mf-facts-idp {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
-:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-kv {
+:root:has(.idp) .mf-body:has(.fund-hero) .mf-kv-idp {
   padding: 0;
   border-top: 0;
   font-size: 12px;
   line-height: 16px;
 }
-:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-kv > span {
+:root:has(.idp) .mf-body:has(.fund-hero) .mf-kv-idp > span {
   color: var(--ink-3);
 }
-:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-grid2 .mf-kv > b {
+:root:has(.idp) .mf-body:has(.fund-hero) .mf-grid2-idp .mf-kv-idp > b {
   font-size: 14px;
   line-height: 20px;
 }
-:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-facts .mf-kv > b {
+:root:has(.idp) .mf-body:has(.fund-hero) .mf-facts-idp .mf-kv-idp > b {
   color: var(--ink);
   font-size: 14px;
   line-height: 20px;
 }
-:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-grid2 .mf-kv:nth-child(2) {
+:root:has(.idp) .mf-body:has(.fund-hero) .mf-grid2-idp .mf-kv-idp:nth-child(2) {
   border-top: 0;
 }
-:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-table {
+:root:has(.idp) .mf-body:has(.fund-hero) .mf-table-idp {
   font-size: 14px;
 }
-:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-table td {
+:root:has(.idp) .mf-body:has(.fund-hero) .mf-table-idp td {
   padding: 12px 0;
 }
-:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-link {
+:root:has(.idp) .mf-body:has(.fund-hero) .mf-link-idp {
   margin-top: 4px;
   padding: 0;
   border-top: 0;
 }
-:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-small {
+:root:has(.idp) .mf-body:has(.fund-hero) .mf-small-idp {
   margin-top: 16px;
 }
-:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-disclaimer {
+:root:has(.idp) .mf-body:has(.fund-hero) .mf-disclaimer-idp {
   margin-top: 48px;
 }
-:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-small.mf-source {
+:root:has(.idp) .mf-body:has(.fund-hero) .mf-small-idp.mf-source-idp {
   margin-top: 48px;
 }
-:root:has(.fund-hero) .mf-body:has(.fund-hero) .mf-source + .mf-disclaimer {
+:root:has(.idp) .mf-body:has(.fund-hero) .mf-source-idp + .mf-disclaimer-idp {
   margin-top: 4px;
 }
-.mf-screen.has-hero:has(.fund-hero) {
+.mf-screen.has-hero.idp {
   position: relative;
 }
-.mf-screen.has-hero:has(.fund-hero) .mf-body {
+.mf-screen.has-hero.idp .mf-body {
   padding-top: 0;
 }
-:root:has(.fund-hero) .mf-head.over {
+:root:has(.idp) .mf-head.over {
   position: absolute;
   z-index: 3;
   top: 0;
@@ -1246,23 +1398,38 @@
   border-bottom: 1px solid transparent;
   transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
-:root:has(.fund-hero) .mf-head.over.solid {
+:root:has(.idp) .mf-head.over.solid {
   border-bottom-color: var(--line);
   background: var(--surface-L1);
   color: var(--text-primary);
 }
-:root:has(.fund-hero) .mf-head.over h1 {
+:root:has(.idp) .mf-head.over h1 {
   opacity: 0;
   transition: opacity 0.2s ease;
 }
-:root:has(.fund-hero) .mf-head.over.solid h1 {
+:root:has(.idp) .mf-head.over.solid h1 {
   opacity: 1;
 }
-:root:has(.fund-hero) .mf-head.over .mf-back,
-:root:has(.fund-hero) .mf-head.over .mf-share-icon {
+:root:has(.idp) .mf-head.over .mf-back,
+:root:has(.idp) .mf-head.over .mf-share-icon {
   color: inherit;
 }
-:root:has(.fund-hero) .bucket-hero {
+.mf-share-icon {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  margin-right: -6px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.mf-share-icon small {
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 12px;
+}
+:root:has(.idp) .bucket-hero {
   position: relative;
   height: 259px;
   margin: 0 -16px;
@@ -1270,7 +1437,7 @@
   background: var(--fixed-black);
   text-align: left;
 }
-:root:has(.fund-hero) .bucket-hero h2 {
+:root:has(.idp) .bucket-hero h2 {
   margin: 0;
   color: var(--fixed-white);
   font-family: "SAHI Season Display Mix:Medium", serif;
@@ -1279,19 +1446,28 @@
   letter-spacing: -0.24px;
   line-height: 28px;
 }
-:root:has(.fund-hero) .bucket-hero p {
+:root:has(.idp) .bucket-hero p {
   margin: 0;
   color: var(--fixed-white-secondary);
   font-size: 14px;
   line-height: 16.8px;
 }
-:root:has(.fund-hero) .est-input .rc-amount {
+.est-input .rc-amount-idp {
   margin-top: 8px;
 }
-:root:has(.fund-hero) .est-input .rc-dial {
+.est-input .rc-dial-idp {
   margin-top: 8px;
 }
-.mf-screen:has(.fund-hero) .mf-dock {
+:root:has(.idp) .bucket-estimate + .mf-list-title {
+  margin-top: 46px;
+}
+.mf-list-sub {
+  margin: -8px 0 0; 
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 16px;
+}
+.mf-screen.idp .mf-dock {
   position: sticky;
   z-index: 2;
   top: -16px;
@@ -1300,93 +1476,96 @@
   border-bottom: 1px solid var(--line);
   background: var(--surface-L1);
 }
-.mf-screen:has(.mf-dock):has(.fund-hero) .mf-head {
+.mf-screen:has(.mf-dock).idp .mf-head {
   padding-bottom: 0;
 }
-.mf-screen:not(.has-hero):has(.mf-dock):has(.fund-hero) .mf-body {
+.mf-screen:not(.has-hero):has(.mf-dock).idp .mf-body {
   padding-top: 16px;
 }
-.mf-screen.has-hero:has(.fund-hero) .mf-dock {
+.mf-screen.has-hero.idp .mf-dock {
   top: 101px;
 }
-.mf-screen:has(.fund-hero) .mf-dock .mf-filterbar {
+.mf-screen.idp .mf-dock .mf-filterbar {
   margin-top: 0;
 }
-.mf-screen:has(.fund-hero) .mf-dock .mf-sortbar {
+.mf-screen.idp .mf-dock .mf-sortbar {
   margin-bottom: 0;
 }
-.mf-screen:has(.mf-dock):has(.mf-lede):has(.fund-hero) .mf-body,
-.mf-screen:has(.mf-dock):has(.bucket-intro):has(.fund-hero) .mf-body {
+.mf-screen:has(.mf-dock):has(.mf-lede).idp .mf-body,
+.mf-screen:has(.mf-dock):has(.bucket-intro).idp .mf-body {
   padding-top: 0;
 }
-.mf-screen:has(.mf-dock):has(.mf-lede):has(.fund-hero) .mf-dock,
-.mf-screen:has(.mf-dock):has(.bucket-intro):has(.fund-hero) .mf-dock {
+.mf-screen:has(.mf-dock):has(.mf-lede).idp .mf-dock,
+.mf-screen:has(.mf-dock):has(.bucket-intro).idp .mf-dock {
   top: 0;
 }
-.mf-screen:has(.mf-dock):has(.fund-hero) .mf-lede {
+.mf-screen:has(.mf-dock).idp .mf-lede {
   margin: 0;
 }
-.mf-screen:has(.mf-dock):has(.fund-hero) .mf-lede + .mf-dock {
+.mf-screen:has(.mf-dock).idp .mf-lede + .mf-dock {
   margin-top: 24px;
 }
-.mf-screen:has(.mf-dock):has(.fund-hero) .bucket-intro {
+.mf-screen:has(.mf-dock).idp .bucket-intro {
   margin-top: 6px;
 }
-.mf-screen:has(.mf-dock):not(:has(.mf-lede)):not(:has(.bucket-intro)):not(.has-hero):has(.fund-hero) .mf-body {
+.mf-screen:has(.mf-dock):not(:has(.mf-lede)):not(:has(.bucket-intro)):not(.has-hero).idp .mf-body {
   padding-top: 0;
 }
-.mf-screen:has(.mf-dock):not(:has(.mf-lede)):not(:has(.bucket-intro)):not(.has-hero):has(.fund-hero) .mf-dock {
+.mf-screen:has(.mf-dock):not(:has(.mf-lede)):not(:has(.bucket-intro)):not(.has-hero).idp .mf-dock {
   top: 0;
   margin-top: 0;
 }
-.mf-screen:has(.mf-dock[data-sector]):not(:has(.mf-lede)):not(:has(.bucket-intro)):not(.has-hero):has(.fund-hero) .mf-dock {
+.mf-screen:has(.mf-dock[data-sector]):not(:has(.mf-lede)):not(:has(.bucket-intro)):not(.has-hero).idp .mf-dock {
   margin-top: 24px;
 }
-:root:has(.fund-hero) .mf-head.over.solid.docked {
+:root:has(.idp) .mf-head.over.solid.docked {
   border-bottom-color: transparent;
 }
-.mf-screen.has-hero:has(.fund-hero) .mf-list-title + .mf-dock {
+:root:has(.idp) .bucket-estimate.note-only + .mf-list-title {
+  margin-top: 32px;
+}
+.mf-screen.has-hero.idp .mf-list-title + .mf-dock {
   margin-top: 0;
 }
-:root:has(.fund-hero) .rco .rc-lead {
+.rco .rc-lead-idp {
   margin: 0 0 16px;
   color: var(--ink-3);
   font-size: 12px;
   line-height: 16px;
 }
-:root:has(.fund-hero) .rc-rows {
+.rc-rows-idp {
   display: flex;
   flex-direction: column;
   margin: 20px 0 0;
   padding-top: 4px;
   border-top: 1px dashed var(--line-strong);
 }
-:root:has(.fund-hero) .rc-rows > div {
+.rc-rows-idp > div {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 6px 0;
 }
-:root:has(.fund-hero) .rc-rows dt {
+.rc-rows-idp dt {
   display: flex;
   align-items: center;
   gap: 8px;
   color: var(--ink-2);
   font-size: 13px;
 }
-:root:has(.fund-hero) .rc-rows dd {
+.rc-rows-idp dd {
   margin: 0;
   font-family: "SAHI Sans:Medium", sans-serif;
   font-size: 14px;
   font-weight: 500;
 }
-:root:has(.fund-hero) .rc-rows dd.up {
+:root:has(.idp) .rc-rows-idp dd.up {
   color: var(--up);
 }
-:root:has(.fund-hero) .rc-rows dd.down {
+:root:has(.idp) .rc-rows-idp dd.down {
   color: var(--down);
 }
-:root:has(.fund-hero) .rc-rows .rc-total {
+.rc-rows-idp .rc-total-idp {
   margin-top: 4px;
   padding: 10px 0 0;
   border-top: 1px dashed var(--line-strong);
@@ -1394,10 +1573,10 @@
 .tick-num {
   font-variant-numeric: tabular-nums;
 }
-:root:has(.fund-hero) .mx-x.up {
+:root:has(.idp) .mx-x.up {
   color: var(--up);
 }
-:root:has(.fund-hero) .mx-x.down {
+:root:has(.idp) .mx-x.down {
   color: var(--down);
 }
 .mx {
@@ -1422,7 +1601,7 @@
   text-align: left;
   transition: background-color 160ms ease-out, border-color 160ms ease-out, transform 160ms ease-out;
 }
-:root:has(.fund-hero) .mx-card.on {
+:root:has(.idp) .mx-card.on {
   border-color: var(--line-strong);
   background: var(--surface);
 }
@@ -1434,11 +1613,11 @@
   font-size: 12px;
   line-height: 16px;
 }
-:root:has(.fund-hero) .mx-card.on .mx-label {
+:root:has(.idp) .mx-card.on .mx-label {
   color: var(--ink);
   font-family: "SAHI Sans:Medium", sans-serif;
 }
-:root:has(.fund-hero) .mx-x {
+.mx-x {
   font-family: "SAHI Season Display Mix:Medium", serif;
   font-size: 24px;
   font-weight: 580;
@@ -1447,7 +1626,7 @@
   opacity: 0.55;
   transition: opacity 160ms ease-out;
 }
-:root:has(.fund-hero) .mx-card.on .mx-x {
+:root:has(.idp) .mx-card.on .mx-x {
   opacity: 1;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1466,7 +1645,7 @@
   border-radius: 100px;
   background: var(--surface-L3);
 }
-:root:has(.fund-hero) .seg.wide {
+:root:has(.idp) .seg.wide {
   align-self: stretch;
 }
 .seg-pill {
@@ -1497,11 +1676,11 @@
 .seg button:active {
   transform: scale(0.97);
 }
-:root:has(.fund-hero) .seg button.on {
+:root:has(.idp) .seg button.on {
   color: var(--text-primary);
   font-family: "SAHI Sans:Medium", sans-serif;
 }
-:root:has(.fund-hero) .seg-returns {
+.seg-returns {
   margin-bottom: 16px;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1509,13 +1688,30 @@
     transition: none;
   }
 }
+:root:has(.idp) .mf-filterbar .chip {
+  border: 1px solid var(--border-L1);
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 16.8px;
+}
+:root:has(.idp) .mf-filterbar .chip.active {
+  border: 1px solid var(--border-L2);
+  color: var(--text-primary);
+  font-family: "SAHI Sans:Medium", sans-serif;
+}
+:root:has(.idp) .mf-filterbar .chip .icon {
+  margin-left: 8px;
+}
+:root:has(.idp) .mf-filterbar .chip:has(.icon) {
+  padding-right: 12px;
+}
 .pf-asof {
   margin: 0 0 16px;
   color: var(--ink-3);
   font-size: 12px;
   line-height: 16px;
 }
-:root:has(.fund-hero) .mf-body:has(.fund-hero) .fold.open h3:has(+ .fold-body .pf-asof) {
+:root:has(.idp) .mf-body:has(.fund-hero) .fold.open h3:has(+ .fold-body .pf-asof) {
   margin-bottom: 8px;
 }
 .pf-sec + .pf-sec {
@@ -1563,7 +1759,7 @@
 .pf-legend i.pfc3 {
   background: var(--mix-3);
 }
-:root:has(.fund-hero) .pf-mixbar i.pad {
+:root:has(.idp) .pf-mixbar i.pad {
   background: transparent;
 }
 .pf-legend {
@@ -1593,7 +1789,7 @@
   font-family: "SAHI Sans:Medium", sans-serif;
   font-weight: 500;
 }
-:root:has(.fund-hero) .pf-insight {
+.pf-insight {
   position: relative;
   margin: 16px 0 8px;
   padding: 12px 16px;
@@ -1612,7 +1808,7 @@
   font-weight: 500;
   line-height: 20px;
 }
-:root:has(.fund-hero) .pf-insight-by {
+.pf-insight-by {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -1622,64 +1818,64 @@
   font-size: 12px;
   line-height: 16px;
 }
-:root:has(.fund-hero) .pf-insight-by img {
+.pf-insight-by img {
   flex: none;
 }
-:root:has(.fund-hero) .pf-insight p {
+.pf-insight p {
   margin: 8px 0 0;
   color: var(--ink-2);
   font-size: 14px;
   line-height: 20px;
   text-wrap: pretty;
 }
-:root:has(.fund-hero) .pf-insight-by {
+.pf-insight-by {
   display: inline-flex;
   margin-left: auto;
   transform-origin: center;
   transition: transform 600ms cubic-bezier(0.77, 0, 0.175, 1);
 }
-:root:has(.fund-hero) .pf-insight-by img {
+.pf-insight-by img {
   display: block;
 }
-:root:has(.fund-hero) .pf-insight.think .pf-insight-by {
+.pf-insight.think .pf-insight-by {
   transform: translate(var(--dx, 0), var(--dy, 0)) scale(2);
   transition: none;
 }
-:root:has(.fund-hero) .fold.open .pf-insight.think .pf-insight-by {
+:root:has(.idp) .fold.open .pf-insight.think .pf-insight-by {
   animation: mf-fade 320ms cubic-bezier(0.23, 1, 0.32, 1) both;
 }
-:root:has(.fund-hero) .fold.open .pf-insight.think .pf-insight-by img {
+:root:has(.idp) .fold.open .pf-insight.think .pf-insight-by img {
   animation: pf-kyro 1100ms cubic-bezier(0.77, 0, 0.175, 1) both;
 }
-:root:has(.fund-hero) .pf-insight.think .pf-insight-tag,
-:root:has(.fund-hero) .pf-insight.think p {
+.pf-insight.think .pf-insight-tag,
+.pf-insight.think p {
   opacity: 0;
 }
-:root:has(.fund-hero) .pf-insight.reveal .pf-insight-tag {
+.pf-insight.reveal .pf-insight-tag {
   animation: mf-rise 320ms 300ms cubic-bezier(0.23, 1, 0.32, 1) both;
 }
-:root:has(.fund-hero) .pf-insight.reveal .w {
+:root:has(.idp) .pf-insight.reveal .w {
   display: inline-block;
   animation: mf-rise 320ms calc(380ms + var(--w) * 40ms) cubic-bezier(0.23, 1, 0.32, 1) both;
 }
-:root:has(.fund-hero) .pf-insight.swap {
+:root:has(.idp) .pf-insight.swap {
   animation: mf-fade 180ms ease-out both;
 }
 @media (prefers-reduced-motion: reduce) {
-:root:has(.fund-hero) .pf-insight.think .pf-insight-by {
+.pf-insight.think .pf-insight-by {
     transform: none;
   }
-:root:has(.fund-hero) .pf-insight-by {
+.pf-insight-by {
     transition: none;
   }
-:root:has(.fund-hero) .pf-insight.think .pf-insight-tag,
-:root:has(.fund-hero) .pf-insight.think p {
+.pf-insight.think .pf-insight-tag,
+.pf-insight.think p {
     opacity: 1;
   }
-:root:has(.fund-hero) .fold.open .pf-insight.think .pf-insight-by,
-:root:has(.fund-hero) .fold.open .pf-insight.think .pf-insight-by img,
-:root:has(.fund-hero) .pf-insight.reveal .pf-insight-tag,
-:root:has(.fund-hero) .pf-insight.reveal .w {
+:root:has(.idp) .fold.open .pf-insight.think .pf-insight-by,
+:root:has(.idp) .fold.open .pf-insight.think .pf-insight-by img,
+.pf-insight.reveal .pf-insight-tag,
+:root:has(.idp) .pf-insight.reveal .w {
     animation: none;
   }
 }
@@ -1731,17 +1927,17 @@
   line-height: 16px;
   font-variant-numeric: tabular-nums;
 }
-:root:has(.fund-hero) .pf-chg.up {
+:root:has(.idp) .pf-chg.up {
   color: var(--up);
 }
-:root:has(.fund-hero) .pf-chg.down {
+:root:has(.idp) .pf-chg.down {
   color: var(--down);
 }
-:root:has(.fund-hero) .pf-chg.new {
+:root:has(.idp) .pf-chg.new {
   color: var(--accent-text);
   font-family: "SAHI Sans:Medium", sans-serif;
 }
-:root:has(.fund-hero) .fold:not(.open) .pf-mixbar {
+:root:has(.idp) .fold:not(.open) .pf-mixbar {
   clip-path: inset(0 100% 0 0 round 6px);
   transition: clip-path 0s linear 260ms;
 }
@@ -1761,7 +1957,7 @@
   line-height: 20px;
   text-align: left;
 }
-:root:has(.fund-hero) .pf-all .icon {
+:root:has(.idp) .pf-all .icon {
   flex: none;
   color: var(--ink-3);
 }
@@ -1818,7 +2014,7 @@
     transition: none;
   }
 }
-:root:has(.fund-hero) .risk {
+:root:has(.idp) .risk {
   display: flex;
   flex-direction: column;
 }
@@ -1850,7 +2046,7 @@
     opacity 240ms ease-out,
     fill 240ms ease-out;
 }
-:root:has(.fund-hero) .rg-lit.on {
+:root:has(.idp) .rg-lit.on {
   opacity: 1;
 }
 .rg-lit.tip {
@@ -1860,11 +2056,11 @@
   stroke: var(--surface-L1);
   stroke-width: 1.2;
 }
-:root:has(.fund-hero) .fold:not(.open) .rg-lit {
+:root:has(.idp) .fold:not(.open) .rg-lit {
   opacity: 0;
   transition: opacity 0s linear 260ms;
 }
-:root:has(.fund-hero) .sheet-root.enter .rg-lit {
+:root:has(.idp) .sheet-root.enter .rg-lit {
   opacity: 0;
   transition: none;
 }
@@ -1887,7 +2083,7 @@
   letter-spacing: -0.32px;
   line-height: 36px;
 }
-:root:has(.fund-hero) .rg-center b.long {
+:root:has(.idp) .rg-center b.long {
   font-size: 26px;
   line-height: 30px;
 }
@@ -1896,7 +2092,7 @@
   font-size: 14px;
   line-height: 16.8px;
 }
-:root:has(.fund-hero) .risk-top {
+.risk-top {
   display: flex;
   align-items: center;
   gap: 16px;
@@ -1925,40 +2121,40 @@
   font-size: 12px;
   line-height: 16px;
 }
-:root:has(.fund-hero) .rg.sm {
+:root:has(.idp) .rg.sm {
   width: 132px;
   height: 118px;
   flex: none;
 }
-:root:has(.fund-hero) .rg.sm svg {
+:root:has(.idp) .rg.sm svg {
   width: 100%;
   height: 100%;
 }
-:root:has(.fund-hero) .rg.sm .rg-center {
+:root:has(.idp) .rg.sm .rg-center {
   top: 56%;
   width: auto;
 }
-:root:has(.fund-hero) .rg.sm .rg-center {
+:root:has(.idp) .rg.sm .rg-center {
   gap: 0;
 }
-:root:has(.fund-hero) .rg.sm .rg-center b {
+:root:has(.idp) .rg.sm .rg-center b {
   font-size: 28px;
   letter-spacing: 0;
   line-height: 30px;
 }
-:root:has(.fund-hero) .rg.sm .rg-center span {
+:root:has(.idp) .rg.sm .rg-center span {
   color: var(--ink-3);
   font-size: 11px;
   line-height: 14px;
 }
-:root:has(.fund-hero) .risk-text {
+.risk-text {
   display: flex;
   min-width: 0;
   flex: 1;
   flex-direction: column;
   gap: 4px;
 }
-:root:has(.fund-hero) .risk-text b {
+.risk-text b {
   font-family: "SAHI Season Display Mix:Medium", serif;
   font-size: 24px;
   font-weight: 580;
@@ -1979,7 +2175,7 @@
 .risk-note {
   margin: 12px 0 0;
 }
-:root:has(.fund-hero) .risk-why {
+.risk-why {
   margin: 0;
   color: var(--ink-2);
   font-size: 14px;
@@ -2002,21 +2198,21 @@
   border-radius: 100px 0 0 100px;
   background: var(--negative-surface);
 }
-:root:has(.fund-hero) .risk-bar i.pos {
+:root:has(.idp) .risk-bar i.pos {
   border-radius: 0 100px 100px 0;
   background: var(--positive-surface);
 }
-:root:has(.fund-hero) .risk-bar i.pos.alone {
+:root:has(.idp) .risk-bar i.pos.alone {
   border-radius: 100px;
 }
 .risk-bar i,
-:root:has(.fund-hero) .risk-bar em.dot,
+:root:has(.idp) .risk-bar em.dot,
 .risk-bar u.zero {
   transition: left 320ms cubic-bezier(0.23, 1, 0.32, 1), width 320ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 @media (prefers-reduced-motion: reduce) {
 .risk-bar i,
-:root:has(.fund-hero) .risk-bar em.dot,
+:root:has(.idp) .risk-bar em.dot,
 .risk-bar u.zero {
     transition: none;
   }
@@ -2028,7 +2224,7 @@
   width: 1px;
   background: var(--ink-3);
 }
-:root:has(.fund-hero) .risk-bar em.dot {
+:root:has(.idp) .risk-bar em.dot {
   position: absolute;
   top: 50%;
   width: 14px;
@@ -2062,7 +2258,7 @@
   font-size: 12px;
   font-weight: 400;
 }
-:root:has(.fund-hero) .risk-three dd.down {
+:root:has(.idp) .risk-three dd.down {
   color: var(--down);
 }
 .risk-three > div:nth-child(2) {
@@ -2076,7 +2272,7 @@
     transition: none;
   }
 }
-:root:has(.fund-hero) .msheet-root {
+.msheet-root {
   position: fixed;
   z-index: 60;
   inset: 0;
@@ -2084,7 +2280,7 @@
   align-items: flex-end;
   justify-content: center;
 }
-:root:has(.fund-hero) .msheet-scrim {
+.msheet-scrim {
   position: absolute;
   inset: 0;
   padding: 0;
@@ -2094,11 +2290,11 @@
   opacity: 0;
   transition: opacity 240ms cubic-bezier(0.23, 1, 0.32, 1);
 }
-:root:has(.fund-hero) .msheet-root.open .msheet-scrim {
+:root:has(.idp) .msheet-root.open .msheet-scrim {
   opacity: 1;
   transition-duration: 360ms;
 }
-:root:has(.fund-hero) .msheet {
+.msheet {
   position: relative;
   display: flex;
   width: 100%;
@@ -2113,23 +2309,23 @@
   transform: translateY(100%);
   transition: transform 280ms cubic-bezier(0.32, 0.72, 0, 1);
 }
-:root:has(.fund-hero) .msheet-root.open .msheet {
+:root:has(.idp) .msheet-root.open .msheet {
   transform: none;
   transition-duration: 440ms;
 }
-:root:has(.fund-hero) .msheet.dragging {
+:root:has(.idp) .msheet.dragging {
   transition: none;
 }
-:root:has(.fund-hero) .msheet.leaving {
+:root:has(.idp) .msheet.leaving {
   transition: transform 260ms cubic-bezier(0.32, 0.72, 0, 1);
 }
-:root:has(.fund-hero) .msheet-top {
+.msheet-top {
   flex: none;
   padding: 0 16px;
   touch-action: none;
   user-select: none;
 }
-:root:has(.fund-hero) .msheet-grab {
+.msheet-grab {
   display: flex;
   align-items: flex-start; 
   width: 100%;
@@ -2139,7 +2335,7 @@
   background: transparent;
   cursor: grab;
 }
-:root:has(.fund-hero) .msheet-grab i {
+.msheet-grab i {
   display: block;
   width: 36px;
   height: 4px;
@@ -2147,14 +2343,14 @@
   border-radius: 2px;
   background: var(--line-strong);
 }
-:root:has(.fund-hero) .msheet-pick {
+.msheet-pick {
   display: flex;
   gap: 8px;
   padding-bottom: 8px;
   overflow-x: auto;
   scrollbar-width: none;
 }
-:root:has(.fund-hero) .msheet-pick button {
+.msheet-pick button {
   display: inline-flex;
   height: 36px;
   flex: none;
@@ -2169,33 +2365,33 @@
   line-height: 20px;
   transition: border-color 200ms ease-out, background-color 200ms ease-out, color 200ms ease-out, transform 160ms ease-out;
 }
-:root:has(.fund-hero) .msheet-pick button.on {
+:root:has(.idp) .msheet-pick button.on {
   border-color: var(--border-L2);
   color: var(--text-primary);
   background: var(--surface);
   font-family: "SAHI Sans:Medium", sans-serif;
 }
-:root:has(.fund-hero) .msheet-pick button:active {
+.msheet-pick button:active {
   transform: scale(0.97);
 }
-:root:has(.fund-hero) .msheet-body {
+.msheet-body {
   min-height: 0;
   flex: 1;
   padding: 4px 16px calc(24px + env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
   overscroll-behavior: contain;
 }
-:root:has(.fund-hero) .ms-hero {
+.ms-hero {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding-top: 8px;
   text-align: center;
 }
-:root:has(.fund-hero) .ms-avatar {
+.ms-avatar {
   display: inline-grid;
 }
-:root:has(.fund-hero) .ms-hero h2 {
+.ms-hero h2 {
   margin: 16px 0 4px;
   font-family: "SAHI Season Display Mix:Medium", serif;
   font-size: 28px;
@@ -2203,19 +2399,19 @@
   letter-spacing: -0.4px;
   line-height: 32px;
 }
-:root:has(.fund-hero) .ms-hero p {
+.ms-hero p {
   margin: 0;
   color: var(--ink-2);
   font-size: 14px;
   line-height: 20px;
 }
-:root:has(.fund-hero) .ms-stats {
+.ms-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 8px;
   margin: 24px 0 0;
 }
-:root:has(.fund-hero) .ms-stats > div {
+.ms-stats > div {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -2223,12 +2419,12 @@
   border: 1px solid var(--border-L1);
   border-radius: 16px;
 }
-:root:has(.fund-hero) .ms-stats dt {
+.ms-stats dt {
   color: var(--ink-3);
   font-size: 12px;
   line-height: 16px;
 }
-:root:has(.fund-hero) .ms-stats dd {
+.ms-stats dd {
   margin: 0;
   font-family: "SAHI Season Display Mix:Medium", serif;
   font-size: 22px;
@@ -2236,101 +2432,101 @@
   letter-spacing: -0.2px;
   line-height: 28px;
 }
-:root:has(.fund-hero) .msheet-body section {
+.msheet-body section {
   margin-top: 24px;
 }
-:root:has(.fund-hero) .msheet-body h3 {
+.msheet-body h3 {
   margin: 0 0 8px;
   font-family: "SAHI Sans:Medium", sans-serif;
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
 }
-:root:has(.fund-hero) .ms-edu {
+.ms-edu {
   margin: 0;
   padding: 0;
   list-style: none;
 }
-:root:has(.fund-hero) .ms-edu li {
+.ms-edu li {
   display: flex;
   flex-direction: column;
   gap: 2px;
   padding: 10px 0;
   border-top: 1px solid var(--line);
 }
-:root:has(.fund-hero) .ms-edu li:first-child {
+.ms-edu li:first-child {
   border-top: 0;
   padding-top: 2px;
 }
-:root:has(.fund-hero) .ms-edu b {
+.ms-edu b {
   font-family: "SAHI Sans:Regular", sans-serif;
   font-size: 14px;
   font-weight: 400;
   line-height: 20px;
 }
-:root:has(.fund-hero) .ms-edu small {
+.ms-edu small {
   color: var(--ink-3);
   font-size: 13px;
   line-height: 18px;
 }
-:root:has(.fund-hero) .ms-bg {
+.ms-bg {
   margin: 0;
   color: var(--ink-2);
   font-size: 14px;
   line-height: 20px;
   text-wrap: pretty;
 }
-:root:has(.fund-hero) .ms-source {
+.ms-source {
   margin: 24px 0 0;
   color: var(--ink-3);
   font-size: 12px;
   line-height: 16px;
 }
-:root:has(.fund-hero) .ms-avatar,
-:root:has(.fund-hero) .ms-hero h2,
-:root:has(.fund-hero) .ms-hero p,
-:root:has(.fund-hero) .ms-stats,
-:root:has(.fund-hero) .msheet-body section {
+.ms-avatar,
+.ms-hero h2,
+.ms-hero p,
+.ms-stats,
+.msheet-body section {
   opacity: 0;
 }
-:root:has(.fund-hero) .msheet-root:not(.enter) .ms-hero h2,
-:root:has(.fund-hero) .msheet-root:not(.enter) .ms-hero p,
-:root:has(.fund-hero) .msheet-root:not(.enter) .ms-stats,
-:root:has(.fund-hero) .msheet-root:not(.enter) .msheet-body section {
+:root:has(.idp) .msheet-root:not(.enter) .ms-hero h2,
+:root:has(.idp) .msheet-root:not(.enter) .ms-hero p,
+:root:has(.idp) .msheet-root:not(.enter) .ms-stats,
+:root:has(.idp) .msheet-root:not(.enter) .msheet-body section {
   animation: ms-rise 320ms calc(220ms + var(--k) * 45ms) cubic-bezier(0.23, 1, 0.32, 1) both;
 }
-:root:has(.fund-hero) .msheet-root:not(.enter) .ms-avatar {
+:root:has(.idp) .msheet-root:not(.enter) .ms-avatar {
   animation: ms-land 360ms 160ms cubic-bezier(0.23, 1, 0.32, 1) both;
 }
-:root:has(.fund-hero) .msheet-root.again:not(.enter) .ms-hero h2,
-:root:has(.fund-hero) .msheet-root.again:not(.enter) .ms-hero p,
-:root:has(.fund-hero) .msheet-root.again:not(.enter) .ms-stats,
-:root:has(.fund-hero) .msheet-root.again:not(.enter) .msheet-body section {
+:root:has(.idp) .msheet-root.again:not(.enter) .ms-hero h2,
+:root:has(.idp) .msheet-root.again:not(.enter) .ms-hero p,
+:root:has(.idp) .msheet-root.again:not(.enter) .ms-stats,
+:root:has(.idp) .msheet-root.again:not(.enter) .msheet-body section {
   animation: ms-rise 260ms calc(var(--k) * 30ms) cubic-bezier(0.23, 1, 0.32, 1) both;
 }
-:root:has(.fund-hero) .msheet-root.again:not(.enter) .ms-avatar {
+:root:has(.idp) .msheet-root.again:not(.enter) .ms-avatar {
   animation: ms-land 280ms cubic-bezier(0.23, 1, 0.32, 1) both;
 }
 @media (prefers-reduced-motion: reduce) {
-:root:has(.fund-hero) .msheet,
-:root:has(.fund-hero) .msheet-root.open .msheet {
+.msheet,
+:root:has(.idp) .msheet-root.open .msheet {
     transform: none;
     opacity: 0;
     transition: opacity 150ms ease-out;
   }
-:root:has(.fund-hero) .msheet-root.open .msheet {
+:root:has(.idp) .msheet-root.open .msheet {
     opacity: 1;
   }
-:root:has(.fund-hero) .ms-avatar,
-:root:has(.fund-hero) .ms-hero h2,
-:root:has(.fund-hero) .ms-hero p,
-:root:has(.fund-hero) .ms-stats,
-:root:has(.fund-hero) .msheet-body section {
+.ms-avatar,
+.ms-hero h2,
+.ms-hero p,
+.ms-stats,
+.msheet-body section {
     opacity: 1;
     animation: none !important;
   }
 }
-:root:has(.fund-hero) .sheet-root {
+.sheet-root {
   position: absolute;
   z-index: 5;
   inset: 0;
@@ -2348,7 +2544,7 @@
   opacity: 0;
   transition: opacity 280ms ease-out;
 }
-:root:has(.fund-hero) .sheet {
+.sheet {
   position: relative;
   display: flex;
   width: 100%;
@@ -2361,15 +2557,15 @@
   transform: translateY(100%);
   transition: transform 280ms cubic-bezier(0.32, 0.72, 0, 1);
 }
-:root:has(.fund-hero) .sheet-root.open .sheet-scrim {
+:root:has(.idp) .sheet-root.open .sheet-scrim {
   opacity: 1;
   transition-duration: 440ms;
 }
-:root:has(.fund-hero) .sheet-root.open .sheet {
+:root:has(.idp) .sheet-root.open .sheet {
   transform: none;
   transition-duration: 440ms;
 }
-:root:has(.fund-hero) .sheet.dragging {
+:root:has(.idp) .sheet.dragging {
   transition: none;
 }
 .sheet-head {
@@ -2420,12 +2616,12 @@
   overscroll-behavior: contain;
 }
 @media (prefers-reduced-motion: reduce) {
-:root:has(.fund-hero) .sheet {
+.sheet {
     opacity: 0;
     transform: none;
     transition: opacity 150ms ease;
   }
-:root:has(.fund-hero) .sheet-root.open .sheet {
+:root:has(.idp) .sheet-root.open .sheet {
     opacity: 1;
   }
 }
@@ -2462,13 +2658,13 @@
   height: 12px;
   opacity: 1;
 }
-:root:has(.fund-hero) .rlc-scale i.up {
+:root:has(.idp) .rlc-scale i.up {
   background: var(--positive-surface);
 }
-:root:has(.fund-hero) .rlc-scale i.warn {
+:root:has(.idp) .rlc-scale i.warn {
   background: var(--warning-surface);
 }
-:root:has(.fund-hero) .rlc-scale i.down {
+:root:has(.idp) .rlc-scale i.down {
   background: var(--negative-surface);
 }
 .rlc-text {
@@ -2488,11 +2684,11 @@
   font-size: 12px;
   line-height: 16px;
 }
-:root:has(.fund-hero) .rlc > .icon {
+:root:has(.idp) .rlc > .icon {
   flex: none;
   color: var(--ink-3);
 }
-:root:has(.fund-hero) .sheet.fit {
+:root:has(.idp) .sheet.fit {
   height: auto;
   max-height: 95%;
 }
@@ -2541,13 +2737,13 @@
   line-height: 14.4px;
   font-variant-numeric: tabular-nums;
 }
-:root:has(.fund-hero) .rl-list li > i.up {
+:root:has(.idp) .rl-list li > i.up {
   background: var(--positive-surface);
 }
-:root:has(.fund-hero) .rl-list li > i.warn {
+:root:has(.idp) .rl-list li > i.warn {
   background: var(--warning-surface);
 }
-:root:has(.fund-hero) .rl-list li > i.down {
+:root:has(.idp) .rl-list li > i.down {
   background: var(--negative-surface);
 }
 .rl-list li > span {
@@ -2582,36 +2778,197 @@
   font-style: normal;
   line-height: 14.4px;
 }
-:root:has(.fund-hero) .sheet-root.open .rl-list li {
+:root:has(.idp) .sheet-root.open .rl-list li {
   animation: rl-row 320ms cubic-bezier(0.23, 1, 0.32, 1) both;
   animation-delay: calc(120ms + var(--k) * 40ms);
 }
-:root:has(.fund-hero) .sheet-root.open .rl-list li.here::before {
+:root:has(.idp) .sheet-root.open .rl-list li.here::before {
   animation: rl-tint 280ms ease-out both;
   animation-delay: 520ms;
 }
 @media (prefers-reduced-motion: reduce) {
-:root:has(.fund-hero) .sheet-root.open .rl-list li,
-:root:has(.fund-hero) .sheet-root.open .rl-list li.here::before {
+:root:has(.idp) .sheet-root.open .rl-list li,
+:root:has(.idp) .sheet-root.open .rl-list li.here::before {
     animation: none;
   }
 }
-.mf-screen.tight:has(.fund-hero) .mf-head {
+.bk-sub-idp {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: -12px 0 12px; 
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 16px;
+}
+.bk-sub-idp.bk-eyebrow-idp {
+  margin: 0 0 4px;
+}
+.mf-screen.tight.idp .mf-head {
   padding-bottom: 0;
 }
-.mf-screen.tight:has(.fund-hero) .mf-body {
+.mf-screen.tight.idp .mf-body {
   padding-top: 0;
 }
-:root:has(.fund-hero) .bk-stack .fund-mark {
+:root:has(.idp) .bk-sub-idp .icon {
+  flex: none;
+}
+:root:has(.idp) .bk-sub-idp .text-link {
+  margin-left: auto;
+}
+.bk-stack-idp {
+  display: inline-flex;
+  align-items: center;
+}
+:root:has(.idp) .bk-stack-idp .fund-mark,
+.bk-more-idp {
   box-shadow: inset 0 0 0 1px var(--line), 0 0 0 2px var(--surface-L1);
 }
-:root:has(.fund-hero) .bk-card .fund-mark {
+.bk-stack-idp > * + * {
+  margin-left: -8px;
+}
+.bk-more-idp {
+  display: inline-grid;
+  place-items: center;
+  border-radius: 8px;
+  color: var(--ink-2);
+  background: var(--surface);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 11px;
+}
+:root:has(.idp) .bk-card-idp .fund-mark {
   background: var(--surface-L1);
 }
-:root:has(.fund-hero) .bk-risk + .risk-why {
+.bk-risk-idp + .risk-why {
   margin-top: 16px;
 }
-:root:has(.fund-hero) .bk-split li > span:not(.fund-mark) {
+.bk-pick-head-idp {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.bk-pick-head-idp span:last-child {
+  display: flex;
+  flex-direction: column;
+}
+.bk-pick-head-idp b {
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+.bk-pick-head-idp small {
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 16px;
+}
+.bk-team-mark-idp {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--surface-L2);
+}
+:root[data-theme="dark"] .bk-team-mark-idp img {
+  filter: invert(1);
+}
+.bk-how-idp {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  flex-direction: column;
+  gap: 12px;
+  list-style: none;
+}
+.bk-pick-head-idp + .bk-how-idp {
+  margin-top: 16px;
+}
+.bk-how-idp li {
+  display: flex;
+  gap: 8px;
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 20px;
+}
+:root:has(.idp) .bk-how-idp .icon {
+  flex: none;
+  margin-top: 2px;
+  color: var(--ink-3);
+}
+.bk-bar-idp {
+  display: flex;
+  height: 8px;
+  gap: 2px;
+  margin: 0 0 8px;
+  overflow: hidden;
+  border-radius: 100px;
+}
+.bk-bar-idp i {
+  flex-basis: 0;
+  min-width: 4px;
+  transform-origin: left center;
+  animation: bk-bar-in-idp 480ms 120ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+.bk-bar-idp i {
+    animation: none;
+  }
+}
+.bk-rows-idp {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.bk-row-idp {
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border: 0;
+  color: inherit;
+  text-align: left;
+  background: transparent;
+}
+.bk-row-idp:active {
+  opacity: 0.7;
+}
+.bk-row-text-idp {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+.bk-row-text-idp b {
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+.bk-row-text-idp small {
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 16px;
+}
+.bk-weight-idp {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+.bk-weight-idp i {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+.bk-limits-idp {
+  margin-top: 24px;
+}
+:root:has(.idp) .bk-split-idp li > span:not(.fund-mark) {
   display: flex;
   min-width: 0;
   flex: 1;
@@ -2619,81 +2976,212 @@
   font-size: 14px;
   line-height: 20px;
 }
-:root:has(.fund-hero) .bi-panel-all .row-list {
+:root:has(.idp) .mf-filterbar:has(+ .bi-panel-all) {
+  margin-bottom: 16px;
+}
+:root:has(.idp) .bi-panel-all .row-list-idp {
   min-height: calc(5 * 68px);
 }
-:root:has(.fund-hero) .bi-panel .row-list > li {
+:root:has(.idp) .bi-panel .row-list-idp > li {
   animation: mf-rise 220ms calc(var(--i, 0) * 30ms) cubic-bezier(0.23, 1, 0.32, 1) both;
 }
 @media (prefers-reduced-motion: reduce) {
-:root:has(.fund-hero) .bi-panel .row-list > li {
+:root:has(.idp) .bi-panel .row-list-idp > li {
     animation: mf-fade 150ms both;
   }
 }
-:root:has(.fund-hero) .bkc-legend i.b {
+.bkc-chart-idp {
+  height: 140px;
+  margin: 4px 0 8px;
+}
+.bkc-chart-idp svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.bkc-chart-idp path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.bkc-basket-idp {
+  stroke: var(--accent-text);
+  stroke-width: 2.5;
+}
+.bkc-nifty-idp {
+  stroke: var(--ink-3);
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+}
+.bkc-legend-idp {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin-bottom: 8px;
+  color: var(--ink-2);
+  font-size: 12px;
+  line-height: 16px;
+}
+.bkc-legend-idp span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.bkc-legend-idp i {
+  width: 12px;
+  height: 3px;
+  border-radius: 2px;
+}
+:root:has(.idp) .bkc-legend-idp i.b {
   background: var(--accent-text);
 }
-:root:has(.fund-hero) .bkc-legend i.n {
+:root:has(.idp) .bkc-legend-idp i.n {
   background: repeating-linear-gradient(90deg, var(--ink-3) 0 4px, transparent 4px 6px);
 }
-:root:has(.fund-hero) .ms-hero p.vb-line {
+.bkc-table-idp th:not(:first-child),
+.bkc-table-idp td:not(:first-child) {
+  text-align: right;
+}
+.bkc-verdict-idp {
+  margin: 12px 0 8px;
+  font-size: 14px;
+  line-height: 20px;
+}
+.ms-baskets {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ms-bk {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+}
+.ms-bk:active {
+  opacity: 0.7;
+}
+:root:has(.idp) .ms-bk > .icon {
+  flex: none;
+  color: var(--ink-3);
+}
+.ms-bk-text {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+.ms-bk-text b {
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+.ms-bk-text small {
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 16px;
+}
+.vb-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.ms-hero p.vb-line {
   justify-content: center;
 }
-:root:has(.fund-hero) .fold.open .vbadge.anim {
+.vbadge {
+  display: inline-block;
+  flex: none;
+  overflow: visible;
+}
+.vbadge-seal {
+  fill: var(--vb-fill);
+}
+.vbadge-check {
+  fill: none;
+  stroke: var(--vb-check);
+  stroke-width: 2.3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+.vbadge-glint {
+  fill: #ffffff;
+  opacity: 0;
+  transform: skewX(-18deg);
+}
+:root:has(.idp) .vbadge.anim .vbadge-seal,
+:root:has(.idp) .vbadge.anim .vbadge-check,
+:root:has(.idp) .vbadge.anim .vbadge-glint {
+  animation-fill-mode: both;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+:root:has(.idp) .fold.open .vbadge.anim {
   --vb-delay: 140ms;
 }
-:root:has(.fund-hero) .msheet-root:not(.enter) .vbadge.anim {
+:root:has(.idp) .msheet-root:not(.enter) .vbadge.anim {
   --vb-delay: 560ms;
 }
-:root:has(.fund-hero) .fold.open .vbadge.anim .vbadge-seal,
-:root:has(.fund-hero) .msheet-root:not(.enter) .vbadge.anim .vbadge-seal {
+:root:has(.idp) .fold.open .vbadge.anim .vbadge-seal,
+:root:has(.idp) .msheet-root:not(.enter) .vbadge.anim .vbadge-seal {
   animation: vb-pop 420ms var(--vb-delay) cubic-bezier(0.23, 1, 0.32, 1) both;
 }
-:root:has(.fund-hero) .fold.open .vbadge.anim .vbadge-check,
-:root:has(.fund-hero) .msheet-root:not(.enter) .vbadge.anim .vbadge-check {
+:root:has(.idp) .fold.open .vbadge.anim .vbadge-check,
+:root:has(.idp) .msheet-root:not(.enter) .vbadge.anim .vbadge-check {
   animation: vb-draw 260ms calc(var(--vb-delay) + 180ms) cubic-bezier(0.23, 1, 0.32, 1) both;
 }
-:root:has(.fund-hero) .fold.open .vbadge.anim .vbadge-glint,
-:root:has(.fund-hero) .msheet-root:not(.enter) .vbadge.anim .vbadge-glint {
+:root:has(.idp) .fold.open .vbadge.anim .vbadge-glint,
+:root:has(.idp) .msheet-root:not(.enter) .vbadge.anim .vbadge-glint {
   animation: vb-glint 520ms calc(var(--vb-delay) + 560ms) cubic-bezier(0.77, 0, 0.175, 1) both;
 }
 @media (prefers-reduced-motion: reduce) {
-:root:has(.fund-hero) .fold.open .vbadge.anim .vbadge-seal,
-:root:has(.fund-hero) .msheet-root:not(.enter) .vbadge.anim .vbadge-seal {
+:root:has(.idp) .fold.open .vbadge.anim .vbadge-seal,
+:root:has(.idp) .msheet-root:not(.enter) .vbadge.anim .vbadge-seal {
     animation: vb-fade 200ms var(--vb-delay) ease-out both;
   }
-:root:has(.fund-hero) .fold.open .vbadge.anim .vbadge-check,
-:root:has(.fund-hero) .fold.open .vbadge.anim .vbadge-glint,
-:root:has(.fund-hero) .msheet-root:not(.enter) .vbadge.anim .vbadge-check,
-:root:has(.fund-hero) .msheet-root:not(.enter) .vbadge.anim .vbadge-glint {
+:root:has(.idp) .fold.open .vbadge.anim .vbadge-check,
+:root:has(.idp) .fold.open .vbadge.anim .vbadge-glint,
+:root:has(.idp) .msheet-root:not(.enter) .vbadge.anim .vbadge-check,
+:root:has(.idp) .msheet-root:not(.enter) .vbadge.anim .vbadge-glint {
     animation: none;
   }
 }
-.mf-screen.vflow:has(.fund-hero) .mf-back::before {
+.mf-screen.vflow.idp .mf-back::before {
   position: absolute;
   inset: -10px;
   content: "";
 }
-:root:has(.fund-hero) .pay-check .mf-back {
+:root:has(.idp) .pay-check .mf-back {
   visibility: hidden;
 }
-:root:has(.fund-hero) .mf-seg button.on {
+:root:has(.idp) .mf-seg button.on {
   color: var(--text-inverse);
   background: var(--surface-inverse);
 }
-:root:has(.fund-hero) .mf-seg.wide {
+:root:has(.idp) .mf-seg.wide {
   display: flex;
   margin: 12px 0 0;
 }
-:root:has(.fund-hero) .mf-seg.wide button {
+:root:has(.idp) .mf-seg.wide button {
   flex: 1;
   height: 32px;
 }
-:root:has(.fund-hero) .mf-sheet.sip-date {
+:root:has(.idp) .mf-sheet.sip-date {
   padding-top: 24px;
   background: var(--surface-L1);
 }
-:root:has(.fund-hero) .mf-sheet.sip-date h2 {
+:root:has(.idp) .mf-sheet.sip-date h2 {
   padding: 0 16px;
   font-family: "SAHI Sans:Medium", sans-serif;
   font-size: 20px;
@@ -2702,44 +3190,44 @@
   line-height: 24px;
   text-align: center;
 }
-:root:has(.fund-hero) .mf-sheet.sip-date .mf-sheet-body {
+:root:has(.idp) .mf-sheet.sip-date .mf-sheet-body {
   gap: 16px;
   padding: 16px 16px 0;
 }
-:root:has(.fund-hero) .mf-sheet.sip-date .mf-sheet-foot {
+:root:has(.idp) .mf-sheet.sip-date .mf-sheet-foot {
   padding: 16px 16px 24px;
 }
-.mf-screen.vflow:has(.fund-hero) .mf-days button:disabled {
+.mf-screen.vflow.idp .mf-days button:disabled {
   color: var(--text-tertiary);
   opacity: 0.5;
   cursor: default;
 }
-.mf-screen.pad:has(.fund-hero) .mf-head {
+.mf-screen.pad.idp .mf-head {
   gap: 16px;
 }
-.mf-screen.pad:has(.fund-hero) .mf-head .mf-fundline {
+.mf-screen.pad.idp .mf-head .mf-fundline-idp {
   flex: 1;
   gap: 8px;
   min-width: 0;
   margin: 0;
 }
-.mf-screen.pad:has(.fund-hero) .mf-head .mf-fundline b {
+.mf-screen.pad.idp .mf-head .mf-fundline-idp b {
   line-height: 16.8px;
 }
-.mf-screen.pad:has(.fund-hero) .mf-head .mf-fundline small {
+.mf-screen.pad.idp .mf-head .mf-fundline-idp small {
   color: var(--text-primary);
   line-height: 14.4px;
 }
-.mf-screen.pad:has(.fund-hero) .mf-body {
+.mf-screen.pad.idp .mf-body {
   padding-bottom: 0;
 }
-:root:has(.fund-hero) .mf-pad-amount.error .mf-pad-figure {
+:root:has(.idp) .mf-pad-amount.error .mf-pad-figure {
   color: var(--negative-text);
 }
-:root:has(.fund-hero) .mf-quick.pad {
+:root:has(.idp) .mf-quick.pad {
   margin: 30px 0 0;
 }
-:root:has(.fund-hero) .mf-quick.pad button {
+:root:has(.idp) .mf-quick.pad button {
   padding: 0 12px;
   border-color: var(--border-L1);
   border-radius: 16px;
@@ -2749,7 +3237,7 @@
   font-weight: 500;
   line-height: 16.8px;
 }
-:root:has(.fund-hero) .mf-sheet-layer {
+:root:has(.idp) .mf-sheet-layer {
   position: fixed;
   z-index: 45;
   inset: 0;
@@ -2757,7 +3245,7 @@
   align-items: flex-end;
   justify-content: center;
 }
-:root:has(.fund-hero) .mf-sheet-scrim {
+:root:has(.idp) .mf-sheet-scrim {
   position: absolute;
   inset: 0;
   padding: 0;
@@ -2766,10 +3254,10 @@
   cursor: default;
   animation: mf-scrim-in-idp 240ms ease-out both;
 }
-:root:has(.fund-hero) .mf-sheet-layer.closing .mf-sheet-scrim {
+:root:has(.idp) .mf-sheet-layer.closing .mf-sheet-scrim {
   animation: mf-scrim-out-idp 220ms ease-in both;
 }
-:root:has(.fund-hero) .mf-sheet {
+:root:has(.idp) .mf-sheet {
   position: relative;
   width: 100%;
   max-width: 600px;
@@ -2778,10 +3266,10 @@
   background: var(--surface-L2);
   animation: sheet-in 300ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
-:root:has(.fund-hero) .mf-sheet-layer.closing .mf-sheet {
+:root:has(.idp) .mf-sheet-layer.closing .mf-sheet {
   animation: sheet-out 220ms ease-in both;
 }
-:root:has(.fund-hero) .mf-sheet h2 {
+:root:has(.idp) .mf-sheet h2 {
   margin: 0;
   padding: 8px 16px 0;
   color: var(--text-primary);
@@ -2791,40 +3279,40 @@
   letter-spacing: -0.24px;
   line-height: 28px;
 }
-:root:has(.fund-hero) .mf-sheet-body {
+:root:has(.idp) .mf-sheet-body {
   display: flex;
   flex-direction: column;
   gap: 24px;
   padding: 24px 16px 8px;
 }
-:root:has(.fund-hero) .mf-sheet-line {
+:root:has(.idp) .mf-sheet-line {
   display: flex;
   align-items: flex-start;
   gap: 12px;
   color: var(--text-primary);
 }
-:root:has(.fund-hero) .mf-sheet-line p {
+:root:has(.idp) .mf-sheet-line p {
   margin: 0;
   max-width: 276px;
   font-family: "SAHI Sans:Regular", sans-serif;
   font-size: 14px;
   line-height: 16.8px;
 }
-:root:has(.fund-hero) .mf-sheet-foot {
+:root:has(.idp) .mf-sheet-foot {
   padding: 16px 16px 28px;
 }
-:root:has(.fund-hero) .mf-sheet .mf-sheet-foot .mf-btn {
+:root:has(.idp) .mf-sheet .mf-sheet-foot .mf-btn {
   border-radius: 48px;
   font-size: 14px;
   line-height: 16.8px;
 }
-:root:has(.fund-hero) .mf-keypad.pad {
+:root:has(.idp) .mf-keypad.pad {
   grid-template-rows: repeat(4, 49px);
   gap: 13px 12px;
   margin: 0 -16px;
   padding: 16px 7px;
 }
-:root:has(.fund-hero) .mf-keypad.pad button {
+:root:has(.idp) .mf-keypad.pad button {
   height: auto;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
@@ -2834,95 +3322,95 @@
   letter-spacing: -0.24px;
   line-height: 28px;
 }
-:root:has(.fund-hero) .mf-keypad.pad button.dot {
+:root:has(.idp) .mf-keypad.pad button.dot {
   font-family: "SAHI Season Display Mix:Medium", serif;
 }
-:root:has(.fund-hero) .mf-keypad.pad .icon {
+:root:has(.idp) .mf-keypad.pad .icon {
   vertical-align: middle;
 }
-.mf-screen.pad:has(.fund-hero) .mf-foot {
+.mf-screen.pad.idp .mf-foot {
   display: flex;
   flex-direction: column;
   gap: 12px;
   border-top: 0;
   border-radius: 16px 16px 0 0;
 }
-.mf-screen.pad:has(.fund-hero) .mf-foot .mf-btn {
+.mf-screen.pad.idp .mf-foot .mf-btn {
   font-size: 16px;
   line-height: 19.2px;
 }
-:root:has(.fund-hero) .mf-sip-date + .mf-keypad.pad {
+:root:has(.idp) .mf-sip-date + .mf-keypad.pad {
   margin-top: auto;
 }
-:root:has(.fund-hero) .mf-split i.debt,
-:root:has(.fund-hero) .mf-split-legend u.debt {
+:root:has(.idp) .mf-split i.debt,
+:root:has(.idp) .mf-split-legend u.debt {
   background: var(--accent-default);
 }
-.mf-screen.pm:has(.fund-hero) .mf-body {
+.mf-screen.pm.idp .mf-body {
   padding-top: 0;
 }
-:root:has(.fund-hero) .pm-row-wrap.on .pm-expand {
+:root:has(.idp) .pm-row-wrap.on .pm-expand {
   grid-template-rows: 1fr;
 }
-:root:has(.fund-hero) .pm-row-wrap.on .pm-expand > div {
+:root:has(.idp) .pm-row-wrap.on .pm-expand > div {
   padding-bottom: 16px;
   opacity: 1;
 }
-:root:has(.fund-hero) .pm-expand .mf-btn {
+:root:has(.idp) .pm-expand .mf-btn {
   height: 40px;
   font-size: 14px;
 }
-:root:has(.fund-hero) .pm-account.on {
+:root:has(.idp) .pm-account.on {
   border-color: var(--text-primary);
 }
-:root:has(.fund-hero) .pm-field.error .mf-text {
+:root:has(.idp) .pm-field.error .mf-text {
   border-color: var(--negative-border);
 }
-:root:has(.fund-hero) .pm-seg button.on {
+:root:has(.idp) .pm-seg button.on {
   color: var(--text-primary);
   background: var(--surface-L1);
   box-shadow: 0 1px 3px var(--shadow-raised);
 }
-.mf-screen.st:has(.fund-hero) {
+.mf-screen.st.idp {
   background: var(--st-bg);
 }
-.mf-screen.st.ok:has(.fund-hero) {
+.mf-screen.st.ok.idp {
   --st-bg: var(--positive-surface);
   --st-mark: var(--positive-surface);
 }
-.mf-screen.st.bad:has(.fund-hero) {
+.mf-screen.st.bad.idp {
   --st-bg: var(--negative-surface);
   --st-mark: var(--negative-surface);
 }
-.mf-screen.st.wait:has(.fund-hero) {
+.mf-screen.st.wait.idp {
   --st-bg: var(--warning-surface);
   --st-mark: var(--warning-surface);
 }
-:root:has(.fund-hero) .pm .mf-notice {
+:root:has(.idp) .pm .mf-notice-idp {
   margin-top: 16px;
 }
-.mf-screen.pad:has(.fund-hero) {
+.mf-screen.pad.idp {
   position: relative;
   isolation: isolate;
 }
-:root:has(.fund-hero) .mf-dotfield.off {
+:root:has(.idp) .mf-dotfield.off {
   opacity: 0;
 }
-.mf-screen.pad:has(.fund-hero) .mf-keypad {
+.mf-screen.pad.idp .mf-keypad {
   margin-inline: -16px;
   padding-inline: 16px;
   background: var(--surface-L1);
 }
-.mf-screen.pad:has(.fund-hero) .mf-strip {
+.mf-screen.pad.idp .mf-strip {
   background: var(--surface-L1);
 }
-.mf-screen.pad:has(.fund-hero) .mf-strip + .mf-keypad {
+.mf-screen.pad.idp .mf-strip + .mf-keypad {
   margin-top: 0;
 }
-.mf-screen.pad:has(.fund-hero) .mf-foot {
+.mf-screen.pad.idp .mf-foot {
   position: relative;
 }
-.mf-screen.pad:has(.fund-hero) .mf-foot::before {
+.mf-screen.pad.idp .mf-foot::before {
   content: "";
   position: absolute;
   inset: 0 0 auto;
@@ -2930,8 +3418,8 @@
   height: 16px;
   background: var(--surface-L1);
 }
-:root:has(.fund-hero) .pm .mf-notice.warn,
-:root:has(.fund-hero) .pm-sheet .mf-notice.warn {
+:root:has(.idp) .pm .mf-notice-idp.warn,
+:root:has(.idp) .pm-sheet .mf-notice-idp.warn {
   width: 100%;
   margin-top: 16px;
   padding: 14px 16px;
@@ -2943,12 +3431,15 @@
   line-height: 20px;
   text-align: left;
 }
-:root:has(.fund-hero) .pm .mf-notice.warn .icon,
-:root:has(.fund-hero) .pm-sheet .mf-notice.warn .icon {
+:root:has(.idp) .pm .mf-notice-idp.warn .icon,
+:root:has(.idp) .pm-sheet .mf-notice-idp.warn .icon {
   margin-top: 2px;
   color: var(--warning-text);
 }
-.mf-screen.vflow:has(.fund-hero) .mf-head {
+:root:has(.idp) .mf-sip-zero + .mf-lede {
+  margin-top: 16px;
+}
+.mf-screen.vflow.idp .mf-head {
   display: flex;
   flex: none;
   align-items: center;
@@ -2957,7 +3448,7 @@
   padding: 0 16px 8px;
   box-sizing: content-box;
 }
-.mf-screen.vflow:has(.fund-hero) .mf-head h1 {
+.mf-screen.vflow.idp .mf-head h1 {
   margin: 0;
   flex: 1;
   overflow: hidden;
@@ -2968,7 +3459,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.mf-screen.vflow:has(.fund-hero) .mf-back {
+.mf-screen.vflow.idp .mf-back {
   position: relative;
   display: grid;
   width: 24px;
@@ -2981,12 +3472,12 @@
   color: var(--ink);
   background: transparent;
 }
-.mf-screen.vflow:has(.fund-hero) .mf-days {
+.mf-screen.vflow.idp .mf-days {
   display: flex;
   flex-direction: column;
   width: 100%;
 }
-.mf-screen.vflow:has(.fund-hero) .mf-days button {
+.mf-screen.vflow.idp .mf-days button {
   display: grid;
   width: 44px;
   height: 44px;
@@ -3000,25 +3491,25 @@
   font-size: 18px;
   line-height: 21.6px;
 }
-.mf-screen.vflow:has(.fund-hero) .mf-days button.on {
+.mf-screen.vflow.idp .mf-days button.on {
   color: var(--text-inverse);
   background: var(--surface-inverse);
   font-family: "SAHI Sans:Medium", sans-serif;
   font-size: 16px;
   line-height: 19.2px;
 }
-.mf-screen.vflow:has(.fund-hero) .mf-btn {
+.mf-screen.vflow.idp .mf-btn {
   border-width: 1.5px;
 }
-:root:has(.fund-hero) .so-line.in .so-w {
+:root:has(.idp) .so-line.in .so-w {
   opacity: 1;
   filter: none;
   transform: none;
 }
-:root:has(.fund-hero) .so-line.in .so-w3 {
+:root:has(.idp) .so-line.in .so-w3 {
   transition-delay: 380ms;
 }
-:root:has(.fund-hero) .so-line.in .so-mark {
+:root:has(.idp) .so-line.in .so-mark {
   opacity: 1;
   filter: none;
   transform: none;
@@ -3026,35 +3517,87 @@
   transition-delay: 260ms;
   transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
 }
-:root:has(.fund-hero) .mf-alert.bad {
+:root:has(.idp) .mf-alert.bad {
   background: var(--negative-subtle);
   box-shadow: inset 0 0 0 1px var(--negative-transparent-L2);
 }
-:root:has(.fund-hero) .mf-alert.bad > .icon {
+:root:has(.idp) .mf-alert.bad > .icon {
   color: var(--negative-text);
 }
-:root:has(.fund-hero) .mf-btn.sm {
+:root:has(.idp) .mf-btn.sm {
   height: 36px;
   padding: 0 16px;
   font-size: 13px;
 }
-:root:has(.fund-hero) .mf-alert-dots i.on {
+:root:has(.idp) .mf-alert-dots i.on {
   width: 16px;
   background: var(--ink);
 }
-.mf-screen:has(.fund-hero) .mf-filterbar .chip.fchip .icon {
+.bk-fit-list-idp {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.bk-fit-list-idp li {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.bk-fit-icon-idp {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--surface-L2);
+}
+.bk-fit-list-idp p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+}
+.bk-fit-note-idp {
+  color: var(--ink-3);
+}
+:root:has(.idp) .mf-filterbar .chip.fchip {
+  position: relative;
+  flex: none;
+  width: 34px;
+  padding: 0;
+  justify-content: center;
+}
+.mf-screen.idp .mf-filterbar .chip.fchip .icon {
   width: 16px;
   height: 16px;
   margin: 0;
 }
-:root:has(.fund-hero) .mf-sheet.mf-fsheet {
+:root:has(.idp) .mf-filterbar .chip .chip-count {
+  position: absolute;
+  top: 0;
+  right: -4px;
+  display: grid;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  color: var(--text-inverse);
+  background: var(--surface-inverse);
+  place-items: center;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 10px;
+  line-height: 1;
+}
+:root:has(.idp) .mf-sheet.mf-fsheet {
   display: flex;
   flex-direction: column;
   height: min(86dvh, 640px);
   padding-top: 0;
   background: var(--surface-L1);
 }
-:root:has(.fund-hero) .mf-sheet.mf-fsheet h2 {
+:root:has(.idp) .mf-sheet.mf-fsheet h2 {
   padding: 0;
   font-family: "SAHI Sans:Medium", sans-serif;
   font-size: 16px;
@@ -3062,17 +3605,17 @@
   letter-spacing: 0;
   line-height: 19.2px;
 }
-:root:has(.fund-hero) .mf-fseg button.on {
+:root:has(.idp) .mf-fseg button.on {
   color: var(--text-inverse);
   background: var(--surface-inverse);
   font-family: "SAHI Sans:Medium", sans-serif;
 }
-:root:has(.fund-hero) .mf-frail button.on {
+:root:has(.idp) .mf-frail button.on {
   color: var(--text-primary);
   background: var(--surface-L2);
   font-family: "SAHI Sans:Medium", sans-serif;
 }
-:root:has(.fund-hero) .mf-frail button.on::after {
+:root:has(.idp) .mf-frail button.on::after {
   position: absolute;
   top: 50%;
   left: calc(100% + 6px);
@@ -3083,89 +3626,36 @@
   content: "";
   transform: translateY(-50%);
 }
-:root:has(.fund-hero) .mf-fpanel.wide {
+:root:has(.idp) .mf-fpanel.wide {
   margin-right: 0;
 }
-:root:has(.fund-hero) .mf-fopt.on {
+:root:has(.idp) .mf-fopt.on {
   color: var(--text-primary);
   font-family: "SAHI Sans:Medium", sans-serif;
 }
-:root:has(.fund-hero) .mf-fmark.radio.on {
+:root:has(.idp) .mf-fmark.radio.on {
   border-color: var(--surface-inverse);
 }
-:root:has(.fund-hero) .mf-fmark.radio.on::after {
+:root:has(.idp) .mf-fmark.radio.on::after {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: var(--surface-inverse);
   content: "";
 }
-:root:has(.fund-hero) .mf-fmark.check.on {
+:root:has(.idp) .mf-fmark.check.on {
   border-color: var(--surface-inverse);
   color: var(--text-inverse);
   background: var(--surface-inverse);
 }
-:root:has(.fund-hero) .mf-fsheet-foot .mf-btn {
+:root:has(.idp) .mf-fsheet-foot .mf-btn {
   flex: 1;
   border-radius: 48px;
   font-size: 14px;
   line-height: 16.8px;
 }
-:root:has(.fund-hero) .mf-table tr.mf-row-blank td {
+.mf-table-idp tr.mf-row-blank td {
   visibility: hidden;
-}
-.chg {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding-top: 8px;
-}
-.chg-group {
-  padding: 16px;
-  border-radius: 16px;
-  background: var(--surface-L2);
-}
-.chg-group h4 {
-  margin: 0;
-  color: var(--ink);
-  font-family: "SAHI Sans:Medium", sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 16.8px;
-}
-.chg-rows {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin: 16px 0 0;
-  padding: 0;
-  list-style: none;
-}
-.chg-rows li {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
-  color: var(--ink-2);
-  font-size: 14px;
-  line-height: 16.8px;
-}
-.chg-rows b {
-  color: var(--ink);
-  font-family: "SAHI Sans:Medium", sans-serif;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-  white-space: nowrap;
-}
-.chg-rows b.nil {
-  color: var(--positive-text);
-}
-.chg-note {
-  margin: 16px 0 0;
-  color: var(--ink-3);
-  font-size: 12px;
-  line-height: 16px;
 }
 .mf-screen:has(.fund-hero) .mf-head.has-dock-title {
   padding-bottom: 8px;
@@ -3181,17 +3671,17 @@
   line-height: 32px;
   font-weight: 500;
 }
-.mf-screen:has(.fund-hero) .fund-meta {
+.mf-screen:has(.fund-hero) .fund-meta-idp {
   line-height: 14px;
 }
-.mf-screen:has(.fund-hero) .fund-figures strong {
+.mf-screen:has(.fund-hero) .fund-figures-idp strong {
   font-family: "SAHI Season Display Mix:Medium", serif;
   font-size: 28px;
   line-height: 34px;
   font-weight: 500;
   letter-spacing: 0;
 }
-.mf-screen:has(.fund-hero) .fund-figures small {
+.mf-screen:has(.fund-hero) .fund-figures-idp small {
   line-height: 14px;
 }
 .mf-screen:has(.fund-hero) .fund-day {
@@ -3204,7 +3694,7 @@
 .mf-screen:has(.fund-hero) .chart-scrub-label {
   line-height: 14px;
 }
-.mf-screen:has(.fund-hero) .mf-ranges button {
+.mf-screen:has(.fund-hero) .mf-ranges-idp button {
   height: 24px;
   min-width: 40px;
   line-height: 14px;
@@ -3224,19 +3714,19 @@
 .mf-screen:has(.fund-hero) .fold-summary {
   line-height: 17px;
 }
-.mf-screen:has(.fund-hero) .mf-table th {
+.mf-screen:has(.fund-hero) .mf-table-idp th {
   line-height: 14px;
 }
-.mf-screen:has(.fund-hero) .mf-table td {
+.mf-screen:has(.fund-hero) .mf-table-idp td {
   line-height: 17px;
 }
-.mf-screen:has(.fund-hero) .mf-small {
+.mf-screen:has(.fund-hero) .mf-small-idp {
   line-height: 14px;
 }
-.mf-screen:has(.fund-hero) .rco .rc-lead {
+.mf-screen:has(.fund-hero) .rco .rc-lead-idp {
   line-height: 14px;
 }
-.mf-screen:has(.fund-hero) .rc-amount {
+.mf-screen:has(.fund-hero) .rc-amount-idp {
   line-height: 34px;
   font-weight: 500;
 }
@@ -3249,21 +3739,21 @@
 .mf-screen:has(.fund-hero) .mx-x {
   font-weight: 500;
 }
-.mf-screen:has(.fund-hero) .rc-rows {
+.mf-screen:has(.fund-hero) .rc-rows-idp {
   margin-top: 16px;
 }
-.mf-screen:has(.fund-hero) .rc-rows > div {
+.mf-screen:has(.fund-hero) .rc-rows-idp > div {
   padding-top: 4px;
   padding-bottom: 4px;
 }
-.mf-screen:has(.fund-hero) .rc-rows dt {
+.mf-screen:has(.fund-hero) .rc-rows-idp dt {
   font-size: 14px;
   line-height: 17px;
 }
-.mf-screen:has(.fund-hero) .rc-rows dd {
+.mf-screen:has(.fund-hero) .rc-rows-idp dd {
   line-height: 17px;
 }
-.mf-screen:has(.fund-hero) .rc-rows .rc-total {
+.mf-screen:has(.fund-hero) .rc-rows-idp .rc-total-idp {
   padding-top: 8px;
 }
 .mf-screen:has(.fund-hero) .pf-asof {
@@ -3297,19 +3787,19 @@
 .mf-screen:has(.fund-hero) .pf-all {
   line-height: 17px;
 }
-.mf-screen:has(.fund-hero) .mf-body-copy {
+.mf-screen:has(.fund-hero) .mf-body-copy-idp {
   line-height: 17px;
 }
 .mf-screen:has(.fund-hero) .mf-body:has(.fund-hero) .about-facts {
   margin-bottom: 16px;
 }
-.mf-screen:has(.fund-hero) .mf-body:has(.fund-hero) .mf-grid2 {
+.mf-screen:has(.fund-hero) .mf-body:has(.fund-hero) .mf-grid2-idp {
   row-gap: 16px;
 }
-.mf-screen:has(.fund-hero) .mf-body:has(.fund-hero) .mf-kv {
+.mf-screen:has(.fund-hero) .mf-body:has(.fund-hero) .mf-kv-idp {
   line-height: 14px;
 }
-.mf-screen:has(.fund-hero) .mf-body:has(.fund-hero) .mf-grid2 .mf-kv > b {
+.mf-screen:has(.fund-hero) .mf-body:has(.fund-hero) .mf-grid2-idp .mf-kv-idp > b {
   line-height: 17px;
 }
 .mf-screen:has(.fund-hero) .mgr-list {
@@ -3324,16 +3814,13 @@
 .mf-screen:has(.fund-hero) .mgr-text small {
   line-height: 14px;
 }
-.mf-screen:has(.fund-hero) .mf-link {
+.mf-screen:has(.fund-hero) .mf-link-idp {
   line-height: 17px;
 }
-.mf-screen:has(.fund-hero) .chg-note {
-  line-height: 14px;
-}
-.mf-screen:has(.fund-hero) .mf-source {
+.mf-screen:has(.fund-hero) .mf-source-idp {
   line-height: 13px;
 }
-.mf-screen:has(.fund-hero) .mf-disclaimer {
+.mf-screen:has(.fund-hero) .mf-disclaimer-idp {
   line-height: 13px;
 }
 .mf-screen:has(.fund-hero) .mf-foot {
@@ -3342,90 +3829,90 @@
 .mf-screen:has(.fund-hero) .mf-foot .mf-btn {
   line-height: 17px;
 }
-:root:has(.fund-hero) .msheet-root .msheet {
+.msheet-root .msheet {
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
 }
-:root:has(.fund-hero) .msheet-root .msheet-grab {
+.msheet-root .msheet-grab {
   height: 16px;
 }
-:root:has(.fund-hero) .msheet-root .msheet-grab i {
+.msheet-root .msheet-grab i {
   display: none;
 }
-:root:has(.fund-hero) .msheet-root .msheet-pick button {
+.msheet-root .msheet-pick button {
   line-height: 17px;
   padding-right: 12px;
 }
-:root:has(.fund-hero) .msheet-root .ms-hero h2 {
+.msheet-root .ms-hero h2 {
   line-height: 34px;
   font-weight: 500;
 }
-:root:has(.fund-hero) .msheet-root .ms-hero p {
+.msheet-root .ms-hero p {
   line-height: 17px;
 }
-:root:has(.fund-hero) .msheet-root .ms-stats dt {
+.msheet-root .ms-stats dt {
   line-height: 14px;
 }
-:root:has(.fund-hero) .msheet-root .ms-stats dd {
+.msheet-root .ms-stats dd {
   font-size: 24px;
   line-height: 32px;
   font-weight: 500;
 }
-:root:has(.fund-hero) .msheet-root .msheet-body h3 {
+.msheet-root .msheet-body h3 {
   line-height: 17px;
 }
-:root:has(.fund-hero) .msheet-root .ms-edu li {
+.msheet-root .ms-edu li {
   padding: 8px 0;
 }
-:root:has(.fund-hero) .msheet-root .ms-edu li:first-child {
+.msheet-root .ms-edu li:first-child {
   padding-top: 2px;
 }
-:root:has(.fund-hero) .msheet-root .ms-edu b {
+.msheet-root .ms-edu b {
   line-height: 17px;
 }
-:root:has(.fund-hero) .msheet-root .ms-edu small {
+.msheet-root .ms-edu small {
   font-size: 12px;
   line-height: 14px;
 }
-:root:has(.fund-hero) .msheet-root .ms-bg {
+.msheet-root .ms-bg {
   line-height: 17px;
 }
-:root:has(.fund-hero) .msheet-root .ms-source {
+.msheet-root .ms-source {
   line-height: 14px;
 }
-:root:has(.fund-hero) .sheet-root:has(.pf-list) .sheet-title h2 {
+.sheet-root:has(.pf-list) .sheet-title h2 {
   line-height: 32px;
   font-weight: 500;
 }
-:root:has(.fund-hero) .sheet-root:has(.pf-list) .sheet-title p {
+.sheet-root:has(.pf-list) .sheet-title p {
   line-height: 14px;
 }
-:root:has(.fund-hero) .sheet-root:has(.pf-list) .mf-search-input {
+:root:has(.idp) .sheet-root:has(.pf-list) .mf-search-input {
   row-gap: 8px;
   column-gap: 8px;
 }
-:root:has(.fund-hero) .sheet-root:has(.pf-list) .pf-cap {
+.sheet-root:has(.pf-list) .pf-cap {
   line-height: 14px;
 }
-:root:has(.fund-hero) .sheet-root:has(.pf-list) .pf-list li {
+.sheet-root:has(.pf-list) .pf-list li {
   line-height: 17px;
 }
-:root:has(.fund-hero) .sheet-root:has(.pf-list) .pf-name small {
+.sheet-root:has(.pf-list) .pf-name small {
   line-height: 14px;
 }
-:root:has(.fund-hero) .sheet-root:has(.pf-list) .pf-chg {
+.sheet-root:has(.pf-list) .pf-chg {
   line-height: 14px;
 }
-:root:has(.fund-hero) .sheet-root:has(.pf-list) .pf-sub {
+.sheet-root:has(.pf-list) .pf-sub {
   line-height: 17px;
 }
-:root:has(.fund-hero) .sheet-root:has(.pf-list) .pf-legend li {
+.sheet-root:has(.pf-list) .pf-legend li {
   font-size: 12px;
   line-height: 14px;
   row-gap: 4px;
   column-gap: 4px;
 }
-.mf-screen:has(.fund-hero) .mf-notice {
+.mf-screen:has(.fund-hero) .mf-notice-idp {
   padding-right: 12px;
   padding-left: 12px;
   row-gap: 8px;
@@ -3433,27 +3920,27 @@
   line-height: 14px;
 }
 .mf-screen:has(.fund-hero) .mgr-avatar,
-:root:has(.fund-hero) .msheet-root .mgr-avatar {
+.msheet-root .mgr-avatar {
   font-size: 12px;
   line-height: 14px;
 }
 .mf-screen:has(.fund-hero) .fund-hero h2,
 .mf-screen:has(.fund-hero) .mx-x,
-.mf-screen:has(.fund-hero) .rc-amount,
-:root:has(.fund-hero) .msheet-root .ms-hero h2,
-:root:has(.fund-hero) .msheet-root .ms-stats dd {
+.mf-screen:has(.fund-hero) .rc-amount-idp,
+.msheet-root .ms-hero h2,
+.msheet-root .ms-stats dd {
   letter-spacing: 0;
 }
-:root:has(.fund-hero) .mf-stars {
+.mf-stars-idp {
   display: inline-flex;
   align-items: center;
   gap: 2px;
 }
-:root:has(.fund-hero) .mf-stars .icon {
+:root:has(.idp) .mf-stars-idp .icon {
   width: 12px;
   height: 12px;
 }
-:root:has(.fund-hero) .mf-foot-note {
+.mf-foot-note-idp {
   margin: 0;
   padding: 12px 16px;
   border-radius: 12px;

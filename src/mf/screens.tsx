@@ -63,6 +63,8 @@ import {
   useFundView,
   Segmented,
 } from "./parts";
+import { Screen as ListChrome } from "./fundidp/parts";
+import { FundRow as ListFundRow } from "./fundidp/FundScreen";
 import { DotField } from "./DotField";
 import { GoalHero } from "./GoalArt";
 import { nextFunds, sectors, themeOf } from "./sectors";
@@ -206,7 +208,7 @@ function useListPool(spec: ListSpec, sector: string) {
 
 // Filter chips, count and fund rows for a list spec. Shared by the list screen and the SIP tab's empty state,
 // so a change here shows up everywhere a list is shown. The filter chip opens the Filters sheet (category, AMC, rating, risk, sort).
-export function FundListBody({ spec }: { spec: ListSpec }) {
+export function FundListBody({ spec, docked = false }: { spec: ListSpec; docked?: boolean }) {
   const { basis, sort, setBasis, setSort } = useFundView();
   const [cat, setCat] = useState<CategoryKey | "all">(spec.cat ?? "all");
   const [sector, setSector] = useState<string>(spec.theme ?? "all"); // Order 2.0 sector pages only
@@ -219,7 +221,8 @@ export function FundListBody({ spec }: { spec: ListSpec }) {
   const list = sortFunds(inCat(cat, filters), sort, basis);
   const filterBadge = filterCount(filters) + (sort !== "returns" ? 1 : 0);
 
-  return (
+  // On a list page the chip row and the count stay stuck under the top bar while the funds scroll.
+  const bar = (
     <>
       {spec.theme ? (
         <FilterRow
@@ -254,10 +257,17 @@ export function FundListBody({ spec }: { spec: ListSpec }) {
         </span>
         <ReturnSwitch basis={basis} onChange={setBasis} />
       </div>
-      <ul className="row-list">
+    </>
+  );
+
+  // On a list page the screen carries the page marker; embedded (the SIP tab) the list brings its own, so it looks the same.
+  const content = (
+    <>
+      {docked ? <div className="mf-dock" data-sector={spec.theme ? "" : undefined}>{bar}</div> : bar}
+      <ul className="row-list-idp">
         {list.map((fund) => (
           <li key={fund.id}>
-            <FundRow fund={fund} basis={basis} />
+            <ListFundRow fund={fund} basis={basis} />
           </li>
         ))}
       </ul>
@@ -282,6 +292,7 @@ export function FundListBody({ spec }: { spec: ListSpec }) {
       )}
     </>
   );
+  return docked ? content : <div className="idp">{content}</div>;
 }
 
 export function ListScreen({ spec }: { spec: ListSpec }) {
@@ -303,9 +314,10 @@ export function ListScreen({ spec }: { spec: ListSpec }) {
   }
 
   return (
-    <Screen
+    <ListChrome
       title={spec.title}
       onBack={pop}
+      plainBack
       right={
         spec.bucket ? (
           <button className="mf-share" onClick={share}>
@@ -315,9 +327,9 @@ export function ListScreen({ spec }: { spec: ListSpec }) {
       }
     >
       {spec.bucket ? <BucketTop spec={spec} /> : spec.caption && <p className="mf-lede">{spec.caption}</p>}
-      <FundListBody spec={spec} />
+      <FundListBody spec={spec} docked />
       {/* Returns note and SEBI disclaimer taken off the list screens for now (PRD: needed before launch). */}
-    </Screen>
+    </ListChrome>
   );
 }
 

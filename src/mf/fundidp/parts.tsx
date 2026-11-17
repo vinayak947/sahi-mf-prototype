@@ -386,7 +386,7 @@ export function ReturnSwitch({ basis, onChange }: { basis: ReturnBasis; onChange
 export function RowSide({ fund, basis, digits = 1, signed = true }: { fund: Fund; basis: ReturnBasis; digits?: number; signed?: boolean }) {
   if (basis === "EXP") {
     return (
-      <span className="row-side">
+      <span className="row-side-idp">
         <b>{fund.expense.toFixed(2)}%</b>
         <small>Expense</small>
       </span>
@@ -395,7 +395,7 @@ export function RowSide({ fund, basis, digits = 1, signed = true }: { fund: Fund
   const value = basis === "1Y" ? fund.r1 : basis === "3Y" ? fund.r3 : fund.r5;
   const text = pct(value, digits);
   return (
-    <span className="row-side">
+    <span className="row-side-idp">
       <b className={value >= 0 ? "up" : "down"}>{signed ? text : text.replace("+", "")}</b>
       <small>{basis}</small>
     </span>
@@ -407,7 +407,7 @@ export const fundCategory = (fund: Fund) => fund.catLabel.replace(" · ", " ");
 
 export function Stars({ n }: { n: number }) {
   return (
-    <span className="mf-stars" aria-label={`${n}-star rating`}>
+    <span className="mf-stars-idp" aria-label={`${n}-star rating`}>
       {n} <Icon name="star-filled" size={12} />
     </span>
   );
@@ -441,7 +441,7 @@ export function Screen({
   const [docked, setDocked] = useState(false); // the filters are stuck under the bar: drop the line between them
   const [titleIn, setTitleIn] = useState(false); // the page heading is gone: its name now lives in the bar
   return (
-    <div className={`mf-screen${tone === "tinted" ? " tinted" : ""}${hero ? " has-hero" : ""}${tight ? " tight" : ""}`}>
+    <div className={`mf-screen idp${tone === "tinted" ? " tinted" : ""}${hero ? " has-hero" : ""}${tight ? " tight" : ""}`}>
       <header className={`mf-head${plainBack ? " plain" : ""}${hero ? " over" : ""}${solid ? " solid" : ""}${docked ? " docked" : ""}${dockTitle ? " has-dock-title" : ""}${titleIn ? " title-in" : ""}`}>
         <button className={`mf-back${plainBack ? " plain" : ""}`} onClick={onBack} aria-label="Back">
           <Icon name="chevron-left" size={24} />
@@ -569,7 +569,7 @@ export function Fold({
   };
   const bodyId = useId();
   return (
-    <section className={`mf-section fold${open ? " open" : ""}`}>
+    <section className={`mf-section-idp fold${open ? " open" : ""}`}>
       <h3>
         <button type="button" className="fold-head" aria-expanded={open} aria-controls={bodyId} onClick={() => setOpen((o) => !o)}>
           {title}
@@ -596,7 +596,7 @@ export function Row({
   hint?: string;
 }) {
   return (
-    <div className="mf-kv">
+    <div className="mf-kv-idp">
       <span>
         {label}
         {hint && <small>{hint}</small>}
@@ -616,7 +616,7 @@ export function Notice({
   children: ReactNode;
 }) {
   return (
-    <div className={`mf-notice ${tone}`}>
+    <div className={`mf-notice-idp ${tone}`}>
       <Icon name={icon ?? (tone === "info" ? "info" : "warning-circle")} size={16} />
       <p>{children}</p>
     </div>
@@ -624,7 +624,7 @@ export function Notice({
 }
 
 export function Disclaimer() {
-  return <p className="mf-disclaimer">{DISCLAIMER}</p>;
+  return <p className="mf-disclaimer-idp">{DISCLAIMER}</p>;
 }
 
 // Prototype-only control, kept visibly separate from the product UI.

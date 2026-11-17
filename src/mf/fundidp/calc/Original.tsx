@@ -16,9 +16,9 @@ export function Original({ m }: { m: CalcModel }) {
 
   return (
     <div className="rco">
-      <p className="rc-lead">See what this {m.subject} would have turned your money into.</p>
+      <p className="rc-lead-idp">See what this {m.subject} would have turned your money into.</p>
 
-      <div className="rc">
+      <div className="rc-idp">
         <SegmentSwitcher
           wide
           label="How you invest"
@@ -30,30 +30,30 @@ export function Original({ m }: { m: CalcModel }) {
           ]}
         />
 
-        <span className="rc-label">{mode === "sip" ? "Monthly investment" : "One-time investment"}</span>
-        <output className="rc-amount" aria-live="polite">
+        <span className="rc-label-idp">{mode === "sip" ? "Monthly investment" : "One-time investment"}</span>
+        <output className="rc-amount-idp" aria-live="polite">
           {inr(amount)}
         </output>
         <Dial key={mode} label={mode === "sip" ? "Monthly investment" : "One-time investment"} {...range} value={amount} onChange={m.setAmount} />
 
         <Multiples m={m} />
 
-        <dl className="rc-rows">
+        <dl className="rc-rows-idp">
           <div>
             <dt>
-              <i className="rc-dot in" />
+              <i className="rc-dot-idp in" />
               Total investment
             </dt>
             <dd>{inr(Math.round(chosen.invested))}</dd>
           </div>
           <div>
             <dt>
-              <i className={`rc-dot out ${tone}`} />
+              <i className={`rc-dot-idp out ${tone}`} />
               Would have become
             </dt>
             <dd>{inr(Math.round(chosen.value))}</dd>
           </div>
-          <div className="rc-total">
+          <div className="rc-total-idp">
             <dt>{PERIODS.find((p) => p.years === pick)!.label} returns</dt>
             <dd className={tone}>{pct(change, 1)}</dd>
           </div>

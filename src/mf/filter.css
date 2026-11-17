@@ -12,10 +12,12 @@
   padding: 0;
   justify-content: center;
 }
+/* No page context needed (the SIP tab is a page, not a screen), so the funnel sits centred wherever the chip is used. */
+.mf-filterbar .chip.fchip .icon,
 .mf-screen .mf-filterbar .chip.fchip .icon {
-  width: 16px;
-  height: 16px;
-  margin: 0;
+  width: 16px !important; /* !important: the funnel's size and centring belong to this component, whatever page styles surround it */
+  height: 16px !important;
+  margin: 0 !important;
 }
 .mf-filterbar .chip .chip-count {
   position: absolute;
@@ -248,4 +250,8 @@
 .mf-fpanel {
     animation: none;
   }
+}
+/* Their disabled buttons in the sheet are not faded; the app-wide .mf-btn:disabled would fade them. */
+.mf-fsheet-foot .mf-btn:disabled {
+  opacity: 1;
 }

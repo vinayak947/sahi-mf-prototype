@@ -1,0 +1,51 @@
+/* Charges and tax fold: title over note, value on the right, divider between rows. Kept apart from fundidp.css so a re-sync of that file cannot drop it. */
+.chg {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.chg .chg-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 0;
+  border-top: 1px solid var(--border-L1);
+}
+.chg .chg-row:first-child {
+  padding-top: 8px;
+  border-top: 0;
+}
+.chg .chg-row:last-child {
+  padding-bottom: 0;
+}
+.chg .chg-text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+.chg .chg-title {
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 19.2px;
+}
+.chg .chg-note {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: 14px;
+  line-height: 16.8px;
+}
+.chg .chg-row b {
+  flex: none;
+  color: var(--ink);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 19.2px;
+  text-align: right;
+  white-space: nowrap;
+}

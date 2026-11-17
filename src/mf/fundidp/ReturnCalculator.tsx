@@ -15,7 +15,7 @@ export function ReturnCalculator({ fund, subject = "fund" }: { fund: Fund; subje
   return (
     <Fold title="Return calculator" defaultOpen={false} onOpenChange={setOpen}>
       <Original m={m} />
-      <p className="mf-small">
+      <p className="mf-small-idp">
         {subject === "fund" ? "Based on this fund\u2019s past returns." : `Based on the past returns of the funds in this ${subject}, weighted by their share.`} Past performance does not
         predict future returns.
       </p>
