@@ -42,6 +42,7 @@ import {
 } from "./parts";
 import { Dial, ReturnCalculator } from "./ReturnCalculator";
 import { Ticker } from "./calc/core";
+import { SAHI_MARK } from "./calc/coins";
 import { sipReturns } from "./sip";
 import { portfolioOf, weightText } from "./portfolio";
 import { BottomSheet } from "./Sheet";
@@ -738,10 +739,18 @@ export function FundScreen({ fundId }: { fundId: string }) {
       }
     >
       <div className="fund-hero">
-        <FundMark fund={fund} size={48} />
+        {/* The logo is a two-sided card: it arrives showing its back (the SAHI mark) and turns over to the fund's logo. */}
+        <span className="fund-flip">
+          <FundMark fund={fund} size={48} />
+          <span className="fund-flip-back" aria-hidden="true">
+            <svg viewBox="0 0 149 148">
+              <path d={SAHI_MARK} />
+            </svg>
+          </span>
+        </span>
         <h2 data-dock-anchor>{fund.name}</h2>
         <p className="fund-meta-idp">
-          Direct • {fundCategory(fund)} • <Stars n={fund.stars} bds /> • {riskText}
+          {fund.plan ?? "Direct"} • {fundCategory(fund)} • <Stars n={fund.stars} bds /> • {riskText}
         </p>
       </div>
       {fund.buyNote && fund.buy !== "restricted" && <Notice tone="warn">{fund.buyNote}</Notice>}

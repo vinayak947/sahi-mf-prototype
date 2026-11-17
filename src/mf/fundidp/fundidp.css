@@ -4009,3 +4009,87 @@
 .mf-screen:has(.fund-hero) .fund-figures-idp .fund-day small {
   color: var(--text-primary);
 }
+
+/* ---- Fund page: the logo is a two-sided card that turns over as the page opens ----
+   Seen once per visit, so it can carry a small moment of delight (Emil: rare = room for delight; transform + opacity only).
+   It arrives showing its back, a dark card with the SAHI mark, flips over to the fund's logo, overshoots 12 degrees once and
+   sits; the light catches the logo as it lands. 700ms in all, no start delay. */
+.fund-hero {
+  perspective: 320px;
+  perspective-origin: 24px 24px; /* the logo's centre, so the turn is seen straight on, not from the middle of the page */
+}
+.fund-flip {
+  display: inline-grid;
+  transform-style: preserve-3d;
+  animation: fund-flip 700ms both;
+}
+.fund-flip > * {
+  grid-area: 1 / 1;
+  backface-visibility: hidden;
+  /* the fade-in lives on the faces, not the card: opacity on a 3D card flattens it and the front shows through its back */
+  animation: fund-mark-fade 120ms ease-out both;
+}
+.fund-hero .fund-mark {
+  position: relative;
+}
+.fund-flip-back {
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--surface-inverse);
+  transform: rotateY(180deg);
+}
+.fund-flip-back svg {
+  width: 50%;
+  height: 50%;
+}
+.fund-flip-back path {
+  fill: color-mix(in srgb, var(--surface-inverse), var(--surface-L1) 30%);
+}
+@keyframes fund-flip {
+  /* back first: an ease-in-out start lets the back register for a moment before the turn speeds up */
+  0% {
+    transform: translateY(-6px) rotateX(8deg) rotateY(180deg) scale(0.94);
+    animation-timing-function: cubic-bezier(0.5, 0, 0.25, 1);
+  }
+  /* one overshoot past flat, then it sits */
+  50% {
+    transform: translateY(0) rotateX(-2deg) rotateY(-12deg) scale(1);
+    animation-timing-function: cubic-bezier(0.37, 0, 0.63, 1);
+  }
+  100% {
+    transform: none;
+  }
+}
+/* once it has settled, a band of light crosses its face, the same glint the coins get */
+.fund-hero .fund-mark::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.55) 50%, transparent 65%) no-repeat;
+  background-size: 250% 100%;
+  background-position: 130% 0;
+  pointer-events: none;
+  animation: fund-mark-glint 650ms cubic-bezier(0.4, 0, 0.2, 1) 600ms both; /* just as it sits */
+}
+@keyframes fund-mark-glint {
+  from { background-position: 130% 0; }
+  to { background-position: -40% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* no turning: the logo just fades in, front side only */
+  .fund-flip {
+    animation: fund-mark-fade 200ms ease both;
+  }
+  .fund-flip-back {
+    display: none;
+  }
+  .fund-hero .fund-mark::before {
+    animation: none;
+  }
+}
+@keyframes fund-mark-fade {
+  from { opacity: 0; }
+}

@@ -1422,7 +1422,7 @@
 /* the dotted tint sits on the front sheet only, under its rounded top */
 .bk-card[data-tint]:before { top: 17px; border-radius: 16px 16px 19px 19px; }
 
-/* Card surface trial (replaces the dot pattern). Each one lives on the front sheet, under the content. */
+/* Card surface (replaces the dot pattern): the "wash", on the front sheet under the content. */
 .bk-card[data-bg]:before { background-image: none; background-size: auto; -webkit-mask-image: none; mask-image: none; }
 
 /* wash: the tab's colour fading down the first third of the card */
@@ -1432,22 +1432,6 @@
 :root[data-theme=dark] .bk-card[data-bg="wash"]:before {
   background-image: linear-gradient(to bottom, color-mix(in srgb, var(--bk-tint) 8%, transparent), transparent 36%);
 }
-
-/* edge: a 1px line in the tab's colour along the front sheet's top edge, curving into its corners */
-.bk-card[data-bg="edge"]:before {
-  bottom: auto;
-  height: 16px;
-  border-top: 1px solid color-mix(in srgb, var(--bk-tint) 70%, transparent);
-  border-radius: 16px 16px 0 0;
-}
-
-/* grain: a faint paper-fibre texture, like card stock */
-.bk-card[data-bg="grain"]:before {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.4 -.45'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 160px 160px;
-  opacity: .045;
-}
-:root[data-theme=dark] .bk-card[data-bg="grain"]:before { filter: invert(1); opacity: .09; }
 
 /* Baskets page: the title on its own row under the back arrow, at x 16 and y 88 from the top of the screen. The back
    row is the 48 px button (the header has no top padding), so 40 above the title; the header's 4 side padding plus
