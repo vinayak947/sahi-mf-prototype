@@ -500,7 +500,7 @@ function PadHeading({ fund }: { fund: Fund }) {
       <FundMark fund={fund} size={32} />
       <span>
         <b>{fund.name}</b>
-        <small>Direct · Growth</small>
+        <small>Direct • {fundCategory(fund)}</small>
       </span>
     </div>
   );
