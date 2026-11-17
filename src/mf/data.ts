@@ -22,6 +22,7 @@ export type Fund = {
   mono: string; // two-letter mark for the tile
   cat: CategoryKey;
   catLabel: string; // "Equity · Small Cap"
+  plan?: "Direct" | "Regular"; // shown as the first tag on the fund page; Direct when not set
   stars: number;
   r1: number;
   r3: number;
@@ -117,6 +118,7 @@ export const funds: Fund[] = [
     mono: "JM",
     cat: "flexi",
     catLabel: "Equity · Flexi Cap",
+    plan: "Regular",
     stars: 4,
     r1: 7.1,
     r3: 21.1,
@@ -253,6 +255,7 @@ export const funds: Fund[] = [
     mono: "HD",
     cat: "mid",
     catLabel: "Equity · Mid Cap",
+    plan: "Regular",
     stars: 4,
     r1: 5.4,
     r3: 16.1,
@@ -557,6 +560,7 @@ export const funds: Fund[] = [
     mono: "SB",
     cat: "gold",
     catLabel: "Commodities · Gold",
+    plan: "Regular",
     stars: 4,
     r1: 32.4,
     r3: 18.9,
