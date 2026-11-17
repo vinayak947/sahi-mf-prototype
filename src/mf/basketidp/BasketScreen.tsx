@@ -41,12 +41,12 @@ export function LogoStack({ basket, size }: { basket: Basket; size: number }) {
 // The basket's folder from its home card, full width at the top of the page, with the fund logos dropped loosely
 // onto its front sheet. Same geometry as the card (tab rising 17px, 16px corners), re-drawn for the page width.
 // The tab takes the basket's colour, as on the card.
-const FOLDER_H = 148;
+const FOLDER_H = 200;
 const DROPS: [number, number, number][] = [
   // [left %, top px, turn °] for up to three 48px logos on the front sheet
-  [22, 50, -10],
-  [44, 66, 7],
-  [64, 44, -4],
+  [22, 76, -10],
+  [44, 94, 7],
+  [64, 70, -4],
 ];
 
 export function FolderMark({ basket, tint }: { basket: Basket; tint: string }) {
