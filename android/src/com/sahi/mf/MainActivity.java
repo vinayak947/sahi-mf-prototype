@@ -23,6 +23,7 @@ public class MainActivity extends Activity {
     static final String URL = "http://localhost:8443/";
 
     WebView web;
+    android.widget.FrameLayout root;
     final Handler main = new Handler(Looper.getMainLooper());
     boolean offline;
 
@@ -52,13 +53,16 @@ public class MainActivity extends Activity {
                   + "send();if(m)new MutationObserver(send).observe(m,{attributes:true});})()", null);
             }
         });
-        // Keep the page clear of the status and navigation bars.
-        web.setOnApplyWindowInsetsListener((v, in) -> {
+        // Keep the page clear of the status bar and the home bar. A WebView ignores its own padding,
+        // so the insets go on a plain frame around it; the frame shows the page colour behind the bars.
+        root = new android.widget.FrameLayout(this);
+        root.addView(web);
+        root.setOnApplyWindowInsetsListener((v, in) -> {
             android.graphics.Insets i = in.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.ime());
             v.setPadding(i.left, i.top, i.right, i.bottom);
             return WindowInsets.CONSUMED;
         });
-        setContentView(web);
+        setContentView(root);
         if (android.os.Build.VERSION.SDK_INT >= 33) {
             getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
                 android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT, this::back);
@@ -71,6 +75,7 @@ public class MainActivity extends Activity {
         main.post(() -> {
             int c = parse(css);
             web.setBackgroundColor(c);
+            root.setBackgroundColor(c);
             getWindow().getDecorView().setBackgroundColor(c);
             boolean light = Color.luminance(c) > 0.5f;
             if (android.os.Build.VERSION.SDK_INT >= 30 && getWindow().getInsetsController() != null) {
