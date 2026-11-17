@@ -85,6 +85,10 @@ function FolderShape() {
   );
 }
 
+// Card surface trial: one treatment per card in the carousel so they can be compared side by side
+// (wash = colour fading down from the tab, edge = coloured top edge, grain = paper texture).
+const CARD_BG = ["wash", "edge", "grain"] as const;
+
 function BasketCard({ basket, tint }: { basket: Basket; tint: number }) {
   const { push } = useMf();
   const ret = basketReturn3Y(basket);
@@ -94,6 +98,7 @@ function BasketCard({ basket, tint }: { basket: Basket; tint: number }) {
     <button
       className="bk-card"
       data-tint={tint % 3}
+      data-bg={CARD_BG[tint % 3]}
       aria-label={`${basket.name}. ${basket.funds.length} funds. ${risk}. Minimum SIP ${inr(minSip)} a month. Reviewed by SAHI Research, ${REVIEWED}.`}
       onClick={() => push({ name: "basket", basketId: basket.id })}
     >
@@ -165,7 +170,7 @@ const BASKET_LIMITS =
 export function BasketsScreen() {
   const { pop } = useMf();
   return (
-    <Screen title="Researcher backed baskets" onBack={pop}>
+    <Screen title="Researcher backed baskets" onBack={pop} className="bk-page">
       <ReviewedLine className="bk-sub bk-sub-page" />
       <div className="bk-list">
         {baskets.map((basket, i) => (
