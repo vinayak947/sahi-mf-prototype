@@ -1,0 +1,147 @@
+/* SIP tab hero card: a desk calendar in the basket card's style. Tokens only; no hex. */
+.sc-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin-top: 12px; /* room for the binder rings */
+  border: 1px solid var(--border-L1);
+  border-radius: 16px;
+  /* the basket card's wash: a soft mauve at the top that is gone by the middle of the card */
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent-subtle) 32%, transparent) 0, transparent 150px) padding-box;
+}
+
+/* Binder rings: two faint grey pills that straddle the top edge, outlined in the page colour so they read as holes through the sheet. */
+.sc-ring {
+  position: absolute;
+  top: -6px;
+  z-index: 1;
+  width: 4px;
+  height: 16px;
+  margin-left: -2px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--text-tertiary) 38%, var(--surface-L1));
+  box-shadow: 0 0 0 2px var(--surface-L1);
+}
+
+.sc-head {
+  display: flex;
+  flex-direction: column;
+  padding: 24px 16px 0;
+}
+
+.sc-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.sc-count {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.sc-cal-glyph {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  color: var(--text-primary);
+  background: var(--surface-L1);
+  box-shadow: inset 0 0 0 1px var(--border-L1);
+  place-items: center;
+}
+
+.sc-head small {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.sc-head strong {
+  margin-top: 4px;
+  color: var(--text-primary);
+  font-family: "SAHI Season Display Mix:Medium", serif;
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 40px;
+}
+
+/* What is due: the old divided row, a clock then the amount and the fund, on one line. */
+.sc-due {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 16px 0;
+  padding: 16px 0; /* even above and below the text */
+  border-top: 1px solid var(--border-L1);
+}
+
+.sc-due .icon {
+  flex: none;
+  color: var(--text-primary);
+}
+
+.sc-due span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  padding-right: 20px; /* long fund names wrap before the dog-ear */
+}
+
+.sc-due b {
+  color: var(--text-primary);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.sc-due small {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.sc-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 20px 16px 0;
+  padding: 16px 0 28px;
+  border: 0;
+  border-top: 1px solid var(--border-L1);
+  color: var(--text-primary);
+  background: transparent;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 16px;
+  line-height: 20px;
+  text-align: left;
+}
+
+/* The dog-ear: the corner is cut on the diagonal and the flap is folded back over the sheet. */
+.sc-fold {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 28px;
+  height: 28px;
+  border-radius: 0 0 16px;
+  background: linear-gradient(135deg, var(--surface-L1) calc(50% - 0.5px), var(--border-L1) calc(50% - 0.5px) calc(50% + 0.5px), var(--accent-subtle) calc(50% + 0.5px));
+  box-shadow: inset -1px -1px 0 var(--border-L1);
+}
+
+/* The stacked fund logos are circles here (not the usual rounded squares). */
+.sc-card .bk-stack .fund-mark,
+.sc-card .sc-cal-glyph {
+  overflow: hidden;
+  background: var(--surface-L1);
+  border-radius: 50%;
+}
+
+.sc-card .bk-stack .fund-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* wide wordmarks (Quant) stay whole inside the circle */
+}
