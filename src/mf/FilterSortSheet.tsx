@@ -53,7 +53,7 @@ export function FilterSortSheet<K extends string>({
     <div className={`mf-sheet-layer${closing ? " closing" : ""}`}>
       <button className="mf-sheet-scrim" aria-label="Close" onClick={() => setClosing(true)} />
       <div
-        className="mf-sheet mf-fsheet"
+        className={`mf-sheet mf-fsheet${sortOnly ? " sort-only" : ""}`}
         role="dialog"
         aria-modal="true"
         aria-label="Filter and sort"
