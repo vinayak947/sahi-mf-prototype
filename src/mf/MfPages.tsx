@@ -11,6 +11,7 @@ import { FundMark } from "./parts";
 import { BasketHoldingsTab } from "./BasketHoldings";
 import { OrdersList2, type TypeFilter } from "./OrdersList2";
 import { SIP_FROM_100 } from "./listSpecs";
+import { SipCalendarCard } from "./SipCalendar";
 import { useMf } from "./store";
 import { FilterSortSheet } from "./FilterSortSheet";
 
@@ -515,56 +516,17 @@ export function SipPage() {
       next: new Date(today.getFullYear(), today.getMonth() + (today.getDate() >= s.day ? 1 : 0), s.day),
     }))
     .sort((a, b) => a.next.getTime() - b.next.getTime());
-  const monthly = sips.reduce((sum, s) => sum + s.amount, 0);
-  const dueSoon = upcoming.filter((s) => (s.next.getTime() - today.getTime()) / 864e5 <= 2);
   const startList = () => push({ name: "list", spec: SIP_FROM_100 });
 
   return (
     <main className="page">
       <h1 className="page-title">SIPs</h1>
 
-      {sips.length === 0 ? (
-        // No SIP running (never invested, or one-time only): ₹0 a month and a way in. No fund list or filters here.
-        <>
-          <div className="mf-sip-zero">
-            <small>Monthly SIP amount</small>
-            <strong>{inr(0)}</strong>
-            <button onClick={startList}>
-              Start a new SIP
-              <Icon name="chevron-right" size={20} />
-            </button>
-          </div>
-        </>
-      ) : (
-        <>
-            <div className="mf-sip-zero">
-              <small>
-                Monthly SIP amount · {sips.length} {sips.length === 1 ? "SIP" : "SIPs"}
-              </small>
-              <strong>{inr(monthly)}</strong>
-              <div className="mf-sip-due">
-                <Icon name="clock" size={24} />
-                <span>
-                  {dueSoon.length > 0 ? (
-                    <>
-                      <b>{inr(dueSoon.reduce((sum, s) => sum + s.amount, 0))} due in the next 2 days</b>
-                      <small>
-                        {dueSoon.length === 1 ? fundById(dueSoon[0].fundId).name : `${dueSoon.length} SIPs`} · debits on{" "}
-                        {fmtDay(dueSoon[0].next)}
-                      </small>
-                    </>
-                  ) : (
-                    <>
-                      <b>Next debit on {fmtDay(upcoming[0].next)}</b>
-                      <small>
-                        {fundById(upcoming[0].fundId).name} · {inr(upcoming[0].amount)}
-                      </small>
-                    </>
-                  )}
-                </span>
-              </div>
-            </div>
+      {/* Same calendar card with or without SIPs: with none it shows ₹0, an empty month and a way in. */}
+      <SipCalendarCard sips={sips} upcoming={upcoming} today={today} onStart={startList} />
 
+      {sips.length > 0 && (
+        <>
           <div className="block-head mf-sip-head">
             <h2>Active SIPs ({sips.length})</h2>
           </div>
