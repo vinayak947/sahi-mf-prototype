@@ -3,44 +3,6 @@
    nothing over ~600 ms except the slow
    conveyor and the spotlight drift, which are ambient and stop for reduced motion. */
 
-/* ---- Prototype switch ------------------------------------------------------------------------------------------- */
-.pk-switch {
-  display: flex;
-  gap: 6px;
-  margin: 0 0 12px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.pk-switch button {
-  flex: none;
-  height: 28px;
-  padding: 0 12px;
-  border: 1px dashed var(--border-L1);
-  border-radius: 999px;
-  color: var(--ink-2);
-  background: transparent;
-  font-size: 12px;
-}
-
-.pk-switch button.on {
-  border-style: solid;
-  border-color: var(--surface-inverse);
-  color: var(--text-inverse);
-  background: var(--surface-inverse);
-}
-
-.pk-stage {
-  animation: pk-in 320ms cubic-bezier(0.23, 1, 0.32, 1) both;
-}
-
-@keyframes pk-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-}
-
 /* ---- Shared ------------------------------------------------------------------------------------------------------ */
 .pk-card {
   position: relative;
@@ -408,135 +370,6 @@
   }
 }
 
-/* ---- 3 · Spotlight ------------------------------------------------------------------------------------------------- */
-@property --sx {
-  syntax: "<percentage>";
-  inherits: false;
-  initial-value: 30%;
-}
-
-@property --sy {
-  syntax: "<percentage>";
-  inherits: false;
-  initial-value: 50%;
-}
-
-/* Two designs, one per theme.
-   Light: a light card with a soft pink glow in the top corner; the dimmed logos are grey ghosts and the light brings
-   them out in colour (no tint inside the light: the logos are the colour). Black Activate.
-   Dark: a deep plum stage with a pink glow; the light brings the logos out the same way. White Activate. */
-.pk-spot-card {
-  border: 1px solid var(--border-L1);
-  background:
-    radial-gradient(70% 55% at 90% 0%, color-mix(in srgb, var(--accent-subtle) 75%, transparent) 0, transparent 70%),
-    radial-gradient(60% 50% at 0% 100%, color-mix(in srgb, var(--accent-subtle) 30%, transparent) 0, transparent 70%),
-    var(--surface-L1);
-}
-
-:root[data-theme="dark"] .pk-spot-card {
-  border-color: rgb(255 255 255 / 8%);
-  background:
-    radial-gradient(80% 60% at 85% 0%, rgb(239 79 172 / 35%) 0, transparent 70%),
-    #120a10;
-}
-
-:root[data-theme="dark"] .pk-spot-card p {
-  color: rgb(255 255 255 / 72%);
-}
-
-.pk-spot-card h3 {
-  margin-top: 12px;
-}
-
-.pk-spot {
-  position: relative;
-  height: 112px;
-  margin: 0 -4px 16px;
-  overflow: hidden;
-  border-radius: 14px;
-  cursor: crosshair;
-  touch-action: pan-y;
-}
-
-.pk-spot-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 36px);
-  justify-content: space-between;
-  gap: 12px 0;
-  padding: 14px 10px;
-}
-
-.pk-spot-dim {
-  filter: blur(2px) grayscale(1);
-  opacity: 0.3;
-}
-
-:root[data-theme="dark"] .pk-spot-dim {
-  opacity: 0.22;
-}
-
-/* the lit copy, seen only through a soft circle that drifts (or follows the finger) */
-.pk-spot-lit {
-  position: absolute;
-  inset: 0;
-  -webkit-mask-image: radial-gradient(64px 64px at var(--sx) var(--sy), #000 0, #000 45%, transparent 100%);
-  mask-image: radial-gradient(64px 64px at var(--sx) var(--sy), #000 0, #000 45%, transparent 100%);
-  animation: pk-drift 9s ease-in-out infinite alternate;
-}
-
-.pk-spot.driving .pk-spot-lit {
-  animation: none;
-}
-
-/* a tap, and the hand back to the drift, ease the light across; a drag has no transition so it sits under the finger */
-.pk-spot.glide .pk-spot-lit {
-  transition:
-    --sx 280ms cubic-bezier(0.23, 1, 0.32, 1),
-    --sy 280ms cubic-bezier(0.23, 1, 0.32, 1);
-}
-
-@keyframes pk-drift {
-  0% {
-    --sx: 18%;
-    --sy: 40%;
-  }
-
-  50% {
-    --sx: 58%;
-    --sy: 70%;
-  }
-
-  100% {
-    --sx: 86%;
-    --sy: 35%;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .pk-stage,
-  .pk-soon i::after,
-  .pk-conv-track,
-  .pk-spot-lit {
-    animation: none;
-  }
-
-  .pk-frost {
-    transition: none;
-  }
-
-  /* reduced motion: the cards just appear and disappear, no rise or fan */
-  .pk-feat,
-  .pk-hold.peeking .pk-feat {
-    transform: none;
-    transition: opacity 150ms ease;
-  }
-
-  .pk-spot-lit {
-    --sx: 50%;
-    --sy: 50%;
-  }
-}
-
 /* ---- Flow v2: the belt in an outlined card --------------------------------------------------------------------------
    An outlined card (Border L1, 20 corners). The belt has no inner box or padding and runs to the card's edges; its fade
    is long at the bottom so the last rows dissolve into the headline. Only the text keeps 16 px padding. */
@@ -612,4 +445,10 @@
 
 .pk-flow .pk-flow-copy {
   padding-bottom: 16px;
+}
+
+/* headlines that run to two lines break evenly ("Mutual Funds are / coming to SAHI"), never leaving one word alone */
+.pk-card h3,
+.pk-flow-copy h3 {
+  text-wrap: balance;
 }
