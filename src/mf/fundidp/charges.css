@@ -1,4 +1,4 @@
-/* Charges and tax fold: title over note, value on the right, divider between rows. Kept apart from fundidp.css so a re-sync of that file cannot drop it. */
+/* Charges and tax fold: same type as the Portfolio list (name 14/17, small line 12/14, value 14 medium); title over note, value on the right, divider between rows. Kept apart from fundidp.css so a re-sync of that file cannot drop it. */
 .chg {
   display: flex;
   flex-direction: column;
@@ -11,11 +11,11 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 16px 0;
+  padding: 12px 0;
   border-top: 1px solid var(--border-L1);
 }
 .chg .chg-row:first-child {
-  padding-top: 8px;
+  padding-top: 0;
   border-top: 0;
 }
 .chg .chg-row:last-child {
@@ -25,27 +25,39 @@
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 .chg .chg-title {
   color: var(--ink);
-  font-size: 16px;
-  line-height: 19.2px;
+  font-size: 14px;
+  line-height: 17px;
 }
 .chg .chg-note {
   margin: 0;
   color: var(--ink-3);
-  font-size: 14px;
-  line-height: 16.8px;
+  font-size: 12px;
+  line-height: 14px;
 }
 .chg .chg-row b {
   flex: none;
   color: var(--ink);
   font-family: "SAHI Sans:Medium", sans-serif;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
-  line-height: 19.2px;
+  line-height: 17px;
   text-align: right;
   white-space: nowrap;
+}
+
+/* A row with a figure on the right: the words keep to a fixed 240px column (balanced over two lines when they wrap), so they
+   never run up against the figure, whatever its length. */
+.chg .chg-row:has(> b) .chg-text {
+  flex: 0 1 240px;
+}
+.chg .chg-row:has(> b) .chg-note {
+  text-wrap: balance;
+}
+.chg .chg-note {
+  text-wrap: pretty;
 }

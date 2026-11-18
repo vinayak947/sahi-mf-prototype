@@ -405,10 +405,11 @@ export function RowSide({ fund, basis, digits = 1, signed = true }: { fund: Fund
 // "Equity · Small Cap" -> "Equity Small Cap" (asset class and sub-category read as one phrase on rows)
 export const fundCategory = (fund: Fund) => fund.catLabel.replace(" · ", " ");
 
-export function Stars({ n }: { n: number }) {
+// bds: the Base Design System star (filled) at 14, used in the fund header; elsewhere the DLS star at 12.
+export function Stars({ n, bds = false }: { n: number; bds?: boolean }) {
   return (
     <span className="mf-stars-idp" aria-label={`${n}-star rating`}>
-      {n} <Icon name="star-filled" size={12} />
+      {n} {bds ? <Icon name="star-bds" size={14} /> : <Icon name="star-filled" size={12} />}
     </span>
   );
 }
@@ -546,7 +547,47 @@ export function ArtBox({ art, className, frame, mirror }: { art: Art; className:
   );
 }
 
+const FOLD_OPEN = "fold-open";
+const FOLD_MS = 240; // .fold-body grid-template-rows transition
+
+// While a fold above collapses, keep the one just tapped where the finger is: each frame, scroll by however far its
+// heading has drifted. Stops once the collapse is over.
+function holdInPlace(section: HTMLElement) {
+  let scroller: HTMLElement | null = section.parentElement;
+  while (scroller && !(scroller.scrollHeight > scroller.clientHeight && /auto|scroll/.test(getComputedStyle(scroller).overflowY)))
+    scroller = scroller.parentElement;
+  if (!scroller) return;
+  const el = scroller;
+  const start = section.getBoundingClientRect().top;
+  const until = performance.now() + FOLD_MS + 80;
+  const tick = () => {
+    const drift = section.getBoundingClientRect().top - start;
+    if (Math.abs(drift) >= 0.5) el.scrollTop += drift;
+    if (performance.now() < until) requestAnimationFrame(tick);
+    else reveal(section, el);
+  };
+  requestAnimationFrame(tick);
+}
+
+// Once open, bring the section into view if it runs past the bottom: all of it when it fits, otherwise its heading
+// near the top. The visible area is the scroller minus the screen's header and fixed footer (the buttons).
+function reveal(section: HTMLElement, scroller: HTMLElement) {
+  const screen = section.closest(".mf-screen");
+  const box = scroller.getBoundingClientRect();
+  const head = screen?.querySelector(".mf-head")?.getBoundingClientRect();
+  const foot = screen?.querySelector(".mf-foot")?.getBoundingClientRect();
+  const top = Math.max(box.top, head && head.bottom > box.top ? head.bottom : box.top) + 8;
+  const bottom = Math.min(box.bottom, foot && foot.top < box.bottom ? foot.top : box.bottom) - 16;
+  const r = section.getBoundingClientRect();
+  if (r.bottom <= bottom) return; // already all in view
+  const by = Math.min(r.bottom - bottom, r.top - top); // never push the heading above the top edge
+  if (by > 0) scroller.scrollBy({ top: by, behavior: reduceMotion() ? "auto" : "smooth" });
+}
+
+const reduceMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
 // A fund page widget that folds away: the title is the toggle, the chevron turns over when it is open.
+// Folds on one page work as an accordion: opening one closes the one that was open.
 // The body stays mounted (so the calculator keeps its state) and is made inert while folded.
 export function Fold({
   title,
@@ -554,22 +595,46 @@ export function Fold({
   children,
   defaultOpen = true,
   onOpenChange,
+  boxed = false,
 }: {
   title: string;
   summary?: ReactNode; // one short value shown in the closed header (fades out when open), so a closed row still says something
   children: ReactNode;
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
+  boxed?: boolean; // the open content sits on a subtle full-width card (About the fund, Charges and tax)
 }) {
   const [open, setOpenState] = useState(defaultOpen);
+  const bodyId = useId();
+  const sectionRef = useRef<HTMLElement>(null);
   const setOpen = (next: (o: boolean) => boolean) => {
     const value = next(open);
     setOpenState(value);
     onOpenChange?.(value);
+    // One open at a time: tell the other folds on this page to close.
+    if (value) {
+      const section = sectionRef.current;
+      section?.closest(".mf-body")?.dispatchEvent(new CustomEvent(FOLD_OPEN, { detail: bodyId }));
+      if (section) holdInPlace(section);
+    }
   };
-  const bodyId = useId();
+  // Close when another fold on the same page opens (scoped to this screen's body, so stacked screens don't interfere).
+  const openRef = useRef(open);
+  openRef.current = open;
+  useEffect(() => {
+    const page = sectionRef.current?.closest(".mf-body");
+    if (!page) return;
+    const onOther = (e: Event) => {
+      if ((e as CustomEvent<string>).detail === bodyId || !openRef.current) return;
+      setOpenState(false);
+      onOpenChange?.(false);
+    };
+    page.addEventListener(FOLD_OPEN, onOther);
+    return () => page.removeEventListener(FOLD_OPEN, onOther);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bodyId]);
   return (
-    <section className={`mf-section-idp fold${open ? " open" : ""}`}>
+    <section ref={sectionRef} className={`mf-section-idp fold${open ? " open" : ""}`}>
       <h3>
         <button type="button" className="fold-head" aria-expanded={open} aria-controls={bodyId} onClick={() => setOpen((o) => !o)}>
           {title}
@@ -580,7 +645,7 @@ export function Fold({
         </button>
       </h3>
       <div className="fold-body" id={bodyId} inert={!open}>
-        <div className="fold-inner">{children}</div>
+        <div className="fold-inner">{boxed ? <div className="fold-card">{children}</div> : children}</div>
       </div>
     </section>
   );

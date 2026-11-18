@@ -1,6 +1,8 @@
 import "./idp-vars.css";
 import "./fundidp.css";
 import "./charges.css";
+import "./folds.css";
+import "./stats.css";
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { asset } from "../../assets";
 import { Icon } from "./Icon";
@@ -40,6 +42,7 @@ import {
 } from "./parts";
 import { Dial, ReturnCalculator } from "./ReturnCalculator";
 import { Ticker } from "./calc/core";
+import { SAHI_MARK } from "./calc/coins";
 import { sipReturns } from "./sip";
 import { portfolioOf, weightText } from "./portfolio";
 import { BottomSheet } from "./Sheet";
@@ -47,6 +50,7 @@ import { RISK_COPY, outcomes, whyRisk, type Outcomes } from "./risk";
 import { ManagerSheet } from "./ManagerSheet";
 import { hostOf, infoFor, joinedAfterLaunch, managerSince, otherFunds, sinceText, tenureText, yearsLabel } from "./managers";
 import { useMf } from "../store";
+import { KyroCard, KyroSheet } from "./kyro";
 
 // ---- Fund page ---------------------------------------------------------------------
 
@@ -468,7 +472,7 @@ function PortfolioWidget({ fund }: { fund: Fund }) {
       <p className="pf-asof">as of {p.asOf}</p>
 
       {/* two sections of their own: what kind of assets, then what exactly it holds */}
-      <section className="pf-sec pf-card">
+      <section className="pf-sec">
         <h4 className="pf-sub">Asset mix</h4>
         <PfMix tiles={p.tiles} />
       </section>
@@ -488,14 +492,21 @@ function PortfolioWidget({ fund }: { fund: Fund }) {
             ]}
           />
         )}
-        <div key={view}>
+        {/* One bordered panel, laid out like "Invest in a sector": the one-line read, a count row, the rows, then the link to all. */}
+        <div className="pf-panel" key={view}>
           <PfInsight headline={insight.headline} detail={insight.detail} stage={stage} />
+          <div className="mf-allhead pf-allhead">
+            <span>
+              {showGroups ? `${p.groups.length} ${(p.groupLabel ?? "").toLowerCase()}` : `${p.items.length} ${p.itemLabel.toLowerCase()}`}
+            </span>
+            <span>Share of fund</span>
+          </div>
           <PfList rows={rows} />
+          <button className="pf-all" onClick={() => setHoldingsOpen(true)}>
+            View all {p.items.length} holdings
+            <Icon name="caret-right" size={16} />
+          </button>
         </div>
-        <button className="pf-all" onClick={() => setHoldingsOpen(true)}>
-          View all {p.items.length} holdings
-          <Icon name="caret-right" size={16} />
-        </button>
         {holdingsOpen && <HoldingsSheet fund={fund} onClose={() => setHoldingsOpen(false)} />}
       </section>
     </Fold>
@@ -630,22 +641,32 @@ function ChargesAndTax({ fund }: { fund: Fund }) {
       : taxKind === "gold"
         ? "If you redeem within two years, returns are taxed as per your Income Tax slab. If you redeem after two years, returns are taxed at 12.5%."
         : "If you redeem within one year, returns are taxed at 20%. If you redeem after one year, returns exceeding ₹1.25 lakh in a financial year are taxed at 12.5%.";
-  // Exit load: Nil, a lock-in, one step, a ladder of steps, or a day-by-day scale (liquid funds).
+  // Exit load: the charge on the right, the condition under the title. Nil, a lock-in, one step, a ladder of steps, or a
+  // day-by-day scale (liquid funds). With a ladder or a scale the right side shows the highest charge, "Up to 1%".
   const scale = steps.length > 3;
-  const exitLoad = fund.lockIn
-    ? `Nil. Units are locked in for ${fund.lockIn}, so they can't be redeemed before that.`
+  const top = steps.reduce((mx, t) => Math.max(mx, t.pct), 0);
+  const exit: { value: string; note: ReactNode } = fund.lockIn
+    ? { value: "Nil", note: `Units are locked in for ${fund.lockIn}, so they can't be redeemed before that.` }
     : !last
-      ? "Nil"
+      ? { value: "Nil", note: "No charge whenever you redeem." }
       : scale
-        ? `${pctWord(steps[0].pct)} if redeemed on day ${steps[0].days}, reducing to ${pctWord(last.pct)} by day ${last.days}. Nil after that.`
+        ? { value: `Up to ${pctWord(top)}`, note: `${pctWord(steps[0].pct)} on day ${steps[0].days}, reducing to ${pctWord(last.pct)} by day ${last.days}. Nil after that.` }
         : steps.length === 1
-          ? `${pctWord(last.pct)} if you redeem within ${dayWord(last.days)}. Nothing after that.`
-          : `${steps.map((t) => `${pctWord(t.pct)} within ${dayWord(t.days)}`).join(", ")}. Nothing after that.`;
-  const exitText = fund.loadFree && last && !fund.lockIn ? `${exitLoad} The first ${Math.round(fund.loadFree * 100)}% of units each year are free.` : exitLoad;
+          ? {
+              value: pctWord(last.pct),
+              note: (
+                <>
+                  If you redeem within {dayWord(last.days)}.<br />
+                  Nil after that.
+                </>
+              ),
+            }
+          : { value: `Up to ${pctWord(top)}`, note: `${steps.map((t) => `${pctWord(t.pct)} within ${dayWord(t.days)}`).join(", ")}. Nothing after that.` };
+  const exitNote = fund.loadFree && last && !fund.lockIn ? <>{exit.note} The first {Math.round(fund.loadFree * 100)}% of units each year are free.</> : exit.note;
   return (
     <ul className="chg">
       <ChargeRow title="Expense ratio" note="Inclusive of GST and statutory charges" value={`${fund.expense}% a year`} />
-      <ChargeRow title="Exit load" note={exitText} />
+      <ChargeRow title="Exit load" note={exitNote} value={exit.value} />
       <ChargeRow title="Tax implication" note={tax} />
     </ul>
   );
@@ -673,6 +694,7 @@ export function FundScreen({ fundId }: { fundId: string }) {
   // Returns widget: what a lumpsum earned, or what a monthly SIP earned (worked out from the same published numbers, see ./sip).
   const [retMode, setRetMode] = useState<"lump" | "sip">("lump");
   const [sheetFor, setSheetFor] = useState<string | null>(null); // the manager whose sheet is open
+  const [kyro, setKyro] = useState<{ q?: string } | null>(null); // the Kyro sheet, opened empty or with a question asked
   const mine: [number, number, number] = retMode === "lump" ? [fund.r1, fund.r3, fund.r5] : sipReturns([fund.r1, fund.r3, fund.r5]);
   const avg: [number, number, number] = retMode === "lump" ? fund.avg : sipReturns(fund.avg);
   const rows: [string, number, number][] = [
@@ -707,7 +729,7 @@ export function FundScreen({ fundId }: { fundId: string }) {
         ) : (
           <div className="mf-actions">
             <button className="mf-btn ghost" onClick={() => push({ name: "amount", fundId, mode: "lump" })}>
-              Invest one-time
+              Invest One-time
             </button>
             <button className="mf-btn solid" onClick={() => push({ name: "amount", fundId, mode: "sip" })}>
               Start SIP
@@ -717,10 +739,18 @@ export function FundScreen({ fundId }: { fundId: string }) {
       }
     >
       <div className="fund-hero">
-        <FundMark fund={fund} size={48} />
+        {/* The logo is a two-sided card: it arrives showing its back (the SAHI mark) and turns over to the fund's logo. */}
+        <span className="fund-flip">
+          <FundMark fund={fund} size={48} />
+          <span className="fund-flip-back" aria-hidden="true">
+            <svg viewBox="0 0 149 148">
+              <path d={SAHI_MARK} />
+            </svg>
+          </span>
+        </span>
         <h2 data-dock-anchor>{fund.name}</h2>
         <p className="fund-meta-idp">
-          {fundCategory(fund)} • <Stars n={fund.stars} /> • {riskText}
+          {fund.plan ?? "Direct"} • {fundCategory(fund)} • <Stars n={fund.stars} bds /> • {riskText}
         </p>
       </div>
       {fund.buyNote && fund.buy !== "restricted" && <Notice tone="warn">{fund.buyNote}</Notice>}
@@ -740,6 +770,9 @@ export function FundScreen({ fundId }: { fundId: string }) {
       </div>
 
       <NavChart fund={fund} range={range} onRange={setRange} navOn={navOn} />
+
+      <KyroCard fund={fund} onAsk={(q) => setKyro({ q })} />
+      {kyro && <KyroSheet fund={fund} question={kyro.q} onClose={() => setKyro(null)} />}
 
       <dl className="fund-stats">
         <div>
@@ -776,37 +809,40 @@ export function FundScreen({ fundId }: { fundId: string }) {
             ["sip", "SIP"],
           ]}
         />
-        <table className="mf-table-idp">
-          <thead>
-            <tr>
-              <th />
-              <th>1Y</th>
-              <th>3Y</th>
-              <th>5Y</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>This fund</td>
-              {rows.map(([k, v]) => (
-                <td key={k} className={v >= 0 ? "up" : "down"}>
-                  <b>{pct(v, 1)}</b>
-                </td>
-              ))}
-            </tr>
-            {/* The category average is a lumpsum figure, so SIP returns (XIRR) don't get one. The row stays, invisible, so the fold keeps its height and columns when the tab changes. */}
-            <tr className={retMode === "sip" ? "mf-row-blank" : undefined} aria-hidden={retMode === "sip" || undefined}>
-              <td>Category average</td>
-              {rows.map(([k, , a]) => (
-                <td key={k}>{pct(a, 1)}</td>
-              ))}
-            </tr>
-          </tbody>
-        </table>
-        <p className="mf-small-idp">
-          {retMode === "lump" ? "Annualised, for a lumpsum held the whole period." : "Annualised (XIRR), for a monthly SIP over the period."} Past
-          performance does not predict future returns.
-        </p>
+        {/* same panel as Portfolio > Holdings: the switch above, the table and its note inside one box */}
+        <div className="pf-panel">
+          <table className="mf-table-idp">
+            <thead>
+              <tr>
+                <th />
+                <th>1Y</th>
+                <th>3Y</th>
+                <th>5Y</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>This fund</td>
+                {rows.map(([k, v]) => (
+                  <td key={k} className={v >= 0 ? "up" : "down"}>
+                    <b>{pct(v, 1)}</b>
+                  </td>
+                ))}
+              </tr>
+              {/* The category average is a lumpsum figure, so SIP returns (XIRR) don't get one. The row stays, invisible, so the fold keeps its height and columns when the tab changes. */}
+              <tr className={retMode === "sip" ? "mf-row-blank" : undefined} aria-hidden={retMode === "sip" || undefined}>
+                <td>Category average</td>
+                {rows.map(([k, , a]) => (
+                  <td key={k}>{pct(a, 1)}</td>
+                ))}
+              </tr>
+            </tbody>
+          </table>
+          <p className="mf-small-idp">
+            {retMode === "lump" ? "Annualised, for a lumpsum held the whole period." : "Annualised (XIRR), for a monthly SIP over the period."} Past
+            performance does not predict future returns.
+          </p>
+        </div>
       </Fold>
 
       <ReturnCalculator fund={fund} />
@@ -814,7 +850,7 @@ export function FundScreen({ fundId }: { fundId: string }) {
       <PortfolioWidget fund={fund} />
 
 
-      <Fold title="About the fund" summary={ageText(fund.launched) ?? undefined} defaultOpen={false}>
+      <Fold title="About the fund" summary={ageText(fund.launched) ?? undefined} defaultOpen={false} boxed>
         <p className="mf-body-copy-idp">{fund.aim}</p>
         {/* the facts that are not shown anywhere else on the page: AUM and Min. SIP are in the top row, the expense ratio is under Charges and tax */}
         <div className="mf-grid2-idp about-facts">
@@ -865,7 +901,7 @@ export function FundScreen({ fundId }: { fundId: string }) {
         </button>
       </Fold>
 
-      <Fold title="Charges and tax" summary={`${fund.expense}% a year`} defaultOpen={false}>
+      <Fold title="Charges and tax" summary={`${fund.expense}% a year`} defaultOpen={false} boxed>
         <ChargesAndTax fund={fund} />
       </Fold>
 

@@ -1,5 +1,6 @@
 import "../fundidp/fundidp.css";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import "../baskets.css";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { asset } from "../../assets";
 import { Icon } from "../fundidp/Icon";
 import { Block, HScroll } from "../../ui/widgets";
@@ -9,6 +10,8 @@ import { Ticker } from "../fundidp/calc/core";
 import { riskLevels } from "../data";
 import { Disclaimer, Fold, FundMark, fundCategory, ManagerAvatar, Notice, Riskometer, Row, Screen, SegmentSwitcher, Stars, VerifiedBadge } from "../fundidp/parts";
 import { ResearcherSheet } from "./ResearcherSheet";
+import { backPath, frontPath } from "../Baskets";
+import { BasketKyroCard, BasketKyroSheet } from "./kyroBasket";
 import { ReturnCalculator } from "../fundidp/ReturnCalculator";
 import { sipReturns } from "../fundidp/sip";
 import { useMf } from "../store";
@@ -32,6 +35,53 @@ export function LogoStack({ basket, size }: { basket: Basket; size: number }) {
           +{list.length - shown.length}
         </span>
       )}
+    </span>
+  );
+}
+
+// The basket's folder from its home card, full width at the top of the page, with the fund logos dropped loosely
+// onto its front sheet. Same geometry as the card (tab rising 17px, 16px corners), re-drawn for the page width.
+// The tab takes the basket's colour, as on the card.
+const FOLDER_H = 200;
+const DROPS: [number, number, number][] = [
+  // [left %, top px, turn °] for up to three 48px logos on the front sheet
+  [22, 76, -10],
+  [44, 94, 7],
+  [64, 70, -4],
+];
+
+export function FolderMark({ basket, tint }: { basket: Basket; tint: string }) {
+  const funds = basketFunds(basket).slice(0, 3);
+  const ref = useRef<HTMLSpanElement>(null);
+  const [w, setW] = useState(0);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const measure = () => setW(el.offsetWidth);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return (
+    <span ref={ref} className="bk-mini-folder" style={{ "--bk-tint": tint } as React.CSSProperties} aria-hidden="true">
+      <svg width={w} height={FOLDER_H}>
+        {w > 0 && (
+          <>
+            <path className="bk-folder-back" transform="translate(4 0)" d={backPath(w - 8, FOLDER_H)} />
+            <path className="bk-folder-front" transform="translate(0 17)" d={frontPath(w, FOLDER_H - 17)} />
+          </>
+        )}
+      </svg>
+      {funds.map(({ fund }, i) => (
+        <span
+          key={`${fund.id}-${i}`}
+          className="bk-mini-logo"
+          style={{ left: `${DROPS[i][0]}%`, top: DROPS[i][1], rotate: `${DROPS[i][2]}deg` }}
+        >
+          <FundMark fund={fund} size={48} />
+        </span>
+      ))}
     </span>
   );
 }
@@ -158,6 +208,7 @@ export function BasketScreen({ basketId }: { basketId: string }) {
   const list = basketFunds(basket);
   const r3 = blended3Y(basket);
   const [shared, setShared] = useState(false);
+  const [kyro, setKyro] = useState<{ q?: string } | null>(null); // the Kyro sheet, opened empty or with a question asked
 
   // Same behaviour as the goal pages: the phone's share sheet when there is one, else the text goes to the clipboard and the icon says "Copied" for a moment.
   async function share() {
@@ -218,7 +269,7 @@ export function BasketScreen({ basketId }: { basketId: string }) {
         ) : (
           <div className="mf-actions">
             <button className="mf-btn ghost" onClick={() => push({ name: "amount", fundId: basketFundId(basketId), mode: "lump" })}>
-              Invest one-time
+              Invest One-time
             </button>
             <button className="mf-btn solid" onClick={() => push({ name: "amount", fundId: basketFundId(basketId), mode: "sip" })}>
               Start SIP
@@ -238,10 +289,17 @@ export function BasketScreen({ basketId }: { basketId: string }) {
         </>
       }
     >
-      <div className="fund-hero">
-        <LogoStack basket={basket} size={48} />
-        <h2 data-dock-anchor>{basket.name}</h2>
-        <p className="fund-meta-idp">{basket.who}</p>
+      {/* Same pieces, in the same order, as the basket's folder card on the home page: logos, name • fund count,
+          who it is for, then 3Y return · Min. SIP · Risk. */}
+      <div className="fund-hero bk-hero-idp">
+        <FolderMark basket={basket} tint={SHADES[Math.max(0, baskets.findIndex((b) => b.id === basket.id)) % SHADES.length]} />
+        <div className="bk-hero-text-idp">
+          <div className="bk-title">
+            <h2 data-dock-anchor>{basket.name}</h2>
+            <span className="bk-count">• {basket.funds.length} funds</span>
+          </div>
+          <p className="fund-meta-idp">{basket.who}</p>
+        </div>
       </div>
       {buy.fund && buy.state === "paused" && (
         <Notice tone="warn">{buy.fund.name} is not taking new money right now, so this basket can't be started until it reopens.</Notice>
@@ -250,33 +308,25 @@ export function BasketScreen({ basketId }: { basketId: string }) {
         <Notice tone="warn">{buy.fund.name} has stopped one-time investments, so this basket can only be started as a SIP.</Notice>
       )}
 
-      <div className="fund-figures-idp">
-        <div className="fund-main">
+      <span className="bk-stats bk-stats-hero-idp">
+        <span>
+          <small>3Y return</small>
           <strong className={r3 >= 0 ? "up" : "down"}>
             <Ticker value={r3} format={(v) => pct(v, 1).replace("+", "")} armed={counting} ms={700} />
           </strong>
-          <small>a year over 3 years</small>
-        </div>
-        <div className="fund-day">
-          <b>{riskLabel(risk).replace(" risk", "")}</b>
+        </span>
+        <span>
+          <small>Min. SIP</small>
+          <strong>{inr(basketMin(basket, "sip"))}</strong>
+        </span>
+        <span>
           <small>Risk</small>
-        </div>
-      </div>
+          <strong>{riskLabel(risk).replace(" risk", "")}</strong>
+        </span>
+      </span>
 
-      <dl className="fund-stats bk-stats-page-idp">
-        <div>
-          <dt>Funds</dt>
-          <dd>{basket.funds.length}</dd>
-        </div>
-        <div>
-          <dt>Min. SIP</dt>
-          <dd>{inr(basketMin(basket, "sip"))}</dd>
-        </div>
-        <div>
-          <dt>Cost a year</dt>
-          <dd>{basketCost(basket).toFixed(2)}%</dd>
-        </div>
-      </dl>
+      <BasketKyroCard basket={basket} onAsk={(q) => setKyro({ q })} />
+      {kyro && <BasketKyroSheet basket={basket} question={kyro.q} onClose={() => setKyro(null)} />}
 
       <Fold title="What&rsquo;s inside" summary={`${basket.funds.length} funds`} defaultOpen>
         <div className="bk-bar-idp" aria-hidden="true">

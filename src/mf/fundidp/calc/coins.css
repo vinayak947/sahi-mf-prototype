@@ -1,0 +1,263 @@
+/* Return calculator coins (calc/coins.tsx). Kept apart from fundidp.css so a re-sync of that file can't drop it. */
+.mx {
+  margin-top: 24px;
+}
+
+/* ---- The chart: three columns, all shown alike (nothing to pick) ----
+   Above each stack: what it became, and "from" what went in. Below: the period, and its return right under it, so each
+   column reads top to bottom as one small statement: ₹28.58L, from ₹13.8L, [coins], 5 years, +107.1%. */
+.vk {
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: end;
+  gap: 8px;
+}
+.vk-col {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.vk-fig {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.vk-x {
+  /* the app's sans, not the display serif: at this size the serif's hairlines thin out */
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: clamp(15px, 5.2cqi, 18px); /* 18px on a regular phone, down to 15px at 320px */
+  font-weight: 500;
+  line-height: 22px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+:root:has(.idp) .vk-x.up {
+  color: var(--up);
+}
+:root:has(.idp) .vk-x.down {
+  color: var(--down);
+}
+.vk-from {
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 14px;
+  white-space: nowrap;
+}
+.vk-from b {
+  color: var(--ink-2);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.vk-stack {
+  position: relative;
+  display: block;
+  width: 52px;
+  transition: height 300ms ease-out;
+}
+.vk-lift {
+  position: absolute;
+  inset: 0;
+}
+/* every stack stands on the table with a soft shadow */
+.vk-stack::before {
+  content: "";
+  position: absolute;
+  right: 2px;
+  bottom: -3px;
+  left: 2px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.22), transparent);
+  opacity: 0.6;
+}
+/* the period and its return, as one label: the period in grey, the return in its colour just under it */
+.vk-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-top: 4px;
+  white-space: nowrap;
+}
+.vk-label span {
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 14px;
+}
+.vk-label b {
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 14px;
+  font-variant-numeric: tabular-nums;
+}
+:root:has(.idp) .vk-label b.up,
+:root:has(.idp) .vk-label b.down {
+  color: var(--text-primary);
+}
+/* each top coin catches the light once, when it lands */
+.vk-coin.top::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 15px;
+  border-radius: 50%;
+  z-index: 2;
+  background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, 0.75) 50%, transparent 65%) no-repeat;
+  background-size: 250% 100%;
+  background-position: 120% 0;
+  animation: vk-glint 700ms cubic-bezier(0.4, 0, 0.2, 1) calc(var(--d, 0ms) + 300ms) both;
+  pointer-events: none;
+}
+.vk-col {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+/* tap: the top coin's face catches the light again, the same glint it gets when it lands */
+.vk-shine {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 15px;
+  z-index: 3;
+  border-radius: 50%;
+  background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, 0.75) 50%, transparent 65%) no-repeat;
+  background-size: 250% 100%;
+  background-position: 120% 0;
+  pointer-events: none;
+  animation: vk-glint 700ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+@keyframes vk-glint {
+  from { background-position: 120% 0; }
+  to { background-position: -40% 0; }
+}
+
+/* ---- The coin ---- */
+/* A coin seen from above at an angle. The element is the whole coin's outline (a short cylinder: half-ellipse top and bottom,
+   26px / 7.5px radii), painted as the reeded edge; ::after is the face on top with its raised rim; .vk-mark is the struck logo.
+   --c is the coin's colour; every shade is mixed from it, so grey, green, light and dark all work. */
+.vk-coin {
+  position: absolute;
+  left: 0;
+  width: 52px;
+  height: 20px;
+  border-radius: 26px / 7.5px;
+  isolation: isolate;
+  background:
+    /* each coin's edge darkens towards its bottom, so the coins in a stack read one by one instead of as one striped tube */
+    linear-gradient(180deg, transparent 80%, color-mix(in srgb, var(--c), #000 38%) 100%),
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--c), #000 22%) 0 1px, transparent 1px 3px),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--c), #000 30%) 0%,
+      color-mix(in srgb, var(--c), #000 8%) 22%,
+      color-mix(in srgb, var(--c), #fff 18%) 45%,
+      color-mix(in srgb, var(--c), #000 6%) 70%,
+      color-mix(in srgb, var(--c), #000 32%) 100%
+    );
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--c), #000 40%);
+  /* falling: speeds up like a dropped coin, lands, one small bounce */
+  animation: vk-drop 420ms var(--d, 0ms) both;
+}
+.vk-coin::after {
+  /* the face: a raised rim (lit on the far side, shaded on the near side), a shallow groove inside it, a soft sheen on the field */
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 15px;
+  border: solid color-mix(in srgb, var(--c), #fff 28%);
+  border-width: 1px 2.5px 1.5px;
+  border-bottom-color: color-mix(in srgb, var(--c), #000 12%);
+  border-radius: 50%;
+  box-sizing: border-box;
+  background: radial-gradient(
+    ellipse 70% 90% at 38% 30%,
+    color-mix(in srgb, var(--c), #fff 22%) 0%,
+    var(--c) 55%,
+    color-mix(in srgb, var(--c), #000 8%) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--c), #000 16%),
+    inset 0 -1px 0 color-mix(in srgb, var(--c), #fff 30%);
+  z-index: 0;
+}
+:root:has(.idp) .vk-coin.in {
+  --c: var(--surface-L3);
+}
+:root:has(.idp) .vk-coin.gain {
+  --c: var(--positive-surface);
+}
+:root:has(.idp) .vk-coin.lost {
+  border: 1px dashed var(--negative-surface);
+  background: transparent;
+  box-shadow: none;
+}
+.vk-coin.lost::after {
+  display: none;
+}
+/* The mark, struck into the face: a touch darker than the field, with a thin lit lip on its lower edge, so it reads as
+   pressed in rather than printed on. Turned -18 degrees and squashed to the face's 0.29 aspect so it lies flat. */
+.vk-mark {
+  position: absolute;
+  top: 7.5px;
+  left: 50%;
+  width: 22px;
+  height: 22px;
+  z-index: 1;
+  transform: translate(-50%, -50%) scaleY(0.29) rotate(-18deg);
+  filter: drop-shadow(0 2.5px 0 color-mix(in srgb, var(--c), #fff 40%));
+}
+.vk-mark path {
+  fill: color-mix(in srgb, var(--c), #000 14%);
+}
+.vk-coin.out {
+  /* lifted off the stack: up and away, top coin first; exits are quicker than the fall */
+  animation: vk-lift-off 220ms cubic-bezier(0.23, 1, 0.32, 1) var(--o, 0ms) both;
+  pointer-events: none;
+}
+@keyframes vk-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes vk-lift-off {
+  to {
+    opacity: 0;
+    transform: translateY(-18px);
+  }
+}
+@keyframes vk-drop {
+  0% { transform: translateY(-56px); opacity: 0; animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45); }
+  15% { opacity: 1; }
+  70% { transform: translateY(0); animation-timing-function: cubic-bezier(0, 0.55, 0.45, 1); }
+  85% { transform: translateY(-4px); animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45); }
+  100% { transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vk-stack {
+    transition: none;
+  }
+  .vk-coin,
+  .vk-coin.top::before {
+    animation: none;
+  }
+  .vk-shine {
+    display: none;
+  }
+  .vk-coin.out {
+    animation: vk-fade-out 150ms ease both;
+  }
+}

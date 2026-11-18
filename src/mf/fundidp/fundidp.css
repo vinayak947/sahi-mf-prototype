@@ -1165,6 +1165,9 @@
   height: 13.5px;
   border-radius: 2px;
   background: var(--surface-L4);
+  /* Magnet: ticks near the needle stretch toward its height (--m set per tick by Dial.tsx, tracking the scroll 1:1). */
+  transform: scaleY(var(--m, 1));
+  transform-origin: top;
 }
 :root:has(.idp) .rc-tick-idp.mid::before {
   height: 19.5px;
@@ -1269,7 +1272,7 @@
   gap: 8px;
 }
 .fold-summary {
-  color: var(--ink-3);
+  color: var(--text-primary);
   font-family: "SAHI Sans:Regular", sans-serif;
   font-size: 14px;
   font-weight: 400;
@@ -3824,7 +3827,8 @@
   line-height: 13px;
 }
 .mf-screen:has(.fund-hero) .mf-foot {
-  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  /* Clear the OS home bar: the real inset on a phone, --home-bar in the desktop frame. */
+  padding-bottom: calc(16px + max(env(safe-area-inset-bottom, 0px), var(--home-bar, 0px)));
 }
 .mf-screen:has(.fund-hero) .mf-foot .mf-btn {
   line-height: 17px;
@@ -3948,4 +3952,144 @@
   background: var(--surface-L2);
   font-size: 14px;
   line-height: 17px;
+}
+
+/* Fund page, scrolled: the bar is 48px of content plus 8px under it, so everything sat 4px above the middle of the box.
+   Split that 8px as 4 above and 4 below, so the mark and name (still left-aligned) sit in the vertical middle. Same height. */
+.mf-screen:has(.fund-hero) .mf-head.has-dock-title {
+  transition:
+    border-color 200ms ease,
+    padding 200ms ease;
+}
+.mf-screen:has(.fund-hero) .mf-head.has-dock-title.title-in {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+/* Portfolio > Holdings: one bordered panel, same box as "Invest in a sector" on home (16px radius, hairline, 16/16/8 padding).
+   The switch sits above it, like the sector chips. Inside: the one-line read (no fill of its own), a count row, the rows, the link. */
+.pf-panel {
+  margin-top: 16px;
+  padding: 16px 16px 8px;
+  border: 1px solid var(--border-L1);
+  border-radius: 16px;
+}
+.pf-panel .pf-insight {
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.pf-panel .pf-allhead {
+  margin-top: 16px;
+}
+.pf-panel .pf-list {
+  margin: 0;
+}
+.pf-panel .pf-all {
+  margin-top: 0;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+}
+/* Returns: the switch already leaves 16px under it, so the panel adds none. */
+.seg-returns + .pf-panel {
+  margin-top: 0;
+}
+.pf-panel .mf-small-idp {
+  margin-top: 12px;
+  padding-bottom: 8px;
+}
+
+/* Fund header in text/primary: the plan · category · stars · risk line (star included), and the labels beside the
+   returns ("3Y annualised", "1D"). The return figures keep their green / red. */
+.mf-screen:has(.fund-hero) .fund-meta-idp,
+.mf-screen:has(.fund-hero) .fund-meta-idp .mf-stars-idp,
+.mf-screen:has(.fund-hero) .fund-meta-idp .icon,
+.mf-screen:has(.fund-hero) .fund-figures-idp .fund-main small,
+.mf-screen:has(.fund-hero) .fund-figures-idp .fund-day small {
+  color: var(--text-primary);
+}
+
+/* ---- Fund page: the logo is a two-sided card that turns over as the page opens ----
+   Seen once per visit, so it can carry a small moment of delight (Emil: rare = room for delight; transform + opacity only).
+   It arrives showing its back, a dark card with the SAHI mark, flips over to the fund's logo, overshoots 12 degrees once and
+   sits; the light catches the logo as it lands. 700ms in all, no start delay. */
+.fund-hero {
+  perspective: 320px;
+  perspective-origin: 24px 24px; /* the logo's centre, so the turn is seen straight on, not from the middle of the page */
+}
+.fund-flip {
+  display: inline-grid;
+  transform-style: preserve-3d;
+  animation: fund-flip 700ms both;
+}
+.fund-flip > * {
+  grid-area: 1 / 1;
+  backface-visibility: hidden;
+  /* the fade-in lives on the faces, not the card: opacity on a 3D card flattens it and the front shows through its back */
+  animation: fund-mark-fade 120ms ease-out both;
+}
+.fund-hero .fund-mark {
+  position: relative;
+}
+.fund-flip-back {
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--surface-inverse);
+  transform: rotateY(180deg);
+}
+.fund-flip-back svg {
+  width: 50%;
+  height: 50%;
+}
+.fund-flip-back path {
+  fill: color-mix(in srgb, var(--surface-inverse), var(--surface-L1) 30%);
+}
+@keyframes fund-flip {
+  /* back first: an ease-in-out start lets the back register for a moment before the turn speeds up */
+  0% {
+    transform: translateY(-6px) rotateX(8deg) rotateY(180deg) scale(0.94);
+    animation-timing-function: cubic-bezier(0.5, 0, 0.25, 1);
+  }
+  /* one overshoot past flat, then it sits */
+  50% {
+    transform: translateY(0) rotateX(-2deg) rotateY(-12deg) scale(1);
+    animation-timing-function: cubic-bezier(0.37, 0, 0.63, 1);
+  }
+  100% {
+    transform: none;
+  }
+}
+/* once it has settled, a band of light crosses its face, the same glint the coins get */
+.fund-hero .fund-mark::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.55) 50%, transparent 65%) no-repeat;
+  background-size: 250% 100%;
+  background-position: 130% 0;
+  pointer-events: none;
+  animation: fund-mark-glint 650ms cubic-bezier(0.4, 0, 0.2, 1) 600ms both; /* just as it sits */
+}
+@keyframes fund-mark-glint {
+  from { background-position: 130% 0; }
+  to { background-position: -40% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* no turning: the logo just fades in, front side only */
+  .fund-flip {
+    animation: fund-mark-fade 200ms ease both;
+  }
+  .fund-flip-back {
+    display: none;
+  }
+  .fund-hero .fund-mark::before {
+    animation: none;
+  }
+}
+@keyframes fund-mark-fade {
+  from { opacity: 0; }
 }

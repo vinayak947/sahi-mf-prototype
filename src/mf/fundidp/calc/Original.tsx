@@ -1,23 +1,21 @@
-import { inr, pct } from "../format";
+import { inr } from "../format";
 import { SegmentSwitcher } from "../parts";
 import { Dial } from "./Dial";
-import { PERIODS, grow, rateAt, type CalcModel } from "./core";
+import type { CalcModel } from "./core";
 import { Multiples } from "./charts";
 
-/* The Return calculator: SIP or one-time, an amount ruler, the Multiples chart (a card per period), three summary rows.
-   The other versions (Rolling, Time machine, and the Bars / Ladder / Dots charts) are in Mutual Funds/archive. */
+/* The Return calculator: SIP or one-time, an amount ruler, and three coin stacks, one each for 1, 3 and 5 years, all shown
+   at once (nothing to pick). Each stack carries what the money became and what went in above it, and its period with its
+   return below it.
+   Tried and archived: Grouped / One stack (one stack with a year switch, in Mutual Funds/archive/calculator-grouped-one-
+   stack), Answer first / Sentence / Readout / Ruler last (calculator-layouts-answer-sentence-readout), and older versions. */
 export function Original({ m }: { m: CalcModel }) {
-  const { mode, amount, range, fund } = m;
-  const pick = m.years;
-  const results = PERIODS.map((p) => ({ ...p, ...grow(mode, amount, p.years, rateAt(fund, p.years)) }));
-  const chosen = results.find((r) => r.years === pick)!;
-  const change = ((chosen.value - chosen.invested) / chosen.invested) * 100;
-  const tone = change >= 0 ? "up" : "down";
+  const { mode, amount, range } = m;
+  const label = mode === "sip" ? "Monthly investment" : "One-time investment";
 
   return (
     <div className="rco">
       <p className="rc-lead-idp">See what this {m.subject} would have turned your money into.</p>
-
       <div className="rc-idp">
         <SegmentSwitcher
           wide
@@ -29,35 +27,12 @@ export function Original({ m }: { m: CalcModel }) {
             ["lump", "One-time"],
           ]}
         />
-
-        <span className="rc-label-idp">{mode === "sip" ? "Monthly investment" : "One-time investment"}</span>
+        <span className="rc-label-idp">{label}</span>
         <output className="rc-amount-idp" aria-live="polite">
           {inr(amount)}
         </output>
-        <Dial key={mode} label={mode === "sip" ? "Monthly investment" : "One-time investment"} {...range} value={amount} onChange={m.setAmount} />
-
+        <Dial key={mode} label={label} {...range} value={amount} onChange={m.setAmount} />
         <Multiples m={m} />
-
-        <dl className="rc-rows-idp">
-          <div>
-            <dt>
-              <i className="rc-dot-idp in" />
-              Total investment
-            </dt>
-            <dd>{inr(Math.round(chosen.invested))}</dd>
-          </div>
-          <div>
-            <dt>
-              <i className={`rc-dot-idp out ${tone}`} />
-              Would have become
-            </dt>
-            <dd>{inr(Math.round(chosen.value))}</dd>
-          </div>
-          <div className="rc-total-idp">
-            <dt>{PERIODS.find((p) => p.years === pick)!.label} returns</dt>
-            <dd className={tone}>{pct(change, 1)}</dd>
-          </div>
-        </dl>
       </div>
     </div>
   );
