@@ -29,6 +29,80 @@
   padding: 24px 16px 0;
 }
 
+/* The empty card is 70% of the invested card's height (247), with its text centred. */
+.sc-card.empty {
+  min-height: 173px;
+  justify-content: center;
+}
+
+/* The date squares: a month's worth of blank blocks, seven to a row, strongest at the top and gone by the bottom. */
+.sc-grid {
+  position: absolute;
+  inset: 20px 16px 0;
+  display: grid;
+  grid-template-columns: repeat(7, 22px);
+  grid-auto-rows: 22px;
+  align-content: start;
+  justify-content: space-between;
+  gap: 8px 0;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0, transparent 85%);
+  mask-image: linear-gradient(to bottom, #000 0, transparent 85%);
+}
+
+/* Calendar flip: every few seconds the page of squares lifts off its top edge (over the rings) and is gone, then the
+   next page settles in. Transform and opacity only; a CSS animation, so it stays smooth while the page is busy. */
+.sc-card.empty {
+  perspective: 700px;
+}
+
+.sc-grid {
+  transform-origin: 50% 0;
+  animation: sc-flip 6s infinite;
+}
+
+@keyframes sc-flip {
+  0%,
+  80% {
+    transform: rotateX(0);
+    opacity: 1;
+    animation-timing-function: cubic-bezier(0.77, 0, 0.175, 1); /* on-screen movement */
+  }
+  90% {
+    transform: rotateX(-70deg);
+    opacity: 0;
+  }
+  90.1% {
+    transform: rotateX(0);
+    opacity: 0;
+    animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1); /* the next page arrives */
+  }
+  100% {
+    transform: rotateX(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sc-grid {
+    animation: none;
+  }
+}
+
+.sc-grid i {
+  box-sizing: border-box;
+  border: 1px solid color-mix(in srgb, var(--text-primary) 7%, transparent); /* stroke only, no fill; kept very faint */
+  border-radius: 6px;
+}
+
+.sc-card.empty .sc-head {
+  position: relative; /* above the squares */
+  align-items: center; /* centred across the card as well as down it */
+  text-align: center;
+  padding-top: 24px;
+  padding-bottom: 24px; /* no due row below, so the card closes with its own padding */
+}
+
 .sc-top {
   display: flex;
   align-items: center;
@@ -78,12 +152,7 @@
   border-top: 1px solid var(--border-L1);
 }
 
-.sc-due .icon {
-  flex: none;
-  color: var(--text-primary);
-}
-
-.sc-due span {
+.sc-due > span {
   display: flex;
   min-width: 0;
   flex-direction: column;
@@ -93,15 +162,34 @@
 .sc-due b {
   color: var(--text-primary);
   font-family: "SAHI Sans:Medium", sans-serif;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
-  line-height: 20px;
+  line-height: 18px;
 }
 
 .sc-due small {
   color: var(--text-secondary);
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+/* One line: a long fund name gives way with an ellipsis, the debit date stays whole. */
+.sc-sub {
+  display: flex;
+  min-width: 0;
+  gap: 4px;
+}
+
+.sc-sub-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sc-sub-rest {
+  flex: none;
+  white-space: nowrap;
 }
 
 .sc-cta {
@@ -109,7 +197,7 @@
   align-items: center;
   justify-content: space-between;
   margin: 20px 16px 0;
-  padding: 16px 0 28px;
+  padding: 16px 20px 16px 0; /* same bottom padding as the due-soon row; the arrow stays clear of the dog-ear */
   border: 0;
   border-top: 1px solid var(--border-L1);
   color: var(--text-primary);

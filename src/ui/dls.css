@@ -655,6 +655,17 @@ button.dls-kv {
   background: var(--surface-inverse);
 }
 
+.dls-btn.small {
+  min-height: 32px;
+  padding: 0 16px;
+}
+
+.dls-btn.small .dls-btn-label {
+  display: flex; /* no line-box slack above and below, so an icon and its label sit on the button's centre line */
+  align-items: center;
+  padding: 0;
+}
+
 .dls-btn-label {
   padding: 12px 6px;
   font-family: "SAHI Sans:Medium", sans-serif;
