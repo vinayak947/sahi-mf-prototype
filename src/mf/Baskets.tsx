@@ -1,6 +1,6 @@
 // Researcher backed baskets: the home carousel, the "View all" page, and the amount, review and done screens.
 // A basket's own page (the IDP) lives in basketidp/. All sample data lives in baskets-data.ts.
-import type { ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { Icon } from "../ui/Icon";
 import { Block, HScroll } from "../ui/widgets";
 import {
@@ -42,6 +42,49 @@ function FundStack({ basket, size }: { basket: Basket; size: number }) {
   );
 }
 
+// Folder outline (Base Design System node 6813:75725): a grey back sheet with a tab on the left rises 17px above
+// a white front sheet whose sides taper in ~3px towards the bottom. The paths are the Figma ones, re-drawn for the
+// card's actual size so the corners keep their shape on the full-width "View all" list.
+const TAB = 17; // how far the back sheet's tab rises above the front sheet
+
+export function frontPath(w: number, h: number) {
+  return `M0 16.37C-.2 7.39 7.02 0 16 0H${w - 16}C${w - 7.02} 0 ${w + 0.2} 7.39 ${w - 0.005} 16.37`
+    + `L${w - 3.27} ${h - 15.63}C${w - 3.47} ${h - 6.94} ${w - 10.57} ${h} ${w - 19.26} ${h}`
+    + `H19.26C10.57 ${h} 3.47 ${h - 6.94} 3.26 ${h - 15.63}Z`;
+}
+
+export function backPath(w: number, h: number) {
+  return `M0 16.34C-.19 7.37 7.03 0 16 0H76.83C80.75 0 84.53 1.44 87.46 4.04L89.61 5.96C92.54 8.56 96.32 10 100.24 10`
+    + `H${w - 16}C${w - 7.02} 10 ${w + 0.2} 17.38 ${w} 26.36L${w - 3.29} ${h - 15.65}C${w - 3.49} ${h - 6.95} ${w - 10.59} ${h} ${w - 19.29} ${h}`
+    + `H19.33C10.62 ${h} 3.51 ${h - 6.96} 3.33 ${h - 15.66}Z`;
+}
+
+function FolderShape() {
+  const ref = useRef<SVGSVGElement>(null);
+  const [size, setSize] = useState<{ w: number; h: number } | null>(null);
+  useLayoutEffect(() => {
+    const el = ref.current?.parentElement;
+    if (!el) return;
+    const measure = () => setSize({ w: el.offsetWidth, h: el.offsetHeight });
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const w = size?.w ?? 0;
+  const h = size?.h ?? 0;
+  return (
+    <svg ref={ref} className="bk-folder" width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden="true">
+      {size && (
+        <>
+          <path className="bk-folder-back" transform="translate(4 0)" d={backPath(w - 8, h)} />
+          <path className="bk-folder-front" transform={`translate(0 ${TAB})`} d={frontPath(w, h - TAB)} />
+        </>
+      )}
+    </svg>
+  );
+}
+
 function BasketCard({ basket, tint }: { basket: Basket; tint: number }) {
   const { push } = useMf();
   const ret = basketReturn3Y(basket);
@@ -51,17 +94,18 @@ function BasketCard({ basket, tint }: { basket: Basket; tint: number }) {
     <button
       className="bk-card"
       data-tint={tint % 3}
+      data-bg="wash"
       aria-label={`${basket.name}. ${basket.funds.length} funds. ${risk}. Minimum SIP ${inr(minSip)} a month. Reviewed by SAHI Research, ${REVIEWED}.`}
       onClick={() => push({ name: "basket", basketId: basket.id })}
     >
+      <FolderShape />
       <span className="bk-top">
-        <FundStack basket={basket} size={28} />
-        <span className="bk-count">
-          {basket.funds.length} funds
-          <Icon name="caret-right" size={16} />
-        </span>
+        <FundStack basket={basket} size={32} />
       </span>
-      <b className="bk-name">{basket.name}</b>
+      <span className="bk-title">
+        <b className="bk-name">{basket.name}</b>
+        <span className="bk-count">• {basket.funds.length} funds</span>
+      </span>
       <span className="bk-who">{basket.who}</span>
       <span className="bk-stats">
         <span>
@@ -99,13 +143,13 @@ export function BasketsSection() {
   const { push } = useMf();
   return (
     <Block>
-      <ReviewedLine className="bk-sub bk-eyebrow" />
       <div className="block-head">
         <h2>Researcher backed baskets</h2>
         <button className="text-link" onClick={() => push({ name: "baskets" })}>
           View all
         </button>
       </div>
+      <ReviewedLine className="bk-sub bk-eyebrow" />
       <HScroll>
         {baskets.map((basket, i) => (
           <BasketCard key={basket.id} basket={basket} tint={i} />
@@ -121,7 +165,7 @@ const BASKET_LIMITS =
 export function BasketsScreen() {
   const { pop } = useMf();
   return (
-    <Screen title="Researcher backed baskets" onBack={pop}>
+    <Screen title="Researcher backed baskets" onBack={pop} className="bk-page">
       <ReviewedLine className="bk-sub bk-sub-page" />
       <div className="bk-list">
         {baskets.map((basket, i) => (

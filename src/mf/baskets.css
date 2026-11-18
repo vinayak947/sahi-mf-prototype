@@ -1,20 +1,21 @@
 /* Researcher backed baskets (Order 2.0 home and basket pages). Every class is bk-* so nothing here can touch the
    core prototype; ported from the shared build's stylesheet. */
 
-/* Tints for the three fund slots on a card, and the SEBI seal. The three tint colours are hex in the upstream
-   build too (brand pink, amber, green); there is no token for them in tokens.css. */
+/* Tints for the three fund slots on a card (the "What's inside" bar and dots, and each basket card's tab tint), and the
+   SEBI seal. SAHI's own colours, the same validated set as the fund page's breakups (see fundidp/idp-vars.css):
+   wine, tan, pink; no amber or green. */
 :root {
-  --bk-c1: #f08bc6;
-  --bk-c2: #f6c05a;
-  --bk-c3: #5fd39b;
+  --bk-c1: #a50f66;
+  --bk-c2: #ac7c54;
+  --bk-c3: #e61c9a;
   --bk-vb-fill: var(--accent-text);
   --bk-vb-check: var(--fixed-white);
 }
 
 :root[data-theme="dark"] {
-  --bk-c1: #fc6ad0;
-  --bk-c2: #ffb13d;
-  --bk-c3: #40e897;
+  --bk-c1: #c80e7d;
+  --bk-c2: #ac7c54;
+  --bk-c3: #fc6ad0;
   --bk-vb-fill: var(--accent-text);
   --bk-vb-check: var(--accent-subtle);
 }
@@ -716,13 +717,18 @@
   margin: 0 0 16px;
 }
 
+/* Home: the reviewed date sits under the heading, 4 below it, and the cards 16 below the date. */
 .bk-sub.bk-eyebrow {
-  margin: 0 0 4px;
+  margin: 0 0 16px;
+}
+
+.block-head:has(+ .bk-sub.bk-eyebrow) {
+  margin-bottom: 4px;
 }
 
 .bk-list {
   flex-direction: column;
-  gap: 12px;
+  gap: 31px; /* + the next folder's 17 px tab = 48 from one card's bottom to the next card's main sheet */
   display: flex;
 }
 
@@ -1390,3 +1396,112 @@
 .bk-fit-note {
   color: var(--ink-3);
 }
+
+/* Folder-style basket cards (Base Design System node 6813:75725). The shape is an SVG drawn behind the content
+   (FolderShape in Baskets.tsx); the card itself loses its border and keeps the tab's 17px above its padding. */
+.bk-card {
+  border: 0;
+  border-radius: 0;
+  padding-top: calc(17px + 16px);
+  overflow: visible;
+}
+.bk-card[data-tint] { overflow: visible; }
+.bk-folder {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  overflow: visible;
+  pointer-events: none;
+}
+.bk-folder-back { fill: var(--surface-L0); }
+.bk-folder-front { fill: var(--surface-L1); stroke: var(--border-L1); stroke-width: 1px; }
+:root[data-theme=dark] .bk-folder-back { fill: var(--surface-L3); }
+/* each basket's tab carries a hint of its own colour (pink, amber, mint): there, but never louder than the card */
+.bk-card[data-tint] .bk-folder-back { fill: color-mix(in srgb, var(--bk-tint) 20%, var(--surface-L2)); }
+:root[data-theme=dark] .bk-card[data-tint] .bk-folder-back { fill: color-mix(in srgb, var(--bk-tint) 14%, var(--surface-L3)); }
+/* the dotted tint sits on the front sheet only, under its rounded top */
+.bk-card[data-tint]:before { top: 17px; border-radius: 16px 16px 19px 19px; }
+
+/* Card surface (replaces the dot pattern): the "wash", on the front sheet under the content. */
+.bk-card[data-bg]:before { background-image: none; background-size: auto; -webkit-mask-image: none; mask-image: none; }
+
+/* wash: the tab's colour fading down the first third of the card */
+.bk-card[data-bg="wash"]:before {
+  background-image: linear-gradient(to bottom, color-mix(in srgb, var(--bk-tint) 10%, transparent), transparent 36%);
+}
+:root[data-theme=dark] .bk-card[data-bg="wash"]:before {
+  background-image: linear-gradient(to bottom, color-mix(in srgb, var(--bk-tint) 8%, transparent), transparent 36%);
+}
+
+/* Baskets page: the title on its own row under the back arrow, at x 16 and y 88 from the top of the screen. The back
+   row is the 48 px button (the header has no top padding), so 40 above the title; the header's 4 side padding plus
+   12 puts it on the page's 16 px edge. */
+.mf-screen.bk-page .mf-head {
+  flex-wrap: wrap;
+}
+
+.mf-screen.bk-page .mf-head h1 {
+  order: 1;
+  flex: 1 1 calc(100% - 24px);
+  margin: 40px 12px 0;
+}
+
+/* Home carousel: one card plus a fifth of the next in view. With 16 page padding and 12 between cards,
+   w = (screen − 28) / 1.2; the carousel's content box is the screen less 32, hence (100% + 4px) / 1.2. */
+.hscroll .bk-card { width: calc((100% + 4px) / 1.2); }
+
+/* "Starter mix • 3 funds": the count follows the name on its line, quieter; no arrow, the whole card is the tap target */
+.bk-title { display: flex; align-items: baseline; gap: 6px; margin-top: 16px; min-width: 0; }
+.bk-title .bk-name { margin: 0; flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bk-card .bk-count {
+  flex: none;
+  margin: 0;
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+/* Basket details page hero: the folder card's pieces at page scale. The name keeps the page title style and may
+   wrap; the count, description and stats row match the card. */
+.bk-hero-idp .bk-title { flex-wrap: wrap; row-gap: 0; }
+.bk-hero-idp .bk-title h2 { margin: 0; }
+.bk-hero-idp .bk-count {
+  margin: 0;
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+.bk-stats.bk-stats-hero-idp { margin: 16px 0 8px; padding: 16px; border: 1px solid var(--border-L2); border-radius: 16px; }
+
+/* Details page hero: name, count and who on the left; the basket's small folder, with its logos dropped in, at the
+   top right level with the heading. */
+:root:has(.idp) .fund-hero.bk-hero-idp { flex-direction: column; align-items: stretch; gap: 16px; }
+.bk-hero-text-idp { flex: 1; min-width: 0; }
+.bk-hero-idp .bk-title { justify-content: flex-start; }
+.mf-screen:has(.fund-hero) .fund-hero.bk-hero-idp h2 { flex: 0 1 auto; width: auto; margin: 0; font-size: 24px; line-height: 28px; }
+.mf-screen:has(.fund-hero) .bk-hero-idp .fund-meta-idp { margin-top: 4px; font-size: 14px; line-height: 20px; }
+
+.bk-mini-folder { position: relative; display: block; width: 100%; height: 200px; isolation: isolate; }
+.bk-mini-folder svg { position: absolute; inset: 0; overflow: visible; }
+.bk-mini-folder .bk-folder-back { fill: color-mix(in srgb, var(--bk-tint) 20%, var(--surface-L2)); }
+:root[data-theme=dark] .bk-mini-folder .bk-folder-back { fill: color-mix(in srgb, var(--bk-tint) 14%, var(--surface-L3)); }
+.bk-mini-folder .bk-folder-front { fill: var(--surface-L1); stroke: var(--border-L1); stroke-width: 1px; }
+/* Same front-sheet surface as the home card's "wash" (.bk-card[data-bg="wash"]): the tab's colour at 10% (8% dark)
+   fading to nothing over the first 36% of the front sheet, which starts 17 below the tab; under the logos. */
+.bk-mini-folder svg { z-index: 0; }
+.bk-mini-folder::before {
+  position: absolute;
+  inset: 17px 0 0;
+  z-index: 1;
+  border-radius: 16px 16px 0 0;
+  background-image: linear-gradient(to bottom, color-mix(in srgb, var(--bk-tint) 10%, transparent), transparent 36%);
+  pointer-events: none;
+  content: "";
+}
+:root[data-theme=dark] .bk-mini-folder::before {
+  background-image: linear-gradient(to bottom, color-mix(in srgb, var(--bk-tint) 8%, transparent), transparent 36%);
+}
+.bk-mini-logo { position: absolute; z-index: 2; line-height: 0; }
+.bk-mini-logo .fund-mark { box-shadow: inset 0 0 0 1px var(--line), 0 1px 3px rgb(15 15 15 / 14%); }

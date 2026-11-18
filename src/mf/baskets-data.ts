@@ -33,7 +33,7 @@ export const baskets: Basket[] = [
     years: 3,
     funds: [
       { id: "uti-nifty50", weight: 50, why: "Owns India's 50 biggest companies, at a low cost." },
-      { id: "hdfc-flexi", weight: 30, why: "A manager who picks across company sizes." },
+      { id: "franklin-flexi", weight: 30, why: "A manager who picks across company sizes." },
       { id: "hdfc-short-debt", weight: 20, why: "Loans of a few years. Moves less than shares." },
     ],
     how: [
@@ -89,7 +89,7 @@ export const baskets: Basket[] = [
     seeking: "seeking growth from shares, with gold alongside",
     years: 5,
     funds: [
-      { id: "hdfc-nifty50", weight: 50, why: "India's 50 biggest companies, at a low cost." },
+      { id: "uti-nifty50", weight: 50, why: "India's 50 biggest companies, at a low cost." },
       { id: "hdfc-flexi", weight: 30, why: "A manager who picks across company sizes." },
       { id: "sbi-gold", weight: 20, why: "Follows the gold price. Pays no interest or dividends." },
     ],
@@ -108,7 +108,7 @@ export const baskets: Basket[] = [
     seeking: "seeking a calmer place for money they may need soon",
     years: 1,
     funds: [
-      { id: "hdfc-liquid", weight: 50, why: "Very short-term loans. Usually paid out by the next working day." },
+      { id: "pp-liquid", weight: 50, why: "Very short-term loans. Usually paid out by the next working day." },
       { id: "hdfc-short-debt", weight: 50, why: "Loans of a few years. Pays a bit more, and moves a bit more." },
     ],
     how: [

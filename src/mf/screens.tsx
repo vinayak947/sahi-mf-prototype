@@ -1,6 +1,7 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "../ui/Icon";
-import { DlsButton, DlsNumberField } from "../ui/dls";
+import { DlsButton, DlsCard, DlsKvStacked, DlsNumberField } from "../ui/dls";
+import { Facts } from "./OrderStatusDetail";
 import { asset } from "../assets";
 import {
   categories,
@@ -500,7 +501,9 @@ function PadHeading({ fund }: { fund: Fund }) {
       <FundMark fund={fund} size={40} />
       <span>
         <b>{fund.name}</b>
-        <small>Direct • {fundCategory(fund)}</small>
+        <small>
+          {fund.plan ?? "Direct"} • {fundCategory(fund)}
+        </small>
       </span>
     </div>
   );
@@ -827,7 +830,7 @@ function AmountPad({ fundId, initialMode, preset }: { fundId: string; initialMod
 
   // Order Pad 2.0 (dev switch): the amount is a DLS Number field, the way the Figma order pad draws it, with the
   // payment row and Invest above the keypad. No Lumpsum/SIP switch: the person already chose on the fund page
-  // ("Invest one-time" or "Start SIP"), so the pad opens in that mode and SIP shows its monthly date.
+  // ("Invest One-time" or "Start SIP"), so the pad opens in that mode and SIP shows its monthly date.
   if (orderPad2)
     return (
       <Screen
@@ -1036,31 +1039,23 @@ export function HoldingScreen({ fundId }: { fundId: string }) {
         <Icon name="caret-right" size={16} />
       </button>
 
-      <div className="summary-card summary-card-lg">
-        <div className="summary-grid">
-          <span>
-            <small>Current value</small>
-            <strong>{inr(holding.current)}</strong>
-          </span>
-          <span className="summary-right">
-            <small>Total returns</small>
-            <strong className={gain >= 0 ? "up" : "down"}>
-              {gain >= 0 ? "+" : ""}
-              {inr(gain)} <em>({pct(gainPct, 2)})</em>
-            </strong>
-          </span>
-        </div>
-        <div className="summary-grid">
-          <span>
-            <small>Invested</small>
-            <strong>{inr(holding.invested)}</strong>
-          </span>
-          <span className="summary-right">
-            <small>Units</small>
-            <strong>{holding.units.toFixed(3)}</strong>
-          </span>
-        </div>
-      </div>
+      <DlsCard>
+        <Facts>
+          <DlsKvStacked label="Current value" value={inr(holding.current)} />
+          <DlsKvStacked
+            label="Total returns"
+            tone={gain >= 0 ? "positive" : "negative"}
+            value={
+              <>
+                {gain >= 0 ? "+" : ""}
+                {inr(gain)} <em>({pct(gainPct, 2)})</em>
+              </>
+            }
+          />
+          <DlsKvStacked label="Invested" value={inr(holding.invested)} />
+          <DlsKvStacked label="Units" value={holding.units.toFixed(3)} />
+        </Facts>
+      </DlsCard>
 
       {holding.pending && (
         <Notice icon="clock">
@@ -1071,13 +1066,18 @@ export function HoldingScreen({ fundId }: { fundId: string }) {
       {sip && (
         <section className="mf-section">
           <h3>SIP</h3>
-          <div className="mf-card flat">
-            <Row label="SIP" value={`${inr(sip.amount)} a month`} />
-            <Row label="Date" value={`${ordinal(sip.day)} of every month`} />
-            <button className="st-link mf-sip-manage" onClick={() => push({ name: "sipdetail", fundId })}>
-              Manage SIP
+          <DlsCard>
+            <Facts>
+              <DlsKvStacked label="SIP amount" value={`${inr(sip.amount)} a month`} />
+              <DlsKvStacked label="SIP date" value={`${ordinal(sip.day)} of every month`} />
+            </Facts>
+            <button className="dls-kv tap" onClick={() => push({ name: "sipdetail", fundId })}>
+              <span className="dls-kv-text">
+                <b>View SIP details</b>
+              </span>
+              <Icon name="chevron-right" size={16} />
             </button>
-          </div>
+          </DlsCard>
         </section>
       )}
 

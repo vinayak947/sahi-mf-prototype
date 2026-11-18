@@ -10,9 +10,10 @@
 }
 
 /* The page sits on a soft wash that fades from the accent into the surface under the banner. */
+/* --header-tint (index.css) is the light theme's soft pink as it is, and a toned-down hint of the wine accent in dark. */
 .app-shell:has(.mf-home-next) {
   isolation: isolate;
-  background: linear-gradient(180deg, var(--accent-subtle) 0, var(--surface-L1) 341px);
+  background: linear-gradient(180deg, var(--header-tint) 0, var(--surface-L1) 341px);
 }
 
 .dashboard.mf-home-next {
@@ -52,7 +53,7 @@
   position: relative;
   display: block;
   height: 166px;
-  padding: 19px 20px 0;
+  padding: 19px 16px 0; /* 16 at the sides, on the same edge as the sections below */
   overflow: hidden;
   border-top: 0.5px solid color-mix(in srgb, var(--text-primary) 8%, transparent);
   border-radius: 0;
