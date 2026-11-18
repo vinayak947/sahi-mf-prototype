@@ -1,0 +1,383 @@
+/* MF early consent: banner on the Stocks home, consent bottom sheet, done state. See MfConsent.tsx. */
+
+/* ---- Banner fold ---------------------------------------------------------------------------------------------------
+   The banner itself (five looks) is in bannerlooks.css; this folds it away for good after consent. */
+.mfc-fold {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition:
+    grid-template-rows 320ms cubic-bezier(0.23, 1, 0.32, 1),
+    opacity 200ms ease;
+}
+
+.mfc-fold.folding {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+
+/* clip only while folding, so an edge-to-edge banner (Flow) can reach past the page's padding */
+.mfc-fold-inner {
+  min-height: 0;
+}
+
+.mfc-fold.folding .mfc-fold-inner {
+  overflow: hidden;
+}
+
+/* ---- Sheet ----------------------------------------------------------------------------------------------------------
+   DLS bottom sheet: L1 surface, 16 radius on top, 16 inside; as tall as its content, at most 90% of the phone. Rises
+   in 440 ms on the drawer curve, leaves in 280 ms; the scrim fades with it. */
+.mfc-layer {
+  position: fixed;
+  z-index: 80;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  overscroll-behavior: contain;
+}
+
+.mfc-scrim {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  background: rgb(0 0 0 / 48%);
+  opacity: 0;
+  transition: opacity 280ms ease;
+}
+
+.mfc-layer.open .mfc-scrim {
+  opacity: 1;
+  transition-duration: 440ms;
+}
+
+.mfc-sheet {
+  position: relative;
+  display: flex;
+  width: 100%;
+  max-height: 90%;
+  box-sizing: border-box;
+  flex-direction: column;
+  padding: 24px 16px 28px;
+  border-radius: 16px 16px 0 0;
+  outline: none;
+  background: var(--surface-L1);
+  color: var(--ink);
+  transform: translateY(100%);
+  transition: transform 280ms cubic-bezier(0.32, 0.72, 0, 1);
+  interpolate-size: allow-keywords; /* lets the height ease when Done replaces the form (Chrome; elsewhere it jumps) */
+}
+
+.mfc-layer.open .mfc-sheet {
+  transform: none;
+  transition-duration: 440ms;
+}
+
+.mfc-x {
+  position: absolute;
+  z-index: 1; /* above the step, whose entrance animation makes it its own layer */
+  top: 16px;
+  right: 12px;
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  color: var(--ink-2);
+  background: transparent;
+}
+
+.mfc-x:active:not(:disabled) {
+  background: var(--surface-L2);
+}
+
+.mfc-step {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  animation: mfc-in 260ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@keyframes mfc-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.mfc-step h2 {
+  margin: 0;
+  padding-right: 40px;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 24px;
+}
+
+.mfc-intro {
+  margin: 8px 0 0;
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+/* T&C: the legal text in full, in an outlined box that scrolls on its own. A fade at the bottom says "more below" until
+   the end is reached. */
+.mfc-terms {
+  position: relative;
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  margin-top: 16px;
+  border: 1px solid var(--border-L1);
+  border-radius: 12px;
+}
+
+.mfc-terms h3 {
+  margin: 0;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-L1);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 17px;
+}
+
+.mfc-terms-scroll {
+  max-height: 240px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 12px 16px;
+  outline: none;
+}
+
+.mfc-terms-scroll:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--ink-3);
+}
+
+.mfc-terms::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 40px;
+  border-radius: 0 0 12px 12px;
+  background: linear-gradient(transparent, var(--surface-L1));
+  content: "";
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+.mfc-terms.more::after {
+  opacity: 1;
+}
+
+.mfc-terms ol {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--ink-2);
+  font-size: 12px;
+  line-height: 18px;
+  list-style: decimal; /* the app resets lists to none; the clauses are numbered in the legal text */
+}
+
+.mfc-terms li::marker {
+  color: var(--ink-3);
+  font-feature-settings: "tnum";
+}
+
+/* Checkbox: the whole row is the tap target (48 tall). 20px box, 6 corners; ticked, it fills with the inverse
+   surface and the check draws itself in. */
+.mfc-check {
+  position: relative;
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.mfc-check input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.mfc-box {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  flex: none;
+  box-sizing: border-box;
+  place-items: center;
+  border: 1.5px solid var(--ink-3);
+  border-radius: 6px;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    transform 100ms ease-out;
+}
+
+.mfc-check:active .mfc-box {
+  transform: scale(0.9);
+}
+
+.mfc-box svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: var(--text-inverse);
+  stroke-dasharray: 16;
+  stroke-dashoffset: 16;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+  transition: stroke-dashoffset 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.mfc-check input:checked + .mfc-box {
+  border-color: var(--surface-inverse);
+  background: var(--surface-inverse);
+}
+
+.mfc-check input:checked + .mfc-box svg {
+  stroke-dashoffset: 0;
+}
+
+.mfc-check input:focus-visible + .mfc-box {
+  outline: 2px solid var(--ink-3);
+  outline-offset: 2px;
+}
+
+.mfc-cta {
+  margin-top: 12px;
+}
+
+.mfc-cta .dls-btn-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mfc-spin {
+  width: 14px;
+  height: 14px;
+  box-sizing: border-box;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: mfc-spin 700ms linear infinite;
+}
+
+@keyframes mfc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Done: a solid dark-green disc (Positive surface) with a white check that draws itself once the disc has landed, then
+   the title, the body and Back to Home, each a beat after the one before. */
+.mfc-done {
+  align-items: flex-start;
+  padding-top: 8px;
+  animation: none; /* its children enter one by one instead */
+}
+
+.mfc-done > * {
+  animation: mfc-in 280ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.mfc-done > h2 {
+  animation-delay: 60ms;
+}
+
+.mfc-done > p {
+  animation-delay: 100ms;
+}
+
+.mfc-done > .mfc-cta {
+  animation-delay: 140ms;
+}
+
+.mfc-tick {
+  display: grid;
+  width: 56px;
+  height: 56px;
+  place-items: center;
+  margin-bottom: 16px;
+  border-radius: 50%;
+  background: var(--positive-surface);
+  animation: mfc-pop 320ms cubic-bezier(0.34, 1.3, 0.64, 1) both;
+}
+
+.mfc-tick svg {
+  width: 28px;
+  height: 28px;
+  fill: none;
+  stroke: var(--positive-on-fill);
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.5;
+  animation: mfc-draw 280ms 180ms cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+@keyframes mfc-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+@keyframes mfc-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.mfc-done .mfc-cta {
+  margin-top: 24px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mfc-sheet,
+  .mfc-layer.open .mfc-sheet {
+    transform: none;
+    transition: none;
+  }
+
+  .mfc-layer .mfc-sheet {
+    opacity: 0;
+    transition: opacity 150ms ease;
+  }
+
+  .mfc-layer.open .mfc-sheet {
+    opacity: 1;
+  }
+
+  .mfc-step,
+  .mfc-tick,
+  .mfc-done > * {
+    animation: none;
+  }
+
+  .mfc-tick svg {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+
+  .mfc-fold {
+    transition: none;
+  }
+}

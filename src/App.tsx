@@ -25,6 +25,7 @@ import { MfFlow } from "./mf/MfFlow";
 import { MfHome } from "./mf/MfHome";
 import { SipPage } from "./mf/MfPages";
 import { MfProvider, useMf } from "./mf/store";
+import { MfConsentBanner } from "./stocks/MfConsent";
 import { deviceSize, scrollToTop, scroller, toDevice } from "./ui/device";
 
 type Market = "fno" | "commodities" | "stocks" | "mf";
@@ -309,7 +310,7 @@ function Header({
                     ? "awaiting-flight"
                     : "",
                   isRevealed ? "tab-revealed" : "tab-hidden",
-                  key !== "mf" ? "tab-off" : "",
+                  key !== "mf" && key !== "stocks" ? "tab-off" : "",
                 ]
                   .filter(Boolean)
                   .join(" ")}
@@ -764,8 +765,8 @@ function Shell({ page, setPage }: { page: Page; setPage: (page: Page) => void })
         <Header
           market={market}
           onMarket={(nextMarket) => {
-            // Only Mutual Funds is built in this prototype; the other markets answer with a toast.
-            if (nextMarket !== "mf") {
+            // Mutual Funds is built, Stocks opens (empty for now); F&O and Commodities answer with a toast.
+            if (nextMarket !== "mf" && nextMarket !== "stocks") {
               setToast(`${marketLabels[nextMarket]} is not part of this prototype`);
               return;
             }
@@ -786,15 +787,23 @@ function Shell({ page, setPage }: { page: Page; setPage: (page: Page) => void })
       )}
       {chromeMounted && market !== null && (
         <>
-          {page === "home" && market === "fno" && <FnoHome />}
-          {page === "home" && market === "commodities" && <CommoditiesHome />}
-          {page === "home" && market === "stocks" && <StocksHome />}
-          {page === "home" && market === "mf" && <MfHome />}
-          {page === "watchlist" && <WatchlistPage />}
-          {page === "trade" && <TradePage />}
-          {page === "orders" && <OrdersPage mfOnly={market === "mf"} />}
-          {page === "portfolio" && <PortfolioPage mfOnly={market === "mf"} />}
-          {page === "sip" && <SipPage />}
+          {/* Stocks is switched on but has no content yet: every tab of it shows an empty page. */}
+          {market === "stocks" ? (
+            <main className="dashboard stocks-empty" aria-label="Stocks">
+              {page === "home" && <MfConsentBanner />}
+            </main>
+          ) : (
+            <>
+              {page === "home" && market === "fno" && <FnoHome />}
+              {page === "home" && market === "commodities" && <CommoditiesHome />}
+              {page === "home" && market === "mf" && <MfHome />}
+              {page === "watchlist" && <WatchlistPage />}
+              {page === "trade" && <TradePage />}
+              {page === "orders" && <OrdersPage mfOnly={market === "mf"} />}
+              {page === "portfolio" && <PortfolioPage mfOnly={market === "mf"} />}
+              {page === "sip" && <SipPage />}
+            </>
+          )}
           <BottomNav market={market} page={page} onPage={goToPage} />
           <MfFlow />
         </>
