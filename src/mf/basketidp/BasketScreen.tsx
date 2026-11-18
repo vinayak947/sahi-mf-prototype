@@ -258,14 +258,27 @@ export function BasketScreen({ basketId }: { basketId: string }) {
       onBack={pop}
       plainBack
       footer={
-        buy.state === "paused" ? (
-          <button className="mf-btn solid wide" disabled>
-            New investments paused
-          </button>
-        ) : buy.state === "sip-only" ? (
-          <button className="mf-btn solid wide" onClick={() => push({ name: "amount", fundId: basketFundId(basketId), mode: "sip" })}>
-            Start SIP
-          </button>
+        // Same as a fund page: the reason above the buttons, both buttons kept, the closed ones disabled.
+        buy.state !== "open" && buy.fund ? (
+          <div className="mf-foot-stack">
+            <p className="mf-foot-note-idp">
+              {buy.state === "paused"
+                ? `${buy.fund.name} has paused new investments for now, so this basket can't be started just yet.`
+                : `${buy.fund.name} is taking only SIPs for now, so this basket can be started as a SIP.`}
+            </p>
+            <div className="mf-actions">
+              <button className="mf-btn ghost" disabled>
+                Invest One-time
+              </button>
+              <button
+                className="mf-btn solid"
+                disabled={buy.state === "paused"}
+                onClick={() => push({ name: "amount", fundId: basketFundId(basketId), mode: "sip" })}
+              >
+                Start SIP
+              </button>
+            </div>
+          </div>
         ) : (
           <div className="mf-actions">
             <button className="mf-btn ghost" onClick={() => push({ name: "amount", fundId: basketFundId(basketId), mode: "lump" })}>
@@ -301,12 +314,6 @@ export function BasketScreen({ basketId }: { basketId: string }) {
           <p className="fund-meta-idp">{basket.who}</p>
         </div>
       </div>
-      {buy.fund && buy.state === "paused" && (
-        <Notice tone="warn">{buy.fund.name} is not taking new money right now, so this basket can't be started until it reopens.</Notice>
-      )}
-      {buy.fund && buy.state === "sip-only" && (
-        <Notice tone="warn">{buy.fund.name} has stopped one-time investments, so this basket can only be started as a SIP.</Notice>
-      )}
 
       <span className="bk-stats bk-stats-hero-idp">
         <span>

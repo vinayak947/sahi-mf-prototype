@@ -714,18 +714,21 @@ export function FundScreen({ fundId }: { fundId: string }) {
         </>
       }
       footer={
-        // The fund house can close a fund to new money (see Fund.buy): no buttons for a paused fund, only the SIP for one that took one-time buys off.
-        fund.buy === "halted" ? (
-          <button className="mf-btn solid wide" disabled>
-            New investments paused
-          </button>
-        ) : fund.buy === "restricted" ? (
-          // A fund this person can't buy (like Groww, but with no dead buttons): the bottom bar says why and offers nothing to tap.
-          <p className="mf-foot-note-idp">{fund.buyNote}</p>
-        ) : fund.buy === "sip-only" ? (
-          <button className="mf-btn solid wide" onClick={() => push({ name: "amount", fundId, mode: "sip" })}>
-            Start SIP
-          </button>
+        // When the fund can't take every kind of money (see Fund.buy), the reason sits in the bottom bar, right above the
+        // buttons it explains; the page above stays clear. Both buttons always stay, the closed ones disabled:
+        // SIP only → One-time disabled, Start SIP open. Paused / not for you → both disabled.
+        fund.buy ? (
+          <div className="mf-foot-stack">
+            {fund.buyNote && <p className="mf-foot-note-idp">{fund.buyNote}</p>}
+            <div className="mf-actions">
+              <button className="mf-btn ghost" disabled>
+                Invest One-time
+              </button>
+              <button className="mf-btn solid" disabled={fund.buy !== "sip-only"} onClick={() => push({ name: "amount", fundId, mode: "sip" })}>
+                Start SIP
+              </button>
+            </div>
+          </div>
         ) : (
           <div className="mf-actions">
             <button className="mf-btn ghost" onClick={() => push({ name: "amount", fundId, mode: "lump" })}>
@@ -753,7 +756,6 @@ export function FundScreen({ fundId }: { fundId: string }) {
           {fund.plan ?? "Direct"} • {fundCategory(fund)} • <Stars n={fund.stars} bds /> • {riskText}
         </p>
       </div>
-      {fund.buyNote && fund.buy !== "restricted" && <Notice tone="warn">{fund.buyNote}</Notice>}
 
       <div className="fund-figures-idp">
         <div className="fund-main">
