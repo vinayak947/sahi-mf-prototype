@@ -659,3 +659,9 @@ button.dls-kv {
 @media (prefers-reduced-motion: reduce) {
   .dls-btn { transition: none; }
 }
+
+/* An action beside a note (copy, info) keeps its 24 tap target but must not make the row taller than its 14.4 text,
+   or the gaps between notes, steps and the card edge stop following the 4 / 16 spacing rules. */
+.dls-tl-note .dls-icon-btn {
+  margin: -5px 0;
+}

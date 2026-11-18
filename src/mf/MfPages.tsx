@@ -7,6 +7,7 @@ import { FundMark } from "./parts";
 import { RangeChart } from "./screens";
 import { BasketHoldingsTab } from "./BasketHoldings";
 import { OrdersList2, type TypeFilter } from "./OrdersList2";
+import { MarketOrders } from "./MarketOrders";
 import { SIP_FROM_100 } from "./listSpecs";
 import { useMf } from "./store";
 
@@ -40,25 +41,60 @@ export function SegmentChips({
   );
 }
 
-// The Orders page seen from inside Mutual Funds: the order-type filter sits at the right of the header.
+type OrderMarket = "mf" | "stocks" | "fno";
+
+// Chips under the Orders title: one orders view per market; the picked one carries a check.
+export function OrderMarketPills({ value, onChange }: { value: OrderMarket; onChange: (next: OrderMarket) => void }) {
+  const items: { key: OrderMarket; label: string }[] = [
+    { key: "mf", label: "Mutual funds" },
+    { key: "stocks", label: "Stocks" },
+    { key: "fno", label: "F&O" },
+  ];
+  return (
+    <div className="chip-row page-chips order-pills" role="tablist" aria-label="Order type">
+      {items.map((item) => {
+        const active = item.key === value;
+        return (
+          <button key={item.key} role="tab" aria-selected={active} className={`chip${active ? " active" : ""}`} onClick={() => onChange(item.key)}>
+            {item.label}
+            {active && <Icon name="check" size={16} />}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export function MfOrdersPage({ segments }: { segments?: ReactNode }) {
   const [type, setType] = useState<TypeFilter>("all");
   const [picking, setPicking] = useState(false);
+  const [market, setMarket] = useState<OrderMarket>("mf");
+  const { push } = useMf();
 
   return (
     <>
       <div className="mf-pf-head">
         <h1 className="page-title">Orders</h1>
         <button
-          className={`mf-orders-filter${type !== "all" ? " on" : ""}`}
-          aria-label="Filter by order type"
-          onClick={() => setPicking(true)}
+          className="mf-pf-more-btn"
+          aria-label="Search orders"
+          onClick={() => push({ name: "ordersearch" })}
         >
-          <Icon name="funnel-simple" size={20} />
+          <Icon name="magnifying-glass" size={24} />
         </button>
       </div>
-      {segments}
-      <OrdersList2 type={type} picking={picking} onType={setType} onClosePicker={() => setPicking(false)} />
+      {segments || <OrderMarketPills value={market} onChange={setMarket} />}
+      {market === "mf" || segments ? (
+        <OrdersList2
+          type={type}
+          picking={picking}
+          onType={setType}
+          onClosePicker={() => setPicking(false)}
+          onOpenPicker={() => setPicking(true)}
+        />
+      ) : (
+        <MarketOrders market={market} />
+      )}
     </>
   );
 }

@@ -82,7 +82,7 @@ export type StepView = {
   time?: string;
   sub?: string;
   showId?: boolean;
-  info?: string[]; // bullets of the "How is the allotment date decided?" sheet
+  info?: WhyStory; // the "How is the allotment date decided?" sheet, as the same visual story as "What does this mean?"
 };
 
 export type DetailView = {
@@ -143,34 +143,36 @@ export function purchaseView({ order: o, fund, sipDay }: Ctx): DetailView {
     ];
   }
 
-  // Allotment info sheet
-  let info: string[] | undefined;
+  // Allotment info sheet: the same visual story as "What does this mean?" (steps, the answer, one note).
+  let info: WhyStory | undefined;
+  const allotStory = (when: { title: string; sub: string }): WhyStory => ({
+    steps: [
+      { icon: "calendar", title: when.title, sub: when.sub },
+      { icon: "clock", title: "Allotted in 2–3 working days", sub: sip ? "Units are usually allotted within 2–3 working days after the debit." : "Units are usually allotted within 2–3 working days." },
+    ],
+    outcomes: [],
+    note: { icon: "info", text: WEEKEND },
+  });
   if (sip && debit) {
-    const lead = o.firstInstalment
-      ? o.status === "scheduled"
-        ? `On an existing UPI AutoPay mandate, the 1st debit happens 2 working days after the order, on ${fmtLong(debit)}.`
-        : `On an existing UPI AutoPay mandate, the 1st debit happens 2 working days after the order. Your debit was on ${fmtLong(debit)}.`
-      : (() => {
-          const sipOn = new Date(debit.getFullYear(), debit.getMonth(), sipDay);
-          if (isBusinessDay(sipOn) || sipOn.getTime() === debit.getTime()) {
-            return o.status === "scheduled"
-              ? `Money is debited on your SIP date, ${fmtLong(debit)}.`
-              : `Money was debited on your SIP date, ${fmtLong(debit)}.`;
-          }
-          const why = sipOn.getDay() === 0 || sipOn.getDay() === 6 ? `a ${WEEKDAYS[sipOn.getDay()]}` : "a public holiday";
-          return `Money is debited on your SIP date. As ${fmtLong(sipOn)} is ${why}, the debit happens on the next working day, ${fmtLong(debit)}.`;
-        })();
-    info = [lead, `Units are usually allotted within 2–3 working days after the debit. So your units will be allotted by ${fmtLong(expected)}.`, WEEKEND];
+    const debitTitle = `${o.status === "scheduled" ? "Debit on" : "Debited on"} ${fmtLong(debit)}`;
+    if (o.firstInstalment) {
+      info = allotStory({ title: debitTitle, sub: "On an existing UPI AutoPay mandate, the 1st debit happens 2 working days after the order." });
+    } else {
+      const sipOn = new Date(debit.getFullYear(), debit.getMonth(), sipDay);
+      if (isBusinessDay(sipOn) || sipOn.getTime() === debit.getTime()) {
+        info = allotStory({ title: debitTitle, sub: "Money is debited on your SIP date." });
+      } else {
+        const why = sipOn.getDay() === 0 || sipOn.getDay() === 6 ? `a ${WEEKDAYS[sipOn.getDay()]}` : "a public holiday";
+        info = allotStory({ title: debitTitle, sub: `Your SIP date, ${fmtLong(sipOn)}, is ${why}, so the debit moves to the next working day.` });
+      }
+    }
   } else if (!sip) {
     const before = o.navDate === fmtDay(payDay);
     const cut = cutoffLabel(cutoffKind(fund)).replace(/^(\d+) PM$/, "$1:00 PM");
-    info = [
-      before
-        ? `Your payment reached the fund house on ${fmtLong(payDay)}, before the ${cut} cut-off.`
-        : `Your payment reached the fund house on ${fmtLong(payDay)}, after the ${cut} cut-off, so it counts on the next working day.`,
-      `Units are usually allotted within 2–3 working days. So your units will be allotted by ${fmtLong(expected)}.`,
-      WEEKEND,
-    ];
+    info = allotStory({
+      title: `Payment reached the fund house on ${fmtLong(payDay)}`,
+      sub: before ? `Before the ${cut} cut-off.` : `After the ${cut} cut-off, so it counts on the next working day.`,
+    });
   }
 
   // Banner
