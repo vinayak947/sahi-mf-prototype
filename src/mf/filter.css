@@ -38,7 +38,8 @@
 .mf-sheet.mf-fsheet {
   display: flex;
   flex-direction: column;
-  height: min(86dvh, 640px);
+  height: auto;
+  max-height: min(86dvh, 640px);
   padding-top: 0;
   background: var(--surface-L1);
 }
@@ -256,16 +257,13 @@
   opacity: 1;
 }
 
-/* A sheet with nothing to filter is just a sort list: it is as tall as its options and the buttons sit right under them. */
-.mf-sheet.mf-fsheet.sort-only {
-  height: auto;
-  max-height: min(86dvh, 640px);
-}
-.mf-fsheet.sort-only .mf-fsheet-body {
+/* Every filter/sort sheet is as tall as its content (capped at the max): the options set the height and the buttons sit
+   right under them, never a fixed or random height. Long lists scroll inside the body. */
+.mf-fsheet .mf-fsheet-body {
   flex: 0 1 auto;
   overflow-y: auto;
 }
-.mf-fsheet.sort-only .mf-fpanel {
+.mf-fsheet .mf-fpanel {
   flex: 1;
   max-height: none;
   overflow: visible;

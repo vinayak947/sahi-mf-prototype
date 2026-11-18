@@ -2587,58 +2587,75 @@ em.amo.st-failed {
   list-style: none;
 }
 
+/* Alert card: outlined like the other Home cards (Top performing, baskets): Border L1, 16 corners, 16 inside, no fill.
+   Logo + fund name with a 12px status line under it; one line of copy; actions at the bottom. */
 .mf-alert {
   display: flex;
   width: 100%;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 14px 16px;
-  border: 0;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 16px;
+  border: 1px solid var(--border-L1);
   border-radius: 16px;
   color: var(--ink);
-  background: var(--surface-L2, var(--surface));
+  background: transparent;
   text-align: left;
 }
 
-.mf-alert > .icon {
+.mf-alert-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mf-alert-head > .icon {
   flex: none;
-  margin-top: 1px;
+  color: var(--ink-3);
 }
 
-.mf-alert.bad {
-  background: var(--negative-subtle);
-  box-shadow: inset 0 0 0 1px var(--negative-transparent-L2);
-}
-
-.mf-alert.bad > .icon {
-  color: var(--negative-text);
-}
-
-.mf-alert-main {
+.mf-alert-who {
   display: flex;
   min-width: 0;
   flex: 1;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
-.mf-alert-main b {
+.mf-alert-who b {
+  overflow: hidden;
   font-family: "SAHI Sans:Medium", sans-serif;
   font-size: 14px;
   font-weight: 500;
+  line-height: 17px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.mf-alert-main small {
+.mf-alert-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   color: var(--ink-2);
   font-size: 12px;
-  line-height: 17px;
+  line-height: 16px;
+}
+
+.mf-alert-tag.bad {
+  color: var(--negative-text);
+}
+
+.mf-alert-text {
+  margin: 12px 0 0;
+  color: var(--ink-2);
+  font-size: 12px;
+  line-height: 16px;
 }
 
 .mf-alert-actions {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-top: 8px;
+  margin-top: 16px;
 }
 
 .mf-btn.sm {
@@ -2682,6 +2699,12 @@ em.amo.st-failed {
 
 .mf-sip-head {
   margin: 24px 0 0;
+}
+
+/* Empty SIP tab: "Start your SIP from ₹100" over the fund list, 14 Medium. */
+.mf-sip-head.mf-sip-start h2 {
+  font-size: 14px;
+  line-height: 17px;
 }
 
 /* breathing room between the search field and its results */
@@ -4182,13 +4205,9 @@ em.amo.st-failed {
   scroll-snap-align: start;
 }
 
-.mf-alerts.carousel .mf-alert-main {
-  height: 100%;
-}
-
 .mf-alerts.carousel .mf-alert-actions {
   margin-top: auto;
-  padding-top: 8px;
+  padding-top: 16px;
 }
 
 .mf-alert-dots {
@@ -5168,7 +5187,7 @@ em.amo.st-failed {
 
 /* Amount field, per the Payment Mode Improvements Figma (text-field, node 282:437): left-aligned, 64 high, ₹ and the
    amount both 24 / 28.8 Medium in text/primary, 4 apart, caret a 28 px line right after the value. */
-.mf-screen.pad.v2:not(.redeem) .mf-pad2-amount .dls-nf-field {
+.mf-screen.pad.v2 .mf-pad2-amount .dls-nf-field {
   gap: 4px;
   font-family: "SAHI Sans:Medium", sans-serif;
   font-size: 24px;
@@ -5176,13 +5195,13 @@ em.amo.st-failed {
   line-height: 28.8px;
 }
 
-.mf-screen.pad.v2:not(.redeem) .mf-pad2-amount .dls-nf-affix {
+.mf-screen.pad.v2 .mf-pad2-amount .dls-nf-affix {
   font-family: inherit; /* ₹ in the amount's 32 Medium, not the field's Regular affix */
   font-weight: inherit;
   color: var(--text-primary);
 }
 
-.mf-screen.pad.v2:not(.redeem) .mf-pad2-amount .dls-nf-caret {
+.mf-screen.pad.v2 .mf-pad2-amount .dls-nf-caret {
   height: 28px;
   margin-left: -3px;
 }
@@ -5225,7 +5244,7 @@ em.amo.st-failed {
 }
 
 /* Keep the amount block tight under the header (24) instead of centred in the free space. */
-.mf-screen.pad.v2:not(.redeem) .mf-pad2-center {
+.mf-screen.pad.v2 .mf-pad2-center {
   margin-block: 32px auto;
 }
 
@@ -5412,9 +5431,22 @@ em.amo.st-failed {
   margin-top: 8px;
 }
 
-/* Redeem pad: the field is centred between the header and the keypad, as the old figure was. */
-.mf-screen.pad.redeem .mf-pad2-amount {
-  margin-top: auto;
+/* Redeem pad: Redeem all sits under the field where the order pad's chips do. */
+.mf-screen.pad.v2.redeem .mf-redeem-all {
+  width: 100%;
+  box-sizing: border-box;
+  align-self: stretch;
+  min-height: 0;
+  margin: 0;
+  padding: 12px 16px;
+  font-family: "SAHI Sans:Medium", sans-serif; /* same type as the SIP date card */
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+}
+
+.mf-screen.pad.v2.redeem .mf-redeem-info {
+  margin-left: auto;
 }
 
 /* Order Pad 2.0 corners: 16 on the amount field, as on the cards and chips around it. */

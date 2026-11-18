@@ -104,10 +104,12 @@ button {
   cursor: pointer;
 }
 
-/* Header tint: the light theme's soft pink as it is; in dark, the wine accent tint (#3D0920) at full strength read as
-   a slab of pink, so it is 40% of that over the page surface: still the SAHI colour, just a hint of it. */
+/* Header tint. Light: the lightest pink in the DLS accent ramp (accent/87, #FECCF1 = --accent-subtle) at full strength
+   was bright and pulled the eye off the content, so it is 40% of that over the page surface (≈ #FFEBF9). Dark: the wine
+   accent tint (#3D0920) at full strength read as a slab of pink, so it is 40% of that too: still the SAHI colour, just
+   a hint of it. */
 :root {
-  --header-tint: var(--accent-subtle);
+  --header-tint: color-mix(in srgb, var(--accent-subtle) 40%, var(--surface-L1));
 }
 
 :root[data-theme="dark"] {
@@ -135,7 +137,8 @@ button {
 /* The tabs dock to the top of the screen while the logo row scrolls away.
    top: 8px puts the pills 32px down, so the tilted icons that rise ~16px above
    them keep a 16px gap from the top edge (the strip itself starts at 0). */
-/* Mutual funds home keeps the status-bar space above the header. */
+/* Every market home keeps the status-bar space above the header (it used to be Mutual Funds only, so switching to
+   Stocks made the header jump up by 56 px). */
 .app-header.mf-top {
   padding-top: 56px;
 }

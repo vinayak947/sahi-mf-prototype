@@ -1,0 +1,454 @@
+/* Mutual Funds pre-launch banner: Peek directions (see PeekBanner.tsx). Headline in the display serif of the MF home
+   banner, so the launch already feels like the MF product. Motion: strong ease-out (0.23, 1, 0.32, 1) for arrivals,
+   nothing over ~600 ms except the slow
+   conveyor and the spotlight drift, which are ambient and stop for reduced motion. */
+
+/* ---- Shared ------------------------------------------------------------------------------------------------------ */
+.pk-card {
+  position: relative;
+  overflow: hidden;
+  padding: 16px;
+  border: 1px solid var(--border-L1);
+  border-radius: 20px;
+  background: var(--surface-L1);
+}
+
+.pk-card h3 {
+  margin: 16px 0 0;
+  font-family: "SAHI Season Display Mix:Medium", serif;
+  font-size: 24px;
+  font-weight: 580;
+  letter-spacing: -0.24px;
+  line-height: 28px;
+}
+
+.pk-card p {
+  margin: 8px 0 0;
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.pk-btn {
+  display: inline-flex;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 16px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--text-inverse);
+  background: var(--surface-inverse);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  transition: transform 120ms ease-out;
+}
+
+.pk-btn.wide {
+  width: 100%;
+  height: 44px;
+}
+
+.pk-btn.light {
+  color: #0f0f0f;
+  background: #ffffff;
+}
+
+.pk-btn:active {
+  transform: scale(0.97);
+}
+
+/* "Coming soon" with a pink beacon dot: the one thing that pulses, slowly, to say "on its way". */
+.pk-soon {
+  display: inline-flex;
+  height: 26px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border-radius: 999px;
+  color: var(--accent-default);
+  background: var(--accent-subtle);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+:root[data-theme="dark"] .pk-soon:not(.dark):not(.ondark) {
+  color: var(--accent-text);
+}
+
+/* The dot is a beacon, not a blink: it stays solid (it's a status, not a warning) and a ring ripples out of it and
+   fades. Ease-out, because the ripple starts with energy and dies away like one on water; 2.4 s a beat with the last
+   40% still, so it pulses gently instead of buzzing. Reduced motion: the dot alone, no ring.
+
+   Colour: SAHI's pink accent (amber and green were tried), a bright tone on the dark chip and a deep one on the light
+   chip, so it reads in both themes. */
+.pk-stage {
+  --dot-on-dark: #ef4fac; /* accent text, light theme */
+  --dot-on-light: #a50f66; /* accent, dark theme */
+}
+
+.pk-soon.ondark,
+:root:not([data-theme="dark"]) .pk-soon.dark {
+  --dot: var(--dot-on-dark);
+}
+
+:root[data-theme="dark"] .pk-soon.dark {
+  --dot: var(--dot-on-light);
+}
+
+.pk-soon i {
+  position: relative;
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--dot, currentColor);
+}
+
+.pk-soon i::after {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--dot, currentColor);
+  content: "";
+  animation: pk-beacon 2.4s cubic-bezier(0.23, 1, 0.32, 1) infinite;
+}
+
+@keyframes pk-beacon {
+  0% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+
+  60%,
+  100% {
+    opacity: 0;
+    transform: scale(3.2);
+  }
+}
+
+.pk-soon.dark {
+  color: var(--text-inverse);
+  background: var(--surface-inverse);
+  box-shadow: 0 6px 16px rgb(0 0 0 / 18%);
+}
+
+.pk-soon.ondark {
+  color: #ffffff;
+  background: rgb(255 255 255 / 14%);
+}
+
+.pk-center {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.pk-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pk-row.blur {
+  filter: blur(1.5px);
+  opacity: 0.75;
+}
+
+.pk-name {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pk-bar {
+  width: 44px;
+  height: 10px;
+  flex: none;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--positive-text) 45%, transparent);
+}
+
+/* ---- Hold to see what's coming (the belt's frost, hint and feature cards) ------------------------------------------- */
+.pk-hold {
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--surface-L2);
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* The frost: blur + a milky wash. Holding thins it over 600 ms (deliberate); letting go frosts it back in 200 ms. */
+.pk-frost {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--surface-L1) 38%, transparent);
+  -webkit-backdrop-filter: blur(7px) saturate(1.1);
+  backdrop-filter: blur(7px) saturate(1.1);
+  transition:
+    backdrop-filter 200ms ease-out,
+    -webkit-backdrop-filter 200ms ease-out,
+    background-color 200ms ease-out;
+}
+
+/* While held the frost deepens a touch, so the cards rising through it are the clear thing on the glass. */
+.pk-hold.peeking .pk-frost {
+  background: color-mix(in srgb, var(--surface-L1) 55%, transparent);
+  -webkit-backdrop-filter: blur(10px) saturate(1.1);
+  backdrop-filter: blur(10px) saturate(1.1);
+  transition-duration: 320ms;
+  transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* The feature cards: tucked below the glass's bottom edge, small and clear; held, they rise one after another
+   (60 ms apart) and land fanned with a small overshoot, like cards pushed up through a slot. Released, all three tuck
+   back together in 180 ms. */
+.pk-feats {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  pointer-events: none;
+}
+
+/* A feature card: portrait, like a small collectible card. An icon at the top, then the label and the value,
+   read as one line ("Commission ₹0") with the value in the display serif carrying the weight. A plain surface and a
+   layered shadow (a tight one for the edge, a soft one for the lift) so it floats off the frost. */
+.pk-feat {
+  display: flex;
+  height: 100px;
+  min-width: 0;
+  box-sizing: border-box;
+  flex-direction: column;
+  justify-content: flex-end; /* icon sits just above the text (2 px), the group at the bottom so the values line up */
+  gap: 2px;
+  padding: 12px;
+  border: 1px solid var(--border-L1);
+  border-radius: 16px;
+  background: var(--surface-L1);
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 6%),
+    0 14px 28px -6px rgb(0 0 0 / 16%);
+  opacity: 0;
+  transform: translateY(70%) scale(0.9);
+  transition:
+    transform 180ms cubic-bezier(0.23, 1, 0.32, 1),
+    opacity 140ms ease-out;
+}
+
+:root[data-theme="dark"] .pk-feat {
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 30%),
+    0 14px 28px -6px rgb(0 0 0 / 55%);
+}
+
+/* just the icon, in the text colour (black in light mode, white in dark), every one drawn on the same 20 px box */
+.pk-feat-icon {
+  display: flex;
+  color: var(--ink);
+}
+
+.pk-feat-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pk-feat small {
+  color: var(--ink-2);
+  font-size: 11px;
+  line-height: 14px;
+}
+
+.pk-feat b {
+  font-family: "SAHI Season Display Mix:Medium", serif;
+  font-size: 22px;
+  font-weight: 580;
+  letter-spacing: -0.22px;
+  line-height: 26px;
+  white-space: nowrap;
+}
+
+.pk-hold.peeking .pk-feat {
+  opacity: 1;
+  transition:
+    transform 460ms cubic-bezier(0.34, 1.32, 0.64, 1),
+    opacity 200ms ease-out;
+}
+
+.pk-hold.peeking .f0 {
+  transform: translateY(2px) rotate(-4deg);
+}
+
+.pk-hold.peeking .f1 {
+  transform: translateY(-4px);
+  transition-delay: 60ms;
+}
+
+.pk-hold.peeking .f2 {
+  transform: translateY(2px) rotate(4deg);
+  transition-delay: 120ms;
+}
+
+.pk-hold .pk-center {
+  transition:
+    opacity 200ms ease-out,
+    transform 200ms ease-out;
+}
+
+.pk-hold.peeking .pk-center {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.96);
+}
+
+/* a soft backing so the hint reads over the moving conveyor as well as the still glass */
+.pk-hint {
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: var(--ink-2);
+  background: color-mix(in srgb, var(--surface-L1) 80%, transparent);
+  font-size: 11px;
+  line-height: 14px;
+}
+
+/* ---- The belt (funds gliding up) ----------------------------------------------------------------------------------- */
+.pk-conv {
+  height: 132px;
+}
+
+/* the fade at both ends belongs to the moving list only, so the cards that rise over it stay crisp */
+.pk-conv-mask {
+  height: 100%;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 28%, #000 72%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 28%, #000 72%, transparent 100%);
+}
+
+/* the conveyor is already soft (blurred rows), so its frost is off until the hold */
+.pk-conv .pk-frost {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* held: the belt stops where it is, so the cards land on something still */
+.pk-conv.peeking .pk-conv-track {
+  animation-play-state: paused;
+}
+
+.pk-conv-track {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 6px 12px;
+  animation: pk-conveyor 36s linear infinite;
+}
+
+@keyframes pk-conveyor {
+  to {
+    transform: translateY(-50%);
+  }
+}
+
+/* ---- Flow v2: the belt in an outlined card --------------------------------------------------------------------------
+   An outlined card (Border L1, 20 corners). The belt has no inner box or padding and runs to the card's edges; its fade
+   is long at the bottom so the last rows dissolve into the headline. Only the text keeps 16 px padding. */
+.pk-flow {
+  overflow: hidden;
+  border: 1px solid var(--border-L1);
+  border-radius: 20px;
+  background: var(--surface-L1);
+}
+
+.pk-flow-belt {
+  height: 168px;
+  border-radius: 0;
+  background: transparent;
+}
+
+.pk-flow-belt .pk-conv-mask {
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 20%, #000 45%, transparent 82%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 20%, #000 45%, transparent 82%);
+}
+
+.pk-flow-belt .pk-conv-track {
+  padding: 6px 16px;
+}
+
+/* the hint sits a little above centre, where the belt is fully visible */
+.pk-flow-belt .pk-center {
+  top: 40%;
+}
+
+/* the cards land in the same visible band */
+.pk-flow-belt .pk-feats {
+  bottom: 22%;
+  padding: 0 16px;
+}
+
+.pk-flow-copy {
+  position: relative;
+  margin-top: -20px; /* the headline starts where the fade ends, so list and text read as one */
+  padding: 0 16px;
+}
+
+/* alone on the belt, the hint becomes a chip: page-coloured, hairline, a soft shadow so it floats over the rows */
+.pk-flow-belt .pk-hint {
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 12px;
+  border: 1px solid var(--border-L1);
+  color: var(--ink);
+  background: var(--surface-L1);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  box-shadow: 0 6px 16px rgb(0 0 0 / 10%);
+}
+
+.pk-flow-copy h3 {
+  margin: 0;
+  font-family: "SAHI Season Display Mix:Medium", serif;
+  font-size: 26px;
+  font-weight: 580;
+  letter-spacing: -0.26px;
+  line-height: 30px;
+}
+
+.pk-flow-copy p {
+  margin: 8px 0 0;
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.pk-flow .pk-flow-copy {
+  padding-bottom: 16px;
+}
+
+/* headlines that run to two lines break evenly ("Mutual Funds are / coming to SAHI"), never leaving one word alone */
+.pk-card h3,
+.pk-flow-copy h3 {
+  text-wrap: balance;
+}

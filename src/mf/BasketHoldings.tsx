@@ -157,7 +157,7 @@ export function BasketHoldingScreen({ basketId }: { basketId: string }) {
       }
     >
       <button className="mf-fundline link" onClick={() => push({ name: "basket", basketId })}>
-        <BasketLine basket={basket} note={`${basket.funds.length} funds · Direct plans`} />
+        <BasketLine basket={basket} note={`${basket.funds.length} funds`} />
         <Icon name="caret-right" size={16} />
       </button>
 

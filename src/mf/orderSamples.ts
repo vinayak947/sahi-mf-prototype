@@ -25,10 +25,10 @@ export const statusSampleOrders: MfOrder[] = [
   { id: "s-ot-fail", fundId: "icici-bluechip", kind: "Lumpsum", amount: 5000, status: "failed", on: "2026-11-01", placedAt: "1 Nov, 10:42 AM", navDate: "2 Nov", failure: "payment", paidAt: "1 Nov, 10:52 AM" },
   // ---- Redemption ----
   { id: "s-red-init", fundId: "pp-flexi", kind: "Redeem", amount: 10000, status: "inprogress", on: "2026-11-13", placedAt: "13 Nov, 11:05 AM", navDate: "13 Nov", units: 185.452, creditBy: "17 Nov" },
-  { id: "s-red-conf", fundId: "sbi-bluechip", kind: "Redeem", amount: 10000, status: "inprogress", on: "2026-11-12", placedAt: "12 Nov, 11:05 AM", navDate: "12 Nov", units: 185.452, creditBy: "16 Nov", exchangeConfirmed: true },
+  { id: "s-red-conf", fundId: "sbi-bluechip", kind: "Redeem", redeemBy: "units", amount: 10000, status: "inprogress", on: "2026-11-12", placedAt: "12 Nov, 11:05 AM", navDate: "12 Nov", units: 185.452, creditBy: "16 Nov", exchangeConfirmed: true },
   {
     id: "s-red-done", fundId: "hdfc-mid", kind: "Redeem", amount: 10000, status: "completed", on: "2026-11-03", placedAt: "3 Nov, 11:05 AM", navDate: "3 Nov", units: 185.452, creditBy: "5 Nov",
     exchangeConfirmed: true, allotment: { folio: "9098694/09", navDate: "3 Nov", nav: 54.0026, units: 185.452 },
   },
-  { id: "s-red-fail", fundId: "icici-bluechip", kind: "Redeem", amount: 10000, status: "failed", on: "2026-10-25", placedAt: "25 Oct, 11:05 AM", navDate: "25 Oct", units: 185.452, creditBy: "28 Oct", failure: "rejected" },
+  { id: "s-red-fail", fundId: "icici-bluechip", kind: "Redeem", redeemBy: "units", amount: 10000, status: "failed", on: "2026-10-25", placedAt: "25 Oct, 11:05 AM", navDate: "25 Oct", units: 185.452, creditBy: "28 Oct", failure: "rejected" },
 ];
