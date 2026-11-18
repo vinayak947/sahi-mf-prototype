@@ -255,3 +255,18 @@
 .mf-fsheet-foot .mf-btn:disabled {
   opacity: 1;
 }
+
+/* A sheet with nothing to filter is just a sort list: it is as tall as its options and the buttons sit right under them. */
+.mf-sheet.mf-fsheet.sort-only {
+  height: auto;
+  max-height: min(86dvh, 640px);
+}
+.mf-fsheet.sort-only .mf-fsheet-body {
+  flex: 0 1 auto;
+  overflow-y: auto;
+}
+.mf-fsheet.sort-only .mf-fpanel {
+  flex: 1;
+  max-height: none;
+  overflow: visible;
+}
