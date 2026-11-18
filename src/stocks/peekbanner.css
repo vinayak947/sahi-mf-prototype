@@ -232,7 +232,7 @@
   pointer-events: none;
 }
 
-/* A feature card: portrait, like a small collectible card. A pink icon at the top, then the label and the value,
+/* A feature card: portrait, like a small collectible card. An icon at the top, then the label and the value,
    read as one line ("Commission ₹0") with the value in the display serif carrying the weight. A plain surface and a
    layered shadow (a tight one for the edge, a soft one for the lift) so it floats off the frost. */
 .pk-feat {
@@ -263,10 +263,10 @@
     0 14px 28px -6px rgb(0 0 0 / 55%);
 }
 
-/* just the icon, in the accent pink; no chip behind it */
+/* just the icon, in the text colour (black in light mode, white in dark), every one drawn on the same 20 px box */
 .pk-feat-icon {
   display: flex;
-  color: var(--accent-text);
+  color: var(--ink);
 }
 
 .pk-feat-text {

@@ -252,7 +252,8 @@ function Header({
 
   return (
     <>
-    <header className={`app-header${market === "mf" ? " mf-top" : ""}`}>
+    {/* Every market keeps the status-bar space above the header, so switching tabs never moves the header or the tabs. */}
+    <header className="app-header mf-top">
       <div className="home-row">
         {/* Demo switch: tapping the logo shows / hides the settings button so
             both versions of the tab row can be compared. */}

@@ -137,7 +137,8 @@ button {
 /* The tabs dock to the top of the screen while the logo row scrolls away.
    top: 8px puts the pills 32px down, so the tilted icons that rise ~16px above
    them keep a 16px gap from the top edge (the strip itself starts at 0). */
-/* Mutual funds home keeps the status-bar space above the header. */
+/* Every market home keeps the status-bar space above the header (it used to be Mutual Funds only, so switching to
+   Stocks made the header jump up by 56 px). */
 .app-header.mf-top {
   padding-top: 56px;
 }

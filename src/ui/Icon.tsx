@@ -57,9 +57,24 @@ const CUSTOM: Record<string, string> = {
   eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
   "eye-off":
     '<path d="M3 3l18 18"/><path d="M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.5 6.6C3.7 8.5 2 12 2 12s3.6 7 10 7c1.6 0 3-.4 4.3-1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
+  // MF pre-launch feature cards (Stocks banner): price tag = fees ("Commission ₹0"), repeat = a monthly SIP,
+  // wallet = money back to you ("Withdraw anytime"). Same 1.5 stroke on a 24 grid as the eye icons.
+  tag: '<path d="M3 12.2V4.8C3 3.8 3.8 3 4.8 3h7.4c.5 0 .9.2 1.3.5l7 7c.7.7.7 1.8 0 2.5l-7.4 7.4c-.7.7-1.8.7-2.5 0l-7-7c-.4-.4-.6-.8-.6-1.2Z"/><circle cx="8" cy="8" r="1.5"/>',
+  repeat: '<path d="M17 2l3 3-3 3"/><path d="M4 11V9a4 4 0 0 1 4-4h12"/><path d="M7 22l-3-3 3-3"/><path d="M20 13v2a4 4 0 0 1-4 4H4"/>',
+  wallet:
+    '<path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5"/><path d="M17 14h.01"/>',
 };
 
-export type IconName = keyof typeof DLS_BY_NAME | "back" | "dls-filter" | "base-x" | "eye" | "eye-off";
+export type IconName =
+  | keyof typeof DLS_BY_NAME
+  | "back"
+  | "dls-filter"
+  | "base-x"
+  | "eye"
+  | "eye-off"
+  | "tag"
+  | "repeat"
+  | "wallet";
 
 const cache = new Map<string, string>();
 

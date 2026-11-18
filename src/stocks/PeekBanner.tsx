@@ -43,10 +43,11 @@ function Row({ fund }: { fund: Fund }) {
 /* Hold the belt and what Mutual Funds will offer comes out of it: three cards rise through the frost, one after
    another, and land fanned. Let go and they tuck back in, faster than they came (the hold is a choice, the release
    isn't). Each reads as one line, label first ("Commission ₹0"), the value in the display serif. */
+// icons say what each card is about: a price tag for fees, repeat arrows for a monthly SIP, a wallet for withdrawals
 const FEATURES: [IconName, string, string][] = [
-  ["sparkle-fill", "Commission", "₹0"],
-  ["calendar", "Start a SIP from", "₹100"],
-  ["lightning", "Withdraw", "Anytime"],
+  ["tag", "Commission", "₹0"],
+  ["repeat", "Start a SIP from", "₹100"],
+  ["wallet", "Withdraw", "Anytime"],
 ];
 
 function HoldReveal({ className, children }: { className: string; children: ReactNode }) {
@@ -75,7 +76,7 @@ function HoldReveal({ className, children }: { className: string; children: Reac
         {FEATURES.map(([icon, label, value], i) => (
           <span key={label} className={`pk-feat f${i}`}>
             <span className="pk-feat-icon">
-              <Icon name={icon} size={18} />
+              <Icon name={icon} size={20} />
             </span>
             <span className="pk-feat-text">
               <small>{label}</small>

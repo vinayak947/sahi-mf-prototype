@@ -547,11 +547,10 @@ export function ArtBox({ art, className, frame, mirror }: { art: Art; className:
   );
 }
 
-const FOLD_OPEN = "fold-open";
 const FOLD_MS = 240; // .fold-body grid-template-rows transition
 
-// While a fold above collapses, keep the one just tapped where the finger is: each frame, scroll by however far its
-// heading has drifted. Stops once the collapse is over.
+// While the page shifts after a fold opens, keep the one just tapped where the finger is: each frame, scroll by
+// however far its heading has drifted, then bring its content into view.
 function holdInPlace(section: HTMLElement) {
   let scroller: HTMLElement | null = section.parentElement;
   while (scroller && !(scroller.scrollHeight > scroller.clientHeight && /auto|scroll/.test(getComputedStyle(scroller).overflowY)))
@@ -611,28 +610,10 @@ export function Fold({
     const value = next(open);
     setOpenState(value);
     onOpenChange?.(value);
-    // One open at a time: tell the other folds on this page to close.
-    if (value) {
-      const section = sectionRef.current;
-      section?.closest(".mf-body")?.dispatchEvent(new CustomEvent(FOLD_OPEN, { detail: bodyId }));
-      if (section) holdInPlace(section);
-    }
+    // Each fold opens and closes on its own: opening one never closes another (one-open-at-a-time was tried and
+    // dropped; people want to compare sections side by side). Opening still brings the new content into view.
+    if (value && sectionRef.current) holdInPlace(sectionRef.current);
   };
-  // Close when another fold on the same page opens (scoped to this screen's body, so stacked screens don't interfere).
-  const openRef = useRef(open);
-  openRef.current = open;
-  useEffect(() => {
-    const page = sectionRef.current?.closest(".mf-body");
-    if (!page) return;
-    const onOther = (e: Event) => {
-      if ((e as CustomEvent<string>).detail === bodyId || !openRef.current) return;
-      setOpenState(false);
-      onOpenChange?.(false);
-    };
-    page.addEventListener(FOLD_OPEN, onOther);
-    return () => page.removeEventListener(FOLD_OPEN, onOther);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bodyId]);
   return (
     <section ref={sectionRef} className={`mf-section-idp fold${open ? " open" : ""}`}>
       <h3>
