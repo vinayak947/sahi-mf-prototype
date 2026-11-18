@@ -289,10 +289,10 @@ export function BasketScreen({ basketId }: { basketId: string }) {
         </>
       }
     >
-      {/* Same pieces, in the same order, as the basket's folder card on the home page: logos, name • fund count,
-          who it is for, then 3Y return · Min. SIP · Risk. */}
+      {/* The basket's funds as overlapping logos (as on a fund page, where the fund's own logo leads), then name • fund
+          count, who it is for, then 3Y return · Min. SIP · Risk. The folder (FolderMark) stays on the home card only. */}
       <div className="fund-hero bk-hero-idp">
-        <FolderMark basket={basket} tint={SHADES[Math.max(0, baskets.findIndex((b) => b.id === basket.id)) % SHADES.length]} />
+        <LogoStack basket={basket} size={48} />
         <div className="bk-hero-text-idp">
           <div className="bk-title">
             <h2 data-dock-anchor>{basket.name}</h2>

@@ -771,9 +771,6 @@ export function FundScreen({ fundId }: { fundId: string }) {
 
       <NavChart fund={fund} range={range} onRange={setRange} navOn={navOn} />
 
-      <KyroCard fund={fund} onAsk={(q) => setKyro({ q })} />
-      {kyro && <KyroSheet fund={fund} question={kyro.q} onClose={() => setKyro(null)} />}
-
       <dl className="fund-stats">
         <div>
           <dt>NAV · {navDate}</dt>
@@ -788,6 +785,10 @@ export function FundScreen({ fundId }: { fundId: string }) {
           <dd>{fund.aum}</dd>
         </div>
       </dl>
+
+      {/* Facts first, then Kyro's reading of them (same order as the basket page). */}
+      <KyroCard fund={fund} onAsk={(q) => setKyro({ q })} />
+      {kyro && <KyroSheet fund={fund} question={kyro.q} onClose={() => setKyro(null)} />}
 
       <Fold
         title="Returns"

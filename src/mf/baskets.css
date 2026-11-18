@@ -1479,6 +1479,7 @@
    top right level with the heading. */
 :root:has(.idp) .fund-hero.bk-hero-idp { flex-direction: column; align-items: stretch; gap: 16px; }
 .bk-hero-text-idp { flex: 1; min-width: 0; }
+.bk-hero-idp > .bk-stack-idp { align-self: flex-start; }
 .bk-hero-idp .bk-title { justify-content: flex-start; }
 .mf-screen:has(.fund-hero) .fund-hero.bk-hero-idp h2 { flex: 0 1 auto; width: auto; margin: 0; font-size: 24px; line-height: 28px; }
 .mf-screen:has(.fund-hero) .bk-hero-idp .fund-meta-idp { margin-top: 4px; font-size: 14px; line-height: 20px; }
