@@ -3,13 +3,19 @@
    Open heading: a fold's title stays the same size open or closed (16 / 19 Medium). Growing it to 20 / 24 on open
    was tried and dropped. */
 
-/* Boxed content (About the fund, Charges and tax): the open content on a subtle surface card, the full 328 content
-   width (the page's 16 margins), as tall as its content, 12 corners and 16 inside, so it reads as one enclosed
-   block under its heading. */
+/* Boxed content (About the fund, Charges and tax): the open content in an outlined card, like the other IDP widgets
+   (stats, Portfolio and Returns panels): no fill, a Border L1 hairline, 16 corners and 16 inside. A grey fill was
+   tried and dropped. */
 .fold-card {
   padding: 16px;
-  border-radius: 12px;
-  background: var(--surface-L2);
+  border: 1px solid var(--border-L1);
+  border-radius: 16px;
+}
+
+/* About the fund: "Managed by" opens a new group, so it sits 24 below the facts above it (the facts' 16 bottom margin
+   collapses into this 24). */
+.fold-card .about-facts + .mgr-list {
+  margin-top: 24px;
 }
 
 .fold-card > :first-child {
