@@ -51,15 +51,15 @@ em.amo.st-initiated {
   min-width: 0;
   flex: 1;
   flex-direction: column;
-  gap: 2px;
+  gap: 8px;
 }
 
 .os-mid b {
   overflow: hidden;
   font-family: "SAHI Sans:Medium", sans-serif;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
-  line-height: 16.8px;
+  line-height: 20px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -75,13 +75,13 @@ em.amo.st-initiated {
   flex: none;
   flex-direction: column;
   align-items: flex-end;
-  gap: 4px;
+  gap: 8px;
 }
 
 .os-amt {
-  font-family: "SAHI Sans:Regular", sans-serif;
-  font-size: 14px;
-  line-height: 16.8px;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 16px;
+  line-height: 20px;
 }
 
 /* ---- Order detail ------------------------------------------------------------------------------------------------ */
@@ -187,4 +187,367 @@ em.amo.st-initiated {
 .os-page .mf-notice,
 .dls-sheet .mf-notice {
   margin: 0;
+}
+
+/* Facts card: two columns while each tile's text fits in half the width. A tile that needs more than 50% (or is alone in its row)
+   takes a full row; Facts() in OrderStatusDetail.tsx measures and sets .wide / .r0. */
+.os-facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.os-facts > .dls-kv.wide {
+  grid-column: 1 / -1;
+}
+
+.os-facts > .dls-kv:not(.r0) {
+  border-top: 1px solid var(--border-L1);
+}
+
+.os-facts.measuring .dls-kv-text {
+  flex: none;
+}
+
+.os-facts.measuring .dls-kv-text small,
+.os-facts.measuring .dls-kv-text b {
+  white-space: nowrap;
+}
+
+/* "Why can the final amount differ" visual story: three steps joined by a line, then what it means for the amount. */
+.os-story {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding-top: 8px;
+}
+
+.os-story-steps {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.os-story-steps li {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding-bottom: 28px;
+}
+
+.os-story-steps li:last-child {
+  padding-bottom: 0;
+}
+
+.os-story-steps li:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  top: 40px;
+  bottom: 8px;
+  left: 19px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--border-L1);
+}
+
+.os-story-dot {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--text-primary);
+  background: var(--surface-L2);
+}
+
+.os-story-dot b {
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.os-story-text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 2px;
+}
+
+.os-story-text b {
+  color: var(--text-primary);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.os-story-text small {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.os-story-outcomes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.os-story-outcomes.n1 {
+  grid-template-columns: 1fr;
+}
+
+.os-story-outcome {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 20px 16px;
+  border: 1px solid var(--border-L1);
+  border-radius: 16px;
+}
+
+.os-story-outcome .os-story-dot {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 12px;
+}
+
+.os-story-outcome.up .os-story-dot {
+  color: var(--positive-text);
+  background: var(--positive-subtle);
+}
+
+.os-story-outcome.down .os-story-dot {
+  color: var(--negative-text);
+  background: var(--negative-subtle);
+}
+
+.os-story-outcome b {
+  color: var(--text-primary);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.os-story-outcome small {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.os-story-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.os-story-note .icon {
+  margin-top: 2px;
+  flex: none;
+}
+
+/* Steps and outcomes arrive one after another, 50ms apart; reduced motion keeps the content still. */
+@media (prefers-reduced-motion: no-preference) {
+  .os-story-steps li,
+  .os-story-outcome {
+    animation: os-story-in 260ms cubic-bezier(0.23, 1, 0.32, 1) both;
+    animation-delay: calc(80ms + var(--i, 0) * 50ms);
+  }
+}
+
+@keyframes os-story-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* Order details as a bottom sheet: the body scrolls, the primary CTA stays pinned under it. */
+.dls-sheet:has(> .os-sheet-body) {
+  overflow: hidden;
+  padding-bottom: 12px;
+}
+
+.os-sheet-body {
+  min-height: 0;
+  flex: 1;
+  margin: 0 -16px;
+  padding: 0 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.os-sheet-body .os-page {
+  padding: 0;
+}
+
+.os-sheet-foot {
+  flex: none;
+}
+
+/* ---- Stocks / F&O order sheet, as in the live app ---- */
+.dls-sheet > .dls-badge {
+  align-self: flex-start;
+}
+
+.mkt-sheet-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mkt-sheet-head h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 21.6px;
+}
+
+.mkt-sheet-head p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 16.8px;
+}
+
+.mkt-details-head {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 0;
+  border: 0;
+  color: var(--text-secondary);
+  background: transparent;
+  font-size: 14px;
+  line-height: 16.8px;
+}
+
+.mkt-caret {
+  display: grid;
+  transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.mkt-caret.open {
+  transform: rotate(0deg);
+}
+
+.mkt-caret:not(.open) {
+  transform: rotate(-90deg);
+}
+
+.mkt-shortcut {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: 16px;
+  color: var(--text-primary);
+  background: var(--surface-L2);
+  font-size: 14px;
+  line-height: 16.8px;
+}
+
+.mkt-shortcut i {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 6px;
+  font-size: 13px;
+  font-style: normal;
+}
+
+.mkt-shortcut i.buy {
+  color: var(--positive-text);
+  background: var(--positive-subtle);
+}
+
+.mkt-shortcut i.sell {
+  color: var(--negative-text);
+  background: var(--negative-subtle);
+}
+
+.mkt-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.mkt-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mkt-confirm p {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 16px;
+  line-height: 20px;
+  text-align: center;
+}
+
+.mkt-btn {
+  flex: 1;
+  height: 56px;
+  border: 1px solid transparent;
+  border-radius: 28px;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 18px;
+  line-height: 22px;
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.mkt-btn:active {
+  transform: scale(0.97);
+}
+
+.mkt-btn.neg {
+  color: var(--negative-text);
+  background: var(--negative-subtle);
+}
+
+.mkt-btn.pos {
+  color: var(--positive-on-fill);
+  background: var(--positive-surface);
+}
+
+.mkt-btn.line {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+  background: transparent;
+}
+
+/* The status badge sits under the fund header, as on the Stocks / F&O sheet. */
+.os-page > .dls-badge {
+  align-self: flex-start;
+}
+
+/* "Order status" is a collapsible card header; it keeps the old heading's type. */
+.os-status-title {
+  color: var(--text-primary);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.mkt-details-head[aria-expanded="false"] {
+  margin-bottom: 0;
 }
