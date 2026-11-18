@@ -123,15 +123,8 @@ export function purchaseView({ order: o, fund, sipDay }: Ctx): DetailView {
       { label: "Amount invested", value: amount },
     ];
   } else if (sip) {
-    // The amount carries its own debit line: placed on, will be debited on, debited on.
-    const when =
-      o.status === "scheduled" && debit
-        ? `will be debited on ${fmtDay(debit)}`
-        : o.status === "paymentdone" && debit
-          ? `debited on ${fmtDay(debit)}`
-          : `on ${fmtDay(debit ?? placed)}`;
     facts = [
-      { label: "Amount", value: `${amount} ${when}` },
+      { label: "Amount", value: amount },
       { label: "Order type", value: "SIP transaction" },
       { label: "Payment", value: `${method} · ${BANK}` },
     ];
@@ -254,12 +247,17 @@ export function redeemView({ order: o, fund }: Ctx): RedeemView {
   const latestNav = units ? o.amount / units : fund.nav;
   const cutText = `Your order was placed ${before ? "before" : "after"} the ${cut} cut-off, so the fund house `;
   const when = before ? `the NAV of ${o.navDate}` : `the NAV of the next working day, ${o.navDate}`;
-  const l1 = `You asked to redeem ${inr(o.amount, 2)}. We converted this to ${unitsText} units using the NAV of ${fmtDay(latest)} (${inr(latestNav, 4)}), the latest published.`;
-  const topLoad = fund.loads.length ? Math.max(...fund.loads.map((t) => t.pct)) : 0;
-  const exitNote = topLoad
-    ? `Exit load, if any: up to ${inr((o.amount * topLoad) / 100, 2)} (${Number(topLoad.toFixed(3))}%) is deducted.`
-    : "This fund has no exit load, so no fee is deducted.";
-  const exit = "If your units are within the fund’s exit load period, the fund house keeps a small fee (exit load) from the amount.";
+  const byUnits = o.redeemBy === "units";
+  const askedTitle = byUnits ? `You asked for ${unitsText} units` : `You asked for ${inr(o.amount, 2)}`;
+  const askedSub = byUnits
+    ? `Worth about ${inr(o.amount, 2)} at ${inr(latestNav, 4)} (${fmtDay(latest)} NAV)`
+    : `About ${unitsText} units at ${inr(latestNav, 4)} (${fmtDay(latest)} NAV)`;
+  const l1 = byUnits
+    ? `You asked to redeem ${unitsText} units. Using the NAV of ${fmtDay(latest)} (${inr(latestNav, 4)}), the latest published, that is about ${inr(o.amount, 2)}.`
+    : `You asked to redeem ${inr(o.amount, 2)}. We converted this to ${unitsText} units using the NAV of ${fmtDay(latest)} (${inr(latestNav, 4)}), the latest published.`;
+  const than = byUnits ? "the estimate" : "you asked for";
+  const exitNote = "Exit load and STT may be deducted, depending on your holdings.";
+  const exit = "Depending on your holdings, the fund house may deduct an exit load, and STT (Securities Transaction Tax) may apply, from the amount.";
 
   let why: RedeemView["why"];
   if (done && a) {
@@ -269,22 +267,22 @@ export function redeemView({ order: o, fund }: Ctx): RedeemView {
       title: `Why you received ${inr(credited, 2)}`,
       bullets: [
         l1,
-        `${cutText}redeemed at ${when}, ${inr(a.nav, 4)}. As this NAV was ${higher ? "higher" : "lower"}, you received ${inr(credited, 2)}, which is ${inr(diff, 2)} ${higher ? "more" : "less"} than you asked for.`,
-        `No exit load was charged on this order. ${exit}`,
+        `${cutText}redeemed at ${when}, ${inr(a.nav, 4)}. As this NAV was ${higher ? "higher" : "lower"}, you received ${inr(credited, 2)}, which is ${inr(diff, 2)} ${higher ? "more" : "less"} than ${than}.`,
+        exit,
       ],
       story: {
         steps: [
-          { glyph: "₹", title: `You asked for ${inr(o.amount, 2)}`, sub: `About ${unitsText} units at ${inr(latestNav, 4)} (${fmtDay(latest)} NAV)` },
+          { glyph: byUnits ? "#" : "₹", title: askedTitle, sub: askedSub },
           { icon: "clock", title: `Placed ${before ? "before" : "after"} ${cut}`, sub: before ? `Priced on ${o.navDate}` : `Priced on the next trading day, ${o.navDate}` },
           { icon: "chart-line", title: `${a.navDate} closing NAV: ${inr(a.nav, 4)}`, sub: `${higher ? "Higher" : "Lower"} than ${inr(latestNav, 4)}` },
         ],
-        outcomes: [{ icon: higher ? "chart-line" : "trend-down", tone: higher ? "up" : "down", title: `You received ${inr(credited, 2)}`, sub: `${inr(diff, 2)} ${higher ? "more" : "less"} than you asked for` }],
-        note: { icon: "check-circle", text: "No exit load was charged on this order." },
+        outcomes: [{ icon: higher ? "chart-line" : "trend-down", tone: higher ? "up" : "down", title: `You received ${inr(credited, 2)}`, sub: `${inr(diff, 2)} ${higher ? "more" : "less"} than ${than}` }],
+        note: { icon: "info", text: exitNote },
       },
     };
   } else {
     why = {
-      title: `Why you may get more or less than ${inr(o.amount, 0)}`,
+      title: `Why you may get more or less than ${byUnits ? "about " : ""}${inr(o.amount, 0)}`,
       bullets: [
         l1,
         `${cutText}redeems at ${when}${before ? ". That NAV is published only in the evening" : ""}. If it’s higher or lower, the amount you receive changes too.`,
@@ -292,7 +290,7 @@ export function redeemView({ order: o, fund }: Ctx): RedeemView {
       ],
       story: {
         steps: [
-          { glyph: "₹", title: `You asked for ${inr(o.amount, 2)}`, sub: `About ${unitsText} units at ${inr(latestNav, 4)} (${fmtDay(latest)} NAV)` },
+          { glyph: byUnits ? "#" : "₹", title: askedTitle, sub: askedSub },
           { icon: "clock", title: `Placed ${before ? "before" : "after"} ${cut}`, sub: before ? `Priced on ${o.navDate}` : `Priced on the next trading day, ${o.navDate}` },
           o.exchangeConfirmed
             ? { icon: "chart-line", title: `${o.navDate} closing NAV is out`, sub: "Your units are priced at it" }
@@ -306,6 +304,11 @@ export function redeemView({ order: o, fund }: Ctx): RedeemView {
       },
     };
   }
+
+  // What the user asked for leads; the other figure is the estimate.
+  const requested = byUnits
+    ? [{ label: "Units requested", value: unitsText }, { label: "Estimated amount", value: inr(o.amount, 2) }]
+    : [{ label: "Amount requested", value: inr(o.amount, 2) }, { label: "Units", value: unitsText }];
 
   const confirmed = !!o.exchangeConfirmed || done;
   const steps: StepView[] = [
@@ -323,14 +326,12 @@ export function redeemView({ order: o, fund }: Ctx): RedeemView {
     head: done ? { label: `Amount credited on ${creditText}`, value: inr(credited, 2) } : { label: "Estimated amount credit date", value: creditText },
     rows: done
       ? [
-          { label: "Amount requested", value: inr(o.amount, 2) },
-          { label: "Units", value: unitsText },
+          ...requested,
           { label: "NAV applicable date", value: a?.navDate ?? o.navDate },
           { label: "Applicable NAV", value: inr(a?.nav ?? fund.nav, 4) },
         ]
       : [
-          { label: "Amount requested", value: inr(o.amount, 2) },
-          { label: "Units", value: unitsText },
+          ...requested,
           { label: "NAV applicable date", value: o.navDate },
         ],
     steps,
@@ -348,8 +349,9 @@ export function redeemFailedView({ order: o, fund }: Ctx): DetailView {
       text: o.failReason ?? "Your redemption was rejected because the units weren’t authorised from your demat account (eDIS). No units were redeemed.",
     },
     facts: [
-      { label: "Amount requested", value: inr(o.amount, 2) },
-      { label: "Units", value: units },
+      ...(o.redeemBy === "units"
+        ? [{ label: "Units requested", value: units }, { label: "Estimated amount", value: inr(o.amount, 2) }]
+        : [{ label: "Amount requested", value: inr(o.amount, 2) }, { label: "Units", value: units }]),
       { label: "Credit to", value: BANK },
     ],
     steps: [

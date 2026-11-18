@@ -688,7 +688,8 @@ export type Holding = {
 export type Lot = { date: string; units: number; allotted: boolean; orderId?: string };
 
 export const sampleHoldings: Holding[] = [
-  { fundId: "bandhan-small", invested: 90000, current: 102340, units: 1791.4, since: "2025-03-12", lots: [{ date: "2025-03-12", units: 1791.4, allotted: true }] },
+  // Bandhan: the figures of the Holding details board (see holdingDetail.ts for the folio, XIRR, NAVs and transactions).
+  { fundId: "bandhan-small", invested: 60000, current: 166566.2, units: 87.012, since: "2018-10-11", lots: [{ date: "2018-10-11", units: 87.012, allotted: true }] },
   { fundId: "hdfc-flexi", invested: 75000, current: 78450, units: 40.97, since: "2025-06-05", lots: [{ date: "2025-06-05", units: 40.97, allotted: true }] },
   { fundId: "quant-flexi", invested: 60000, current: 62180, units: 655.8, since: "2026-01-20", lots: [{ date: "2026-01-20", units: 655.8, allotted: true }] },
   { fundId: "hdfc-liquid", invested: 35000, current: 35640, units: 6.96, since: "2026-05-02", lots: [{ date: "2026-05-02", units: 6.96, allotted: true }] },
@@ -734,6 +735,7 @@ export type MfOrder = {
   failReason?: string;
   allotment?: Allotment; // Completed: folio, NAV date, NAV and units
   units?: number; // redeem: units sold
+  redeemBy?: "amount" | "units"; // redeem: what the user asked for (default amount)
   creditBy?: string; // redeem: estimated date the money reaches the bank
   // Order 2.0 status screens, all optional.
   exchangeConfirmed?: boolean; // redeem: the exchange has confirmed the order (still In progress until the money is sent)

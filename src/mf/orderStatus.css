@@ -64,7 +64,12 @@ em.amo.st-initiated {
   white-space: nowrap;
 }
 
+/* The sub-line is as tall as the right column's second line (the 24px badge / gain), so the name sits level with the
+   amount and the sub-line level with the badge / gain. */
 .os-mid small {
+  display: flex;
+  height: 24px;
+  align-items: center;
   color: var(--text-secondary);
   font-size: 12px;
   line-height: 14.4px;
@@ -559,4 +564,30 @@ em.amo.st-initiated {
 
 .mkt-details-head[aria-expanded="false"] {
   margin-bottom: 0;
+}
+
+/* Lazy load: the marker row at the end of the Orders list. */
+.os-list > li.os-more {
+  display: flex;
+  min-height: 56px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 16px;
+}
+.os-more .mf-spinner.small {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  border-width: 2px;
+}
+
+/* Portfolio holdings: 4px less between the fund name and its category line (and the amount and gain), both columns
+   together so name and amount, category and gain stay level. */
+.pf-holdings .os-mid,
+.pf-holdings .os-end {
+  gap: 4px;
 }

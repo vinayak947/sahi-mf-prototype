@@ -210,13 +210,13 @@ const matches = (r: Row, p: Picks) =>
   (!p.validity.length || p.validity.includes("Day"));
 
 // Same pattern as the mutual fund orders: status tabs, then a count with the filter chip (opens the sheet).
-export function MarketOrders({ market }: { market: "stocks" | "fno" }) {
+export function MarketOrders({ market }: { market: "stocks" | "fno" | "both" }) {
   const [tab, setTab] = useState<Tab>("open");
   const [picks, setPicks] = useState<Picks>(NO_PICKS);
   const [sort, setSort] = useState<SortKey>("newest");
   const [picking, setPicking] = useState(false);
   const [openRow, setOpenRow] = useState<number | null>(null);
-  const rows = market === "fno" ? FNO : STOCKS;
+  const rows = market === "fno" ? FNO : market === "both" ? [...STOCKS, ...FNO] : STOCKS;
   const active = GROUPS.some((g) => picks[g.key].length > 0) || sort !== "newest";
   const filtered = rows.filter((r) => matches(r, picks));
   const shown = filtered
@@ -244,7 +244,12 @@ export function MarketOrders({ market }: { market: "stocks" | "fno" }) {
       </div>
       <div className="mf-pf-bar mf-orders-count">
         <span>
-          {shown.length} {market === "fno" ? (shown.length === 1 ? "contract" : "contracts") : shown.length === 1 ? "stock" : "stocks"}
+          {shown.length}{" "}
+          {market === "both"
+            ? shown.length === 1 ? "order" : "orders"
+            : market === "fno"
+              ? shown.length === 1 ? "contract" : "contracts"
+              : shown.length === 1 ? "stock" : "stocks"}
         </span>
         <button
           className={`dls-chip mf-orders-typechip${active ? " on" : ""}`}

@@ -308,9 +308,6 @@ export function PayModeScreen({ fundId, amount, sip = false }: { fundId: string;
 
       <div className="pm-section">
         <h3>UPI</h3>
-        <button className="pm-link" onClick={() => push({ name: "upiapps", fundId, amount, sip })}>
-          View all <Icon name="chevron-right" size={14} />
-        </button>
       </div>
       {upi.rows(FEATURED_UPI, <AddUpiRow onClick={upi.openIdSheet} />)}
       {upi.nudge}
