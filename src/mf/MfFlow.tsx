@@ -9,6 +9,7 @@ import {
 } from "./screens";
 import { FundScreen } from "./fundidp/FundScreen";
 import { OrderSearchScreen } from "./OrderSearch";
+import { HoldingsSearchScreen } from "./HoldingsSearch";
 import { AddBankScreen, PayModeScreen, UpiAppsScreen, VerifyBankScreen } from "./PayMode";
 import { CheckoutScreen } from "./Checkout";
 import { SipDetail2 } from "./SipDetail2";
@@ -26,6 +27,8 @@ function renderRoute(route: Route) {
       return <SearchScreen />;
     case "ordersearch":
       return <OrderSearchScreen />;
+    case "holdingsearch":
+      return <HoldingsSearchScreen />;
     case "fund":
       return <FundScreen fundId={route.fundId} />;
     case "amount":

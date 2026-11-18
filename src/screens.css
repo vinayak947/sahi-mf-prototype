@@ -308,7 +308,7 @@
 }
 
 .chip.active {
-  border: 1px solid var(--border-L2);
+  border: 1px solid var(--text-primary);
   color: var(--text-primary);
   font-family: "SAHI Sans:Medium", sans-serif;
 }
@@ -581,6 +581,7 @@
   font-weight: 500;
 }
 
+/* The 2pt indicator runs the full width of the tab, label and trailing dots together. */
 .tab-underlined.active::after {
   position: absolute;
   right: 0;
@@ -1083,7 +1084,41 @@
   background: transparent;
 }
 
+.portfolio-controls-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.switch-row {
+  padding: 0;
+  color: var(--text-primary);
+}
+
+.sort-button {
+  padding: 0;
+  color: var(--text-primary);
+}
+
+/* DLS Switch (Size=small, Value=on): brand fill, 18px white thumb carrying a check. */
+.switch.on {
+  border-color: var(--accent-default);
+  background: var(--accent-default);
+}
+
+.switch.on i {
+  top: 2px;
+  left: 17px;
+  display: grid;
+  width: 18px;
+  height: 18px;
+  background: var(--fixed-white);
+  color: var(--accent-default);
+  place-items: center;
+}
+
 .switch i {
+  transition: left 160ms cubic-bezier(0.23, 1, 0.32, 1), top 160ms cubic-bezier(0.23, 1, 0.32, 1), width 160ms cubic-bezier(0.23, 1, 0.32, 1), height 160ms cubic-bezier(0.23, 1, 0.32, 1);
   position: absolute;
   top: 3.5px;
   left: 3.5px;
@@ -1169,5 +1204,367 @@
 @media (prefers-reduced-motion: reduce) {
   .hscroll {
     scroll-behavior: auto;
+  }
+}
+
+/* ---- Portfolio (Stocks | Mutual funds): header link, kind chips, outlined summary card ----------------------------- */
+
+.pf-head .page-title {
+  margin-bottom: 4px;
+}
+
+.pf-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pf-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 2px;
+}
+
+.pf-search {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  margin-right: -8px;
+  place-items: center;
+  border: 0;
+  color: var(--text-primary);
+  background: transparent;
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.pf-search:active {
+  transform: scale(0.97);
+}
+
+.pf-charges {
+  margin-top: 0;
+  padding: 0;
+  border: 0;
+  color: var(--text-primary);
+  background: none;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+  line-height: 18px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* No card: the summary sits straight on the page and spreads across its full width. The optional wash is the up/down colour
+   at its faintest, fading to nothing by the bottom edge. */
+.pf-summary {
+  position: relative;
+  isolation: isolate;
+  margin: 0 -16px;
+  padding: 36px 16px 20px;
+  /* the grey fades down into the white list below, so there is no edge between them */
+  --pf-fade: linear-gradient(180deg, var(--surface-L2) 0%, var(--surface-L1) 100%);
+  background-color: var(--surface-L1);
+  background-image: var(--pf-fade);
+}
+
+/* The funds / stocks list sits on a white rounded sheet that tucks into the bottom of the grey summary (static, it all
+   scrolls together). */
+.pf-sheet {
+  position: relative;
+  z-index: 1; /* slides over the sticky summary as the page scrolls */
+  min-height: 60vh;
+  margin: 0 -16px;
+  padding: 16px 16px 0;
+  background: var(--surface-L1);
+}
+
+/* The home banner's halftone dots, tinted green or red, strongest at the top and gone by the bottom edge. */
+.pf-summary.positive,
+.pf-summary.negative {
+  --pf-tint: var(--positive-text);
+}
+
+.pf-summary.negative {
+  --pf-tint: var(--negative-text);
+}
+
+.pf-summary.positive::before,
+.pf-summary.negative::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--pf-tint);
+  opacity: 0.21; /* the dot image peaks at ~94%, so the dots top out around 20% at the top edge */
+  pointer-events: none;
+  content: "";
+  -webkit-mask-image: var(--pf-dots), linear-gradient(180deg, #000 0%, transparent 100%);
+  -webkit-mask-size: 100% auto, 100% 100%;
+  -webkit-mask-position: center 30%, center;
+  -webkit-mask-repeat: no-repeat, no-repeat;
+  -webkit-mask-composite: source-in;
+  mask-image: var(--pf-dots), linear-gradient(180deg, #000 0%, transparent 100%);
+  mask-size: 100% auto, 100% 100%;
+  mask-position: center 30%, center;
+  mask-repeat: no-repeat, no-repeat;
+  mask-composite: intersect;
+}
+
+.pf-summary.positive {
+  /* both washes start at 5% at the top edge and fade to 0 at the bottom, over the grey the sheet below sits on */
+  background-image: linear-gradient(180deg, color-mix(in srgb, var(--positive-transparent-L3) 41.667%, transparent) 0%, transparent 100%), var(--pf-fade);
+}
+
+.pf-summary.negative {
+  background-image: linear-gradient(180deg, color-mix(in srgb, var(--negative-text) 5%, transparent) 0%, transparent 100%), var(--pf-fade);
+}
+
+.pf-hero-label {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.pf-hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin-top: 4px;
+}
+
+.pf-hero strong {
+  font-family: "SAHI Season Display Mix:Medium", serif;
+  font-size: 32px;
+  font-weight: 580;
+  letter-spacing: -0.5px;
+  line-height: 36px;
+}
+
+.pf-hero-note {
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.pf-summary .up {
+  color: var(--positive-text);
+}
+
+.pf-summary .down {
+  color: var(--negative-text);
+}
+
+/* Values scale with the card (container units) so a long amount like -₹1,23,456 can never wrap or spill into the next column. */
+.pf-stats {
+  display: grid;
+  container-type: inline-size;
+  grid-template-columns: repeat(3, auto);
+  justify-content: space-between;
+  gap: 8px;
+  margin: 20px 0 0;
+}
+
+.pf-stat {
+  min-width: 0;
+}
+
+.pf-stat dt {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: clamp(12px, 4.4cqw, 14px);
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Amount and its percentage stay on one line; the type scales down with the card instead of wrapping. */
+.pf-stat dd {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin: 6px 0 0;
+  white-space: nowrap;
+}
+
+/* Masked() wraps the value; it takes over the flex row so the amount and its percentage keep their gap. */
+.pf-stat dd > span {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.pf-stat b {
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: clamp(13px, 5.2cqw, 16px);
+  font-weight: 500;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.pf-stat em {
+  font-size: clamp(11px, 3.8cqw, 12px);
+  font-style: normal;
+  line-height: 14px;
+  white-space: nowrap;
+}
+
+/* Portfolio: market chips on top, Holdings / Positions as tabs below with the round "more" button at the right end. */
+/* Scrolling hides the page title; the chips and the tabs stay pinned (chips at 0, tabs just under them, the summary under both). */
+.pf-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 -16px;
+  padding: 16px 16px 8px;
+  background: var(--surface-L1);
+}
+
+.pf-chips {
+  display: flex;
+  min-width: 0;
+  gap: 8px;
+}
+
+.pf-subtabs {
+  position: sticky;
+  top: var(--pf-chips-h, 56px);
+  z-index: 5;
+  margin-bottom: 0; /* the summary below brings its own top padding, so its wash meets the tab divider */
+  background: var(--surface-L1);
+}
+
+.pf-more {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  color: var(--text-primary);
+  background: var(--surface-L3);
+}
+
+.pf-more:active {
+  transform: scale(0.97);
+}
+
+/* Orders: the market chips and the status tabs stay pinned while the title scrolls away. */
+.order-pills {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  margin-bottom: 0;
+  padding-top: 16px;
+  padding-bottom: 8px;
+  background: var(--surface-L1);
+}
+
+.mf-orders-bar {
+  position: sticky;
+  top: 56px;
+  z-index: 5;
+  background: var(--surface-L1);
+}
+
+/* Rolling digits (RollText): each digit shows one line of its reel; the heights match the text they replace. */
+.roll {
+  display: inline-flex;
+  align-items: flex-start;
+  --rd-h: 20px;
+}
+
+.pf-hero .roll {
+  --rd-h: 36px;
+}
+
+/* The column is as wide as the digit it lands on (the hidden sizer), so the spacing is exactly the normal text's. */
+.rd {
+  position: relative;
+  display: inline-block;
+  height: var(--rd-h);
+  overflow: hidden;
+}
+
+.rd-size {
+  display: block;
+  height: var(--rd-h);
+  line-height: var(--rd-h);
+  visibility: hidden;
+}
+
+.rd-col {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+}
+
+.rd-col > span {
+  display: block;
+  height: var(--rd-h);
+  line-height: var(--rd-h);
+}
+
+.roll > span:not(.rd) {
+  display: block;
+  height: var(--rd-h);
+  line-height: var(--rd-h);
+}
+
+/* Hide values: eye toggle at the summary's top right, and the crossfade-with-blur when values swap to dots and back. */
+.pf-eye {
+  position: absolute;
+  top: 28px;
+  right: 8px;
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  color: var(--text-secondary);
+  background: transparent;
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.pf-eye:active {
+  transform: scale(0.92);
+}
+
+.pf-eye-glyph {
+  display: grid;
+  animation: pf-eye-in 180ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@keyframes pf-eye-in {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
+.mask-swap {
+  animation: mask-in 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@keyframes mask-in {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pf-eye-glyph,
+  .mask-swap {
+    animation: none;
   }
 }

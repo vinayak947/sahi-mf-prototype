@@ -1,13 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { asset } from "../assets";
+import { Masked } from "../mf/privacy";
 import { holdings, indexScalper, orders } from "../data";
 import { Icon, type IconName } from "../ui/Icon";
-import { MfOrdersPage, MfPortfolio, MfPortfolioPage, PortfolioOverview, SegmentChips } from "../mf/MfPages";
+import { MfOrdersPage, MfPortfolio, PfDelta, PfSummary, SegmentChips } from "../mf/MfPages";
 import { useMf } from "../mf/store";
+import { FilterSortSheet } from "../mf/FilterSortSheet";
+import { inrShort } from "../mf/format";
+import { RollText } from "../ui/RollText";
 import {
   Block,
   CardGrid,
-  SparkleBadge,
+  DlsTab,
   Tabs,
   toneOf,
 } from "../ui/widgets";
@@ -164,108 +168,167 @@ export function OrdersPage({ mfOnly = false }: { mfOnly?: boolean }) {
   );
 }
 
+type HoldingRow = (typeof holdings)[number];
+type HoldingSort = "cur_hi" | "cur_lo" | "inv_hi" | "inv_lo" | "pl_hi" | "pl_lo" | "pct_hi" | "pct_lo" | "az" | "za";
+const num = (text: string) => Number(text.replace(/[^0-9.\-]/g, ""));
+// The app's own holdings sort options; there is nothing else to filter, so the sheet is sort only.
+const HOLDING_SORTS: { key: HoldingSort; label: string }[] = [
+  { key: "cur_hi", label: "Current value (High to low)" },
+  { key: "cur_lo", label: "Current value (Low to high)" },
+  { key: "inv_hi", label: "Invested value (High to low)" },
+  { key: "inv_lo", label: "Invested value (Low to high)" },
+  { key: "pl_hi", label: "Total P&L (High to low)" },
+  { key: "pl_lo", label: "Total P&L (Low to high)" },
+  { key: "pct_hi", label: "Total P&L % (High to low)" },
+  { key: "pct_lo", label: "Total P&L % (Low to high)" },
+  { key: "az", label: "A to Z" },
+  { key: "za", label: "Z to A" },
+];
+// The Holdings / Positions tabs sit above the Mutual funds | Stocks chips, so their counts cover the whole portfolio and
+// never change with the chip: every holding (stocks and funds) and every open position (mutual funds have none).
+const STOCK_POSITIONS = 6;
+
+
 export function PortfolioPage({ mfOnly = false }: { mfOnly?: boolean }) {
-  const [seg, setSeg] = useState<"overview" | "stocks" | "mf">(mfOnly ? "mf" : "stocks");
-
-  if (mfOnly) {
-    return (
-      <main className="page">
-        <MfPortfolioPage />
-      </main>
-    );
-  }
-
-  if (seg !== "stocks") {
-    return (
-      <main className="page">
-        <h1 className="page-title">Portfolio</h1>
-        <SegmentChips value={seg} onChange={setSeg} withOverview />
-        {seg === "overview" ? <PortfolioOverview onOpen={setSeg} /> : <MfPortfolio />}
-      </main>
-    );
-  }
+  const [seg, setSeg] = useState<"stocks" | "mf">("mf");
+  const { holdings: mfHoldings, push } = useMf();
+  const [sort, setSort] = useState<HoldingSort>("cur_hi");
+  const [filtering, setFiltering] = useState(false);
+  const [viewMore, setViewMore] = useState(false);
+  const shownHoldings = useMemo(() => {
+    const list = holdings;
+    const by: Record<HoldingSort, (a: HoldingRow, b: HoldingRow) => number> = {
+      cur_hi: (a, b) => num(b.current) - num(a.current),
+      cur_lo: (a, b) => num(a.current) - num(b.current),
+      inv_hi: (a, b) => num(b.invested) - num(a.invested),
+      inv_lo: (a, b) => num(a.invested) - num(b.invested),
+      pl_hi: (a, b) => num(b.pl) - num(a.pl),
+      pl_lo: (a, b) => num(a.pl) - num(b.pl),
+      pct_hi: (a, b) => num(b.plPct) - num(a.plPct),
+      pct_lo: (a, b) => num(a.plPct) - num(b.plPct),
+      az: (a, b) => a.name.localeCompare(b.name),
+      za: (a, b) => b.name.localeCompare(a.name),
+    };
+    return [...list].sort(by[sort]);
+  }, [sort]);
 
   return (
     <main className="page">
-      <h1 className="page-title">Portfolio</h1>
-      <SegmentChips value="stocks" onChange={setSeg} withOverview />
-
-      <Tabs
-        items={[{ label: "Holdings (4)" }, { label: "Positions (0)" }]}
-        trailing={
-          <button className="tabs-menu" aria-label="More">
-            <Icon name="dots-three-vertical" size={20} />
-          </button>
-        }
-      />
-
-      <div className="summary-card summary-card-lg">
-        <div className="summary-grid">
-          <span>
-            <small>Current value</small>
-            <strong>₹22,826</strong>
-          </span>
-          <span className="summary-right">
-            <small>Total P&amp;L</small>
-            <strong className="up">
-              +₹6,930 <em>(43.59%)</em>
-            </strong>
-          </span>
-        </div>
-        <div className="summary-grid">
-          <span>
-            <small>Invested amount</small>
-            <strong>₹15,897</strong>
-          </span>
-          <span className="summary-right">
-            <small>Day&rsquo;s P&amp;L</small>
-            <strong className="down">
-              -₹511 <em>(-3.22%)</em>
-            </strong>
-          </span>
-        </div>
-      </div>
-
-      <div className="portfolio-controls">
-        <label className="switch-row">
-          View more
-          <span className="switch" aria-hidden="true">
-            <i />
-          </span>
-        </label>
-        <button className="sort-button">
-          Total P&amp;L <Icon name="caret-up-down" size={16} />
+      <div className="pf-head">
+        <h1 className="page-title">Portfolio</h1>
+        <button className="pf-search" aria-label="Search holdings" onClick={() => push({ name: "holdingsearch" })}>
+          <Icon name="magnifying-glass" size={24} />
         </button>
       </div>
 
+      <div className="pf-topbar">
+        <div className="pf-chips" role="tablist" aria-label="Holdings and positions">
+          <button role="tab" aria-selected="true" className="chip active">
+            {`Holdings · ${holdings.length + mfHoldings.length}`}
+            <Icon name="check" size={16} />
+          </button>
+          <button role="tab" aria-selected="false" className="chip">
+            {`Positions · ${STOCK_POSITIONS}`}
+          </button>
+        </div>
+        <button className="pf-more" aria-label="More">
+          <Icon name="dots-three-vertical" size={16} />
+        </button>
+      </div>
+
+      <div className="tabs-row pf-subtabs">
+        <div className="tabs-list" role="tablist" aria-label="Asset type">
+          {(["mf", "stocks"] as const).map((k) => (
+            <DlsTab key={k} active={seg === k} onClick={() => setSeg(k)}>
+              {k === "stocks" ? "Stocks" : "Mutual funds"}
+            </DlsTab>
+          ))}
+        </div>
+      </div>
+
+      {seg === "mf" ? (
+        <MfPortfolio hideSips showBaskets={false} />
+      ) : (
+        <>
+      <PfSummary
+        tone="negative"
+        hero="₹22,826"
+        stats={[
+          ["Total P&L", <PfDelta key="t" amount={-6930} pctValue={-43.59} />],
+          ["Invested", <b key="i"><RollText text={inrShort(15897)} /></b>],
+          ["Day’s P&L", <PfDelta key="d" amount={-511} pctValue={-3.22} />],
+        ]}
+      />
+
+      <div className="pf-sheet">
+      <div className="portfolio-controls">
+        <button className="switch-row" role="switch" aria-checked={viewMore} onClick={() => setViewMore((v) => !v)}>
+          View more
+          <span className={`switch${viewMore ? " on" : ""}`} aria-hidden="true">
+            <i>{viewMore && <Icon name="check" size={12} />}</i>
+          </span>
+        </button>
+        <button
+          className={`dls-chip mf-orders-typechip${sort !== "cur_hi" ? " on" : ""}`}
+          onClick={() => setFiltering(true)}
+          aria-label="Filter and sort holdings"
+        >
+          <Icon name="funnel-simple" size={16} />
+        </button>
+      </div>
       <ul className="holding-list">
-        {holdings.map((holding) => (
+        {shownHoldings.map((holding) => (
           <li key={holding.name}>
             <button className="holding-row">
               <span className="holding-top">
                 <b>
                   {holding.name}
-                  {holding.tag && <em className="tag-chip">{holding.tag}</em>}
-                  {holding.ai && <SparkleBadge />}
                 </b>
                 <span className={`holding-pl ${toneOf(holding.pl)}`}>
-                  {holding.pl} <em>{holding.plPct}</em>
+                  <Masked>
+                    {holding.pl} <em>{holding.plPct}</em>
+                  </Masked>
                 </span>
               </span>
               <span className="holding-bot">
                 <small>
-                  Invested: <b>{holding.invested}</b>
+                  Invested: <b><Masked>{holding.invested}</Masked></b>
                 </small>
                 <small>
-                  Current: <b>{holding.current}</b>
+                  Current: <b><Masked>{holding.current}</Masked></b>
                 </small>
               </span>
+              {viewMore && (
+                <span className="holding-bot">
+                  <small>
+                    Qty: <b>{holding.qty}</b> • Avg: <b>{holding.avg}</b>
+                  </small>
+                  <small>
+                    LTP: <b>{holding.ltp}</b>
+                  </small>
+                </span>
+              )}
             </button>
           </li>
         ))}
       </ul>
+      </div>
 
-      <FloatingSearch label="Search holdings" />
+      {filtering && (
+        <FilterSortSheet
+          groups={[]}
+          sorts={HOLDING_SORTS}
+          picks={{}}
+          sort={sort}
+          defaultSort="cur_hi"
+          onApply={(_picks, nextSort) => setSort(nextSort)}
+          onClose={() => setFiltering(false)}
+        />
+      )}
+
+
+        </>
+      )}
     </main>
   );
 }

@@ -1,5 +1,17 @@
 // Money, dates and the 3 PM cut-off, in the words the PRD asks for.
 
+// Compact money for tight spots: ₹512, ₹25.5K, ₹2.9L, ₹1.2Cr (K = thousand, L = lakh, Cr = crore). Under a thousand it is
+// the full amount.
+export function inrShort(value: number): string {
+  const sign = value < 0 ? "-" : "";
+  const abs = Math.abs(value);
+  const trim = (n: number) => n.toFixed(1).replace(/\.0$/, "");
+  if (abs < 1000) return `${sign}₹${Math.round(abs)}`;
+  if (abs < 1e5) return `${sign}₹${trim(abs / 1e3)}K`;
+  if (abs < 1e7) return `${sign}₹${trim(abs / 1e5)}L`;
+  return `${sign}₹${trim(abs / 1e7)}Cr`;
+}
+
 export function inr(value: number, decimals = 0): string {
   const sign = value < 0 ? "-" : "";
   const abs = Math.abs(value);

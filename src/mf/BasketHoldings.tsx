@@ -1,5 +1,6 @@
 // Order 2.0 portfolio: what the investor holds through baskets. The "Baskets" tab lists them; a basket
 // opens the same kind of view as a single fund (value, returns, what's inside) plus its rebalance dates.
+import { Masked } from "./privacy";
 import { Icon } from "../ui/Icon";
 import {
   basketById,
@@ -11,6 +12,8 @@ import {
 } from "./baskets-data";
 import { BasketLine } from "./Baskets";
 import { blendSeries, inr, pct, type Range } from "./format";
+import { DlsCard, DlsKvStacked } from "../ui/dls";
+import { Facts } from "./OrderStatusDetail";
 import { FundMark, Screen } from "./parts";
 import { RangeChart } from "./screens";
 import { useMf } from "./store";
@@ -74,32 +77,26 @@ export function BasketHoldingsTab() {
         </span>
       </div>
 
-      <ul className="holding-list">
+      <ul className="os-list">
         {rows.map(({ position, current: value, gain: g, invested: put }) => {
           const basket = basketById(position.basketId);
           return (
             <li key={position.basketId}>
-              <button
-                className="holding-row"
-                onClick={() => push({ name: "basketholding", basketId: position.basketId })}
-              >
-                <span className="holding-top">
-                  <b>
-                    <BasketLogos position={position} />
-                    <span className="mf-pf-name">
-                      {basket.name}
-                      <small>
-                        {basket.funds.length} funds
-                        {position.sip && ` · SIP ${inr(position.sip.amount)}/mo`}
-                      </small>
-                    </span>
-                  </b>
-                  <span className="mf-pf-value">
-                    <b>{inr(value)}</b>
-                    <small className={gainClass(g)}>
-                      {signed(g)} ({pct((g / put) * 100, 2)})
-                    </small>
+              <button className="os-row" onClick={() => push({ name: "basketholding", basketId: position.basketId })}>
+                <BasketLogos position={position} />
+                <span className="os-mid">
+                  <b>{basket.name}</b>
+                  <small>{basket.funds.length} funds</small>
+                </span>
+                <span className="os-end">
+                  <span className="os-amt">
+                    <Masked>{inr(value)}</Masked>
                   </span>
+                  <small className={`os-gain ${gainClass(g)}`}>
+                    <Masked>
+                      {signed(g)} ({pct((g / put) * 100, 2)})
+                    </Masked>
+                  </small>
                 </span>
               </button>
             </li>
@@ -166,32 +163,22 @@ export function BasketHoldingScreen({ basketId }: { basketId: string }) {
 
       <RangeChart initial="1M" seriesFor={valueSeries([position])} showChange={false} />
 
-      <div className="summary-card summary-card-lg">
-        <div className="summary-grid">
-          <span>
-            <small>Current value</small>
-            <strong>{inr(current)}</strong>
-          </span>
-          <span className="summary-right">
-            <small>Total returns</small>
-            <strong className={gainClass(gain)}>
-              {signed(gain)} <em>({pct((gain / invested) * 100, 2)})</em>
-            </strong>
-          </span>
-        </div>
-        <div className="summary-grid">
-          <span>
-            <small>Invested</small>
-            <strong>{inr(invested)}</strong>
-          </span>
-          {position.sip && (
-            <span className="summary-right">
-              <small>SIP</small>
-              <strong>{inr(position.sip.amount)} a month</strong>
-            </span>
-          )}
-        </div>
-      </div>
+      <DlsCard>
+        <Facts>
+          <DlsKvStacked label="Current value" value={inr(current)} />
+          <DlsKvStacked
+            label="Total returns"
+            tone={gain >= 0 ? "positive" : "negative"}
+            value={
+              <>
+                {signed(gain)} <em>({pct((gain / invested) * 100, 2)})</em>
+              </>
+            }
+          />
+          <DlsKvStacked label="Invested" value={inr(invested)} />
+          {position.sip && <DlsKvStacked label="SIP" value={`${inr(position.sip.amount)} a month`} />}
+        </Facts>
+      </DlsCard>
 
       <p className="mf-label">What&rsquo;s inside</p>
       <ul className="holding-list">

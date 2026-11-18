@@ -109,7 +109,7 @@ export function DlsKvStacked({
 }: {
   label: string;
   value: ReactNode;
-  tone?: "positive";
+  tone?: "positive" | "negative";
   onTap?: () => void;
 }) {
   const body = (

@@ -1,15 +1,18 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Masked, toggleHidden, useHidden } from "./privacy";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { asset } from "../assets";
+import { RollText } from "../ui/RollText";
 import { Block, DlsTab } from "../ui/widgets";
 import { Icon } from "../ui/Icon";
+import { MarketOrders } from "./MarketOrders";
 import { fundById } from "./data";
-import { blendSeries, fmtDay, inr, pct, xirr, type Range } from "./format";
+import { fmtDay, inr, inrShort, pct, xirr } from "./format";
 import { FundMark } from "./parts";
-import { RangeChart } from "./screens";
 import { BasketHoldingsTab } from "./BasketHoldings";
 import { OrdersList2, type TypeFilter } from "./OrdersList2";
-import { MarketOrders } from "./MarketOrders";
 import { SIP_FROM_100 } from "./listSpecs";
 import { useMf } from "./store";
+import { FilterSortSheet } from "./FilterSortSheet";
 
 // "Stocks | Mutual funds" switch used at the top of Orders and Portfolio.
 export function SegmentChips({
@@ -41,6 +44,7 @@ export function SegmentChips({
   );
 }
 
+// The Orders page seen from inside Mutual Funds: the order-type filter sits at the right of the header.
 type OrderMarket = "mf" | "stocks" | "fno";
 
 // Chips under the Orders title: one orders view per market; the picked one carries a check.
@@ -205,21 +209,19 @@ export function MfPortfolioPage() {
 }
 
 function FundsPortfolio({ hideSips = false }: { hideSips?: boolean }) {
-  const { holdings, push, setSegment } = useMf();
+  const { holdings, push } = useMf();
   const current = holdings.reduce((s, h) => s + h.current, 0);
   const invested = holdings.reduce((s, h) => s + h.invested, 0);
   const gain = current - invested;
 
   if (holdings.length === 0) {
     return (
-      <div className="mf-empty-card tall">
-        <b>No mutual funds yet</b>
-        <p>Start a SIP from ₹100 or invest a one-time amount. Your funds will show up here.</p>
-        <button className="mf-btn solid" onClick={() => push({ name: "list", spec: { title: "All mutual funds" } })}>
+      <div className="mf-sip-zero">
+        <small>Current value</small>
+        <strong>{inr(0)}</strong>
+        <button onClick={() => push({ name: "list", spec: { title: "All mutual funds" } })}>
           Browse funds
-        </button>
-        <button className="proto-link" onClick={() => setSegment("holdings")}>
-          Prototype · show with sample holdings
+          <Icon name="chevron-right" size={20} />
         </button>
       </div>
     );
@@ -297,21 +299,28 @@ function SipHoldingTabs({
 const subCategory = (catLabel: string) => catLabel.split(" · ")[1] ?? catLabel;
 
 const SORTS = [
-  { key: "returns", label: "Returns" },
-  { key: "current", label: "Current value" },
-  { key: "invested", label: "Invested" },
+  { key: "current", label: "Current value - High to low" },
+  { key: "invested", label: "Invested - High to low" },
+  { key: "abs", label: "Absolute return - High to low" },
+  { key: "absPct", label: "Absolute return % - High to low" },
+  { key: "xirr", label: "XIRR - High to low" },
+  { key: "az", label: "Alphabetical (A-Z)" },
+  { key: "za", label: "Alphabetical (Z-A)" },
 ] as const;
 type SortKey = (typeof SORTS)[number]["key"];
 
 // MF portfolio dashboard: totals, where the money sits, then every fund with what it has made.
 function HoldingsDashboard({ current, invested, gain }: { current: number; invested: number; gain: number }) {
   const { holdings, sips, push } = useMf();
-  const [sort, setSort] = useState<SortKey>("returns");
+  const [sort, setSort] = useState<SortKey>("current");
+  const [sorting, setSorting] = useState(false);
 
   const rows = holdings.map((h) => {
     const fund = fundById(h.fundId);
     const g = h.current - h.invested;
-    return { h, fund, g, gPct: (g / h.invested) * 100, sub: subCategory(fund.catLabel) };
+    const fundFlows = h.lots.map((l) => ({ date: new Date(l.date), amount: -(h.invested * l.units) / h.units }));
+    const fundRate = xirr([...fundFlows, { date: new Date(), amount: h.current }]) ?? -Infinity;
+    return { h, fund, g, gPct: (g / h.invested) * 100, fundRate, sub: subCategory(fund.catLabel) };
   });
 
   // Each purchase is a cash outflow on its date (the amount split by units); today's value comes back in.
@@ -326,96 +335,82 @@ function HoldingsDashboard({ current, invested, gain }: { current: number; inves
     return sum + h.current - h.current / (1 + change / 100);
   }, 0);
 
-  const portfolioSeries = (range: Range) =>
-    blendSeries(
-      holdings.map((h) => {
-        const fund = fundById(h.fundId);
-        return { weight: h.current, id: fund.id, r1: fund.r1, r3: fund.r3, r5: fund.r5 };
-      }),
-      range,
-    );
-
-  const shown = rows.sort((a, b) =>
-    sort === "returns" ? b.gPct - a.gPct : sort === "current" ? b.h.current - a.h.current : b.h.invested - a.h.invested,
-  );
-  const sortLabel = SORTS.find((x) => x.key === sort)!.label;
-  const nextSort = () => setSort(SORTS[(SORTS.findIndex((x) => x.key === sort) + 1) % SORTS.length].key);
+  const shown = rows.sort((a, b) => {
+    switch (sort) {
+      case "invested": return b.h.invested - a.h.invested;
+      case "abs": return b.g - a.g;
+      case "absPct": return b.gPct - a.gPct;
+      case "xirr": return b.fundRate - a.fundRate;
+      case "az": return a.fund.name.localeCompare(b.fund.name);
+      case "za": return b.fund.name.localeCompare(a.fund.name);
+      default: return b.h.current - a.h.current;
+    }
+  });
 
   return (
     <>
-      <div className="mf-pf-card flat">
-        <small>Holdings</small>
-        <div className="mf-pf-total">
-          <strong>{inr(current)}</strong>
-          {rate !== null && <em className={rate >= 0 ? "up" : "down"}>XIRR {(rate * 100).toFixed(1)}%</em>}
-        </div>
-        <RangeChart initial="1M" seriesFor={portfolioSeries} showChange={false} />
-        <dl className="mf-pf-stats">
-          <div>
-            <dt>Total Returns</dt>
-            <dd>{inr(gain)}</dd>
-          </div>
-          <div>
-            <dt>Invested</dt>
-            <dd>{inr(invested)}</dd>
-          </div>
-          <div>
-            <dt>1D returns</dt>
-            <dd>{inr(day)}</dd>
-          </div>
-        </dl>
-      </div>
+      <PfSummary
+        tone={day >= 0 ? "positive" : "negative"}
+        hero={inr(current)}
+        note={rate !== null ? <span className={rate >= 0 ? "up" : "down"}>XIRR {(rate * 100).toFixed(1)}%</span> : undefined}
+        stats={[
+          ["Total returns", <PfDelta key="t" amount={gain} pctValue={(gain / invested) * 100} />],
+          ["Invested", <b key="i"><RollText text={inrShort(invested)} /></b>],
+          ["1D returns", <PfDelta key="d" amount={day} pctValue={(day / (current - day)) * 100} />],
+        ]}
+      />
 
-      <hr className="dls-divider" />
-
+      <div className="pf-sheet">
       <div className="mf-pf-bar">
         <span>
           {shown.length} {shown.length === 1 ? "fund" : "funds"}
         </span>
-        <button className="dls-chip" onClick={nextSort} aria-label={`Sort by ${sortLabel}. Change sort`}>
-          Sort: {sortLabel}
-          <Icon name="caret-up-down" size={16} />
+        <button
+          className={`dls-chip mf-orders-typechip${sort !== "current" ? " on" : ""}`}
+          onClick={() => setSorting(true)}
+          aria-label="Sort holdings"
+        >
+          <Icon name="funnel-simple" size={16} />
         </button>
       </div>
 
-      <ul className="holding-list">
-        {shown.map(({ h, fund, g, gPct, sub }) => {
-          const sip = sips.find((x) => x.fundId === h.fundId);
-          return (
-            <li key={h.fundId}>
-              <button className="holding-row" onClick={() => push({ name: "holding", fundId: h.fundId })}>
-                <span className="holding-top">
-                  <b>
-                    <FundMark fund={fund} size={32} />
-                    <span className="mf-pf-name">
-                      {fund.name}
-                      <small>
-                        {sub}
-                        {sip && ` · SIP ${inr(sip.amount)}/mo`}
-                      </small>
-                    </span>
-                  </b>
-                  <span className="mf-pf-value">
-                    <b>{h.pending ? inr(h.invested) : inr(h.current)}</b>
-                    <small className={g >= 0 ? "up" : "down"}>
-                      {g >= 0 ? "+" : ""}
-                      {inr(g)} ({pct(gPct, 2)})
-                    </small>
-                  </span>
+      <ul className="os-list">
+        {shown.map(({ h, fund, g, gPct }) => (
+          <li key={h.fundId}>
+            <button className="os-row" onClick={() => push({ name: "holding", fundId: h.fundId })}>
+              <FundMark fund={fund} size={40} />
+              <span className="os-mid">
+                <b>{fund.name}</b>
+                <small>{h.pending ?? fund.catLabel}</small>
+              </span>
+              <span className="os-end">
+                <span className="os-amt">
+                  <Masked>{h.pending ? inr(h.invested) : inr(h.current)}</Masked>
                 </span>
-                {/* No invested / units line; only a fund still waiting on its units says when they land. */}
-                {h.pending && (
-                  <span className="holding-bot mf-pf-bot">
-                    <small>
-                      <b>{h.pending}</b>
-                    </small>
-                  </span>
-                )}
-              </button>
-            </li>
-          );
-        })}
+                <small className={`os-gain ${g >= 0 ? "up" : "down"}`}>
+                  <Masked>
+                    {g >= 0 ? "+" : ""}
+                    {inr(g)} ({pct(gPct, 2)})
+                  </Masked>
+                </small>
+              </span>
+            </button>
+          </li>
+        ))}
       </ul>
+      </div>
+
+      {sorting && (
+        <FilterSortSheet
+          groups={[]}
+          sorts={[...SORTS]}
+          picks={{}}
+          sort={sort}
+          defaultSort="current"
+          onApply={(_picks, next) => setSort(next)}
+          onClose={() => setSorting(false)}
+        />
+      )}
     </>
   );
 }
@@ -598,5 +593,71 @@ export function SipPage() {
         </>
       )}
     </main>
+  );
+}
+
+// Summary card shared by Stocks and Mutual funds under Portfolio: the current value is the hero with an optional note
+// (XIRR) right beside it, and three metrics sit in a row below.
+export function PfDelta({ amount, pctValue }: { amount: number; pctValue: number }) {
+  const up = amount >= 0;
+  return (
+    <>
+      <b className={up ? "up" : "down"}>
+        <RollText text={`${up ? "+" : "-"}${inrShort(Math.abs(amount))}`} />
+      </b>
+      <em className={up ? "up" : "down"}>({pctValue.toFixed(2)}%)</em>
+    </>
+  );
+}
+
+export function PfSummary({
+  label = "Current value",
+  hero,
+  note,
+  stats,
+  tone,
+}: {
+  label?: string;
+  hero: string;
+  note?: ReactNode;
+  stats: [string, ReactNode][];
+  tone?: "positive" | "negative"; // a faint wash behind the block: green when the portfolio is up today, red when down
+}) {
+  const off = useHidden();
+  return (
+    <div
+      className={`pf-summary${tone ? ` ${tone}` : ""}`}
+      style={{ "--pf-dots": `url(${asset("mf-banner-dots.png")})` } as CSSProperties}
+    >
+      <button
+        className="pf-eye"
+        aria-pressed={off}
+        aria-label={off ? "Show values" : "Hide values"}
+        onClick={toggleHidden}
+      >
+        <span key={String(off)} className="pf-eye-glyph">
+          <Icon name={off ? "eye-off" : "eye"} size={20} />
+        </span>
+      </button>
+      <small className="pf-hero-label">{label}</small>
+      <div className="pf-hero">
+        <strong>
+          <Masked mask="₹••••••">
+            <RollText text={hero} />
+          </Masked>
+        </strong>
+        {note && <span className="pf-hero-note">{note}</span>}
+      </div>
+      <dl className="pf-stats">
+        {stats.map(([name, value]) => (
+          <div key={name} className="pf-stat">
+            <dt>{name}</dt>
+            <dd>
+              <Masked>{value}</Masked>
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </div>
   );
 }

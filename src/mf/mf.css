@@ -2529,7 +2529,8 @@ em.amo.st-failed {
   justify-content: space-between;
   margin-top: 12px;
   color: var(--ink-3);
-  font-size: 12px;
+  font-size: 14px;
+  line-height: 18px;
 }
 
 .mf-pf-bar .text-link {
@@ -2675,8 +2676,8 @@ em.amo.st-failed {
   margin: 0;
 }
 
-.mf-sip-manage {
-  margin: 4px 0 12px;
+.mf-fundline + .dls-card {
+  margin-top: 12px;
 }
 
 .mf-sip-head {

@@ -52,7 +52,14 @@ const FILTER = asset("dls-filter.svg");
 // The Base Design System x (node 3703:14584): a 1.5 stroke cross on a 24 grid, the clear button in the amount field.
 const BASE_X = asset("base-x.svg");
 
-export type IconName = keyof typeof DLS_BY_NAME | "back" | "dls-filter" | "base-x";
+// Custom, no DlsIcons glyph exists for it yet: 1.5 stroke eye / eye-off on a 24 grid, for the Portfolio "hide values" toggle.
+const CUSTOM: Record<string, string> = {
+  eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
+  "eye-off":
+    '<path d="M3 3l18 18"/><path d="M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.5 6.6C3.7 8.5 2 12 2 12s3.6 7 10 7c1.6 0 3-.4 4.3-1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
+};
+
+export type IconName = keyof typeof DLS_BY_NAME | "back" | "dls-filter" | "base-x" | "eye" | "eye-off";
 
 const cache = new Map<string, string>();
 
@@ -61,8 +68,13 @@ function maskFor(name: IconName): string {
   if (name === "dls-filter") return `url("${FILTER}")`;
   if (name === "base-x") return `url("${BASE_X}")`;
   let uri = cache.get(name);
+  if (!uri && name in CUSTOM) {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${CUSTOM[name]}</svg>`;
+    uri = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+    cache.set(name, uri);
+  }
   if (!uri) {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="${DLS_PATHS[DLS_BY_NAME[name]]}"/></svg>`;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="${DLS_PATHS[DLS_BY_NAME[name as keyof typeof DLS_BY_NAME]]}"/></svg>`;
     uri = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
     cache.set(name, uri);
   }
