@@ -23,25 +23,23 @@ import "./mfconsent.css";
      Home (or any close) the banner folds away for good, so a late launch never leaves a stale card behind.
    - No timestamps, consent IDs, exchange names or technical words outside the legal text.
 
-   Prototype only: the consent is kept in localStorage. Open the app with ?mfconsent=reset to see the banner again. */
+   Prototype only: consent is remembered for this page load only (in memory). Switching tabs keeps the banner gone;
+   a refresh brings it back, so the flow can be demoed again and again. In the real app the backend remembers it for
+   good. (It used to be saved in localStorage, which hid the banner on every later visit.) */
 
-const KEY = "sahi.mfConsent.v1";
+let consentedThisLoad = false;
 
-function readConsent(): boolean {
-  try {
-    if (new URLSearchParams(location.search).get("mfconsent") === "reset") localStorage.removeItem(KEY);
-    return localStorage.getItem(KEY) === "1";
-  } catch {
-    return false;
-  }
+// clear what the earlier localStorage version saved, so older visits don't keep the banner hidden
+try {
+  localStorage.removeItem("sahi.mfConsent.v1");
+} catch {
+  // storage unavailable: nothing to clear
 }
 
+const readConsent = (): boolean => consentedThisLoad;
+
 function saveConsent() {
-  try {
-    localStorage.setItem(KEY, "1");
-  } catch {
-    // private mode: the banner simply comes back next time
-  }
+  consentedThisLoad = true;
 }
 
 // The Terms & Conditions, verbatim from the approved consent screen. Legal text: do not edit.
