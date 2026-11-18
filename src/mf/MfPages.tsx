@@ -537,22 +537,22 @@ export function SipPage() {
           <div className="block-head mf-sip-head">
             <h2>Active SIPs ({sips.length})</h2>
           </div>
-          <ul className="row-list">
+          <ul className="os-list">
             {upcoming.map((s) => {
               const fund = fundById(s.fundId);
               return (
                 <li key={s.fundId}>
-                  <button className="list-row fund-row" onClick={() => push({ name: "sipdetail", fundId: s.fundId })}>
+                  <button className="os-row" onClick={() => push({ name: "sipdetail", fundId: s.fundId })}>
                     <FundMark fund={fund} />
-                    <span className="row-main">
+                    <span className="os-mid">
                       <b>{fund.name}</b>
                       <small>{inr(s.amount)} every month</small>
                     </span>
-                    <span className="row-side">
-                      <b>
+                    <span className="os-end">
+                      <span className="os-amt">
                         {s.next.getDate()} {s.next.toLocaleString("en-IN", { month: "short" })}
-                      </b>
-                      <small>Next debit</small>
+                      </span>
+                      <span className="os-gain" style={{ color: "var(--text-secondary)" }}>Next debit</span>
                     </span>
                   </button>
                 </li>
