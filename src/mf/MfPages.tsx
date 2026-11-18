@@ -4,7 +4,7 @@ import { Icon } from "../ui/Icon";
 import { fundById } from "./data";
 import { blendSeries, fmtDay, inr, pct, xirr, type Range } from "./format";
 import { FundMark } from "./parts";
-import { FundListBody, RangeChart } from "./screens";
+import { RangeChart } from "./screens";
 import { BasketHoldingsTab } from "./BasketHoldings";
 import { OrdersList2, type TypeFilter } from "./OrdersList2";
 import { SIP_FROM_100 } from "./listSpecs";
@@ -476,7 +476,7 @@ export function PortfolioOverview({ onOpen }: { onOpen: (view: "stocks" | "mf") 
 
 // SIP tab (Mutual Funds bottom bar): what is running and what is due next.
 export function SipPage() {
-  const { sips, push, setSegment } = useMf();
+  const { sips, push } = useMf();
   const today = new Date();
   const upcoming = sips
     .map((s) => ({
@@ -493,7 +493,7 @@ export function SipPage() {
       <h1 className="page-title">SIPs</h1>
 
       {sips.length === 0 ? (
-        // No SIP running (never invested, or one-time only): ₹0 a month, a way in, and the ₹100 funds right below.
+        // No SIP running (never invested, or one-time only): ₹0 a month and a way in. No fund list or filters here.
         <>
           <div className="mf-sip-zero">
             <small>Monthly SIP amount</small>
@@ -503,11 +503,6 @@ export function SipPage() {
               <Icon name="chevron-right" size={20} />
             </button>
           </div>
-          <p className="mf-lede">{SIP_FROM_100.caption}</p>
-          <FundListBody spec={SIP_FROM_100} />
-          <button className="proto-link" onClick={() => setSegment("holdings")}>
-            Prototype · show with sample SIPs
-          </button>
         </>
       ) : (
         <>
