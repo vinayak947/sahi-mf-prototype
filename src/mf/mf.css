@@ -2701,11 +2701,12 @@ em.amo.st-failed {
   margin: 24px 0 0;
 }
 
-/* Empty SIP tab: "Start your SIP from ₹100" over the fund list, 14 Medium. */
+/* Empty SIP tab and Portfolio: "Top funds to start a SIP" over the fund list, 14 Medium. */
 .mf-sip-head.mf-sip-start h2 {
   font-size: 14px;
   line-height: 17px;
 }
+
 
 /* breathing room between the search field and its results */
 .mf-search-input + .row-list {
@@ -4378,7 +4379,7 @@ em.amo.st-failed {
   display: flex;
   flex-direction: column;
   margin-top: 8px;
-  padding: 20px 16px 0;
+  padding: 20px 16px;
   border: 1px solid var(--border-L1);
   border-radius: 16px;
 }
@@ -5568,4 +5569,73 @@ em.amo.st-failed {
 /* Orders: the count and the filter chip share one bar under the status tabs, as on Portfolio. */
 .mf-orders-count {
   margin: 12px 0 4px;
+}
+
+/* Mutual fund empty state (Orders with no orders): the briefcase, one line and a way in. */
+.mf-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  justify-content: center; /* centred between the header and the bottom bar */
+  min-height: calc(100dvh - 200px);
+  padding: 0 24px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+/* The art fills about half of its canvas, so the canvas is drawn large (the Watchlist art is about 168 wide) and its
+   padding pulled in. */
+.mf-empty-state img {
+  max-width: 100%;
+  height: auto;
+  margin: 0 0 -28px;
+}
+
+/* Title, subtitle, CTA: the Watchlist empty state's pattern. */
+.mf-empty-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+/* The app's own light and dark illustrations: the one for the current theme shows. */
+.mf-empty-state img.dark {
+  display: none;
+}
+
+:root[data-theme="dark"] .mf-empty-state img.light {
+  display: none;
+}
+
+:root[data-theme="dark"] .mf-empty-state img.dark {
+  display: block;
+}
+
+.mf-empty-copy h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 19.2px;
+}
+
+.mf-empty-copy p {
+  max-width: 280px;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.mf-empty-cta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mf-empty-state .dls-btn {
+  margin-top: 8px; /* 32 from the subtitle, as on the Watchlist */
 }

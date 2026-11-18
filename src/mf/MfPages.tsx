@@ -217,14 +217,17 @@ function FundsPortfolio({ hideSips = false }: { hideSips?: boolean }) {
 
   if (holdings.length === 0) {
     return (
-      <div className="mf-sip-zero">
-        <small>Current value</small>
-        <strong>{inr(0)}</strong>
-        <button onClick={() => push({ name: "list", spec: { title: "All mutual funds" } })}>
-          Browse funds
-          <Icon name="chevron-right" size={20} />
-        </button>
-      </div>
+      <>
+        <div className="mf-sip-zero">
+          <small>Current value</small>
+          <strong>{inr(0)}</strong>
+        </div>
+
+        <div className="block-head mf-sip-head mf-sip-start">
+          <h2>Top funds to start a SIP</h2>
+        </div>
+        <FundListBody spec={SIP_FROM_100} bare limit={10} />
+      </>
     );
   }
 
@@ -525,11 +528,11 @@ export function SipPage() {
       {/* Same calendar card with or without SIPs: with none it shows ₹0, an empty month and a way in. */}
       <SipCalendarCard sips={sips} upcoming={upcoming} today={today} onStart={startList} />
 
-      {/* No SIPs yet: the first 10 funds under a small heading, the size of "Active SIPs", with no filter or count. */}
+      {/* No SIPs yet: the first 10 funds under a small heading, no filter or count. */}
       {sips.length === 0 && (
         <>
           <div className="block-head mf-sip-head mf-sip-start">
-            <h2>Start your SIP from ₹100</h2>
+            <h2>Top funds to start a SIP</h2>
           </div>
           <FundListBody spec={SIP_FROM_100} bare limit={10} />
         </>

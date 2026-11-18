@@ -6,7 +6,10 @@ import { kindLabel } from "./screens";
 import { StatusBadge } from "./OrderStatusDetail";
 import { useMf } from "./store";
 import { DlsTab } from "../ui/widgets";
+import { DlsButton } from "../ui/dls";
 import { Icon } from "../ui/Icon";
+import emptyLight from "./empty-holding-light.png";
+import emptyDark from "./empty-holding-dark.png";
 import { uiStatus, type UiStatus } from "./orderStatus";
 
 type StatusTab = "all" | UiStatus;
@@ -46,6 +49,7 @@ export function OrdersList2({
   onOpenPicker?: () => void;
 }) {
   const { orders, push } = useMf();
+  const noOrders = orders.length === 0;
   const [picked, setTab] = useState<StatusTab>("initiated");
   const tabsRef = useRef<HTMLDivElement>(null);
 
@@ -101,7 +105,7 @@ export function OrdersList2({
         </div>
       </div>
 
-      {onOpenPicker && (
+      {onOpenPicker && !noOrders && (
         <div className="mf-pf-bar mf-orders-count">
           <span>
             {list.length} {list.length === 1 ? "order" : "orders"}
@@ -116,7 +120,28 @@ export function OrdersList2({
         </div>
       )}
 
-      {list.length === 0 ? (
+      {noOrders ? (
+        // No mutual fund orders at all: no filter or count, just the empty state.
+        <div className="mf-empty-state">
+          <img className="light" src={emptyLight} alt="" width={288} height={192} />
+          <img className="dark" src={emptyDark} alt="" width={288} height={192} />
+          <div className="mf-empty-copy">
+            <h2>No mutual funds yet</h2>
+            <p>Your SIPs and one-time investments will show up here once you place an order.</p>
+          </div>
+          <DlsButton
+            size="small"
+            fillWidth={false}
+            label={
+              <span className="mf-empty-cta">
+                <Icon name="magnifying-glass" size={16} />
+                Browse funds
+              </span>
+            }
+            onClick={() => push({ name: "list", spec: { title: "All mutual funds" } })}
+          />
+        </div>
+      ) : list.length === 0 ? (
         <p className="mf-empty">No orders here yet.</p>
       ) : (
         <ul className="os-list pf-holdings">
