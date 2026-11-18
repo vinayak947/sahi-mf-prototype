@@ -64,7 +64,6 @@ export function OrdersList2({
     .filter((o) => uiStatus(o) === tab)
     .sort((x, y) => (x.on < y.on ? 1 : x.on > y.on ? -1 : 0));
 
-  const count = (key: StatusTab) => ofType.filter((o) => uiStatus(o) === key).length;
 
   return (
     <>
@@ -72,7 +71,7 @@ export function OrdersList2({
         <div className="tabs-list" role="tablist" aria-label="Order status">
           {tabs.map((t) => (
             <DlsTab key={t.key} active={tab === t.key} onClick={() => setTab(t.key)}>
-              {`${t.label} · ${count(t.key)}`}
+              {t.label}
             </DlsTab>
           ))}
         </div>

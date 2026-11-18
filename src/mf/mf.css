@@ -2676,8 +2676,8 @@ em.amo.st-failed {
   margin: 0;
 }
 
-.mf-sip-manage {
-  margin: 4px 0 12px;
+.mf-fundline + .dls-card {
+  margin-top: 12px;
 }
 
 .mf-sip-head {
@@ -5417,6 +5417,11 @@ em.amo.st-failed {
   margin-top: auto;
 }
 
+/* Order Pad 2.0 corners: 16 on the amount field, as on the cards and chips around it. */
+.mf-screen.pad.v2 .mf-pad2-amount .dls-nf-field {
+  border-radius: 16px;
+}
+
 /* Orders: filter chip + status chips in one scrolling row, right under the market tabs. */
 .mf-orders-chips {
   display: flex;
@@ -5531,9 +5536,4 @@ em.amo.st-failed {
 /* Orders: the count and the filter chip share one bar under the status tabs, as on Portfolio. */
 .mf-orders-count {
   margin: 12px 0 4px;
-}
-
-/* Order Pad 2.0 corners: 16 on the amount field, as on the cards and chips around it. */
-.mf-screen.pad.v2 .mf-pad2-amount .dls-nf-field {
-  border-radius: 16px;
 }

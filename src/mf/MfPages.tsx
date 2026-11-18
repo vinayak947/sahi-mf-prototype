@@ -1,3 +1,4 @@
+import { Masked, toggleHidden, useHidden } from "./privacy";
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { asset } from "../assets";
 import { RollText } from "../ui/RollText";
@@ -299,22 +300,28 @@ function SipHoldingTabs({
 const subCategory = (catLabel: string) => catLabel.split(" · ")[1] ?? catLabel;
 
 const SORTS = [
-  { key: "returns", label: "Returns" },
-  { key: "current", label: "Current value" },
-  { key: "invested", label: "Invested" },
+  { key: "current", label: "Current value - High to low" },
+  { key: "invested", label: "Invested - High to low" },
+  { key: "abs", label: "Absolute return - High to low" },
+  { key: "absPct", label: "Absolute return % - High to low" },
+  { key: "xirr", label: "XIRR - High to low" },
+  { key: "az", label: "Alphabetical (A-Z)" },
+  { key: "za", label: "Alphabetical (Z-A)" },
 ] as const;
 type SortKey = (typeof SORTS)[number]["key"];
 
 // MF portfolio dashboard: totals, where the money sits, then every fund with what it has made.
 function HoldingsDashboard({ current, invested, gain }: { current: number; invested: number; gain: number }) {
   const { holdings, sips, push } = useMf();
-  const [sort, setSort] = useState<SortKey>("returns");
+  const [sort, setSort] = useState<SortKey>("current");
   const [sorting, setSorting] = useState(false);
 
   const rows = holdings.map((h) => {
     const fund = fundById(h.fundId);
     const g = h.current - h.invested;
-    return { h, fund, g, gPct: (g / h.invested) * 100, sub: subCategory(fund.catLabel) };
+    const fundFlows = h.lots.map((l) => ({ date: new Date(l.date), amount: -(h.invested * l.units) / h.units }));
+    const fundRate = xirr([...fundFlows, { date: new Date(), amount: h.current }]) ?? -Infinity;
+    return { h, fund, g, gPct: (g / h.invested) * 100, fundRate, sub: subCategory(fund.catLabel) };
   });
 
   // Each purchase is a cash outflow on its date (the amount split by units); today's value comes back in.
@@ -329,9 +336,17 @@ function HoldingsDashboard({ current, invested, gain }: { current: number; inves
     return sum + h.current - h.current / (1 + change / 100);
   }, 0);
 
-  const shown = rows.sort((a, b) =>
-    sort === "returns" ? b.gPct - a.gPct : sort === "current" ? b.h.current - a.h.current : b.h.invested - a.h.invested,
-  );
+  const shown = rows.sort((a, b) => {
+    switch (sort) {
+      case "invested": return b.h.invested - a.h.invested;
+      case "abs": return b.g - a.g;
+      case "absPct": return b.gPct - a.gPct;
+      case "xirr": return b.fundRate - a.fundRate;
+      case "az": return a.fund.name.localeCompare(b.fund.name);
+      case "za": return b.fund.name.localeCompare(a.fund.name);
+      default: return b.h.current - a.h.current;
+    }
+  });
 
   return (
     <>
@@ -352,7 +367,7 @@ function HoldingsDashboard({ current, invested, gain }: { current: number; inves
           {shown.length} {shown.length === 1 ? "fund" : "funds"}
         </span>
         <button
-          className={`dls-chip mf-orders-typechip${sort !== "returns" ? " on" : ""}`}
+          className={`dls-chip mf-orders-typechip${sort !== "current" ? " on" : ""}`}
           onClick={() => setSorting(true)}
           aria-label="Sort holdings"
         >
@@ -360,43 +375,29 @@ function HoldingsDashboard({ current, invested, gain }: { current: number; inves
         </button>
       </div>
 
-      <ul className="holding-list">
-        {shown.map(({ h, fund, g, gPct, sub }) => {
-          const sip = sips.find((x) => x.fundId === h.fundId);
-          return (
-            <li key={h.fundId}>
-              <button className="holding-row" onClick={() => push({ name: "holding", fundId: h.fundId })}>
-                <span className="holding-top">
-                  <b>
-                    <FundMark fund={fund} size={32} />
-                    <span className="mf-pf-name">
-                      {fund.name}
-                      <small>
-                        {sub}
-                        {sip && ` · SIP ${inr(sip.amount)}/mo`}
-                      </small>
-                    </span>
-                  </b>
-                  <span className="mf-pf-value">
-                    <b>{h.pending ? inr(h.invested) : inr(h.current)}</b>
-                    <small className={g >= 0 ? "up" : "down"}>
-                      {g >= 0 ? "+" : ""}
-                      {inr(g)} ({pct(gPct, 2)})
-                    </small>
-                  </span>
+      <ul className="os-list">
+        {shown.map(({ h, fund, g, gPct }) => (
+          <li key={h.fundId}>
+            <button className="os-row" onClick={() => push({ name: "holding", fundId: h.fundId })}>
+              <FundMark fund={fund} size={40} />
+              <span className="os-mid">
+                <b>{fund.name}</b>
+                <small>{h.pending ?? fund.catLabel}</small>
+              </span>
+              <span className="os-end">
+                <span className="os-amt">
+                  <Masked>{h.pending ? inr(h.invested) : inr(h.current)}</Masked>
                 </span>
-                {/* No invested / units line; only a fund still waiting on its units says when they land. */}
-                {h.pending && (
-                  <span className="holding-bot mf-pf-bot">
-                    <small>
-                      <b>{h.pending}</b>
-                    </small>
-                  </span>
-                )}
-              </button>
-            </li>
-          );
-        })}
+                <small className={`os-gain ${g >= 0 ? "up" : "down"}`}>
+                  <Masked>
+                    {g >= 0 ? "+" : ""}
+                    {inr(g)} ({pct(gPct, 2)})
+                  </Masked>
+                </small>
+              </span>
+            </button>
+          </li>
+        ))}
       </ul>
       </div>
 
@@ -406,7 +407,7 @@ function HoldingsDashboard({ current, invested, gain }: { current: number; inves
           sorts={[...SORTS]}
           picks={{}}
           sort={sort}
-          defaultSort="returns"
+          defaultSort="current"
           onApply={(_picks, next) => setSort(next)}
           onClose={() => setSorting(false)}
         />
@@ -584,15 +585,28 @@ export function PfSummary({
   stats: [string, ReactNode][];
   tone?: "positive" | "negative"; // a faint wash behind the block: green when the portfolio is up today, red when down
 }) {
+  const off = useHidden();
   return (
     <div
       className={`pf-summary${tone ? ` ${tone}` : ""}`}
       style={{ "--pf-dots": `url(${asset("mf-banner-dots.png")})` } as CSSProperties}
     >
+      <button
+        className="pf-eye"
+        aria-pressed={off}
+        aria-label={off ? "Show values" : "Hide values"}
+        onClick={toggleHidden}
+      >
+        <span key={String(off)} className="pf-eye-glyph">
+          <Icon name={off ? "eye-off" : "eye"} size={20} />
+        </span>
+      </button>
       <small className="pf-hero-label">{label}</small>
       <div className="pf-hero">
         <strong>
-          <RollText text={hero} />
+          <Masked mask="₹••••••">
+            <RollText text={hero} />
+          </Masked>
         </strong>
         {note && <span className="pf-hero-note">{note}</span>}
       </div>
@@ -600,7 +614,9 @@ export function PfSummary({
         {stats.map(([name, value]) => (
           <div key={name} className="pf-stat">
             <dt>{name}</dt>
-            <dd>{value}</dd>
+            <dd>
+              <Masked>{value}</Masked>
+            </dd>
           </div>
         ))}
       </dl>

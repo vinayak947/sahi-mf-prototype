@@ -70,7 +70,7 @@ const STATUS_WORD: Record<Status, string> = { pending: "pending", trigger: "pend
 // The order sheet as it looks in the live app: name with a share icon, "MCX • Normal • LTP", a status pill, one card of
 // stacked facts, an "Order details" timeline card, a quick "Buy at Mkt" tile, and Cancel / Modify under it.
 function OrderSheet({ order: o, index, onClose }: { order: Row; index: number; onClose: () => void }) {
-  const [detailsOpen, setDetailsOpen] = useState(true);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const [confirm, setConfirm] = useState(false);
   const tab = STATUS[o.status].tab;
   const open = tab === "open";
@@ -219,7 +219,6 @@ export function MarketOrders({ market }: { market: "stocks" | "fno" }) {
   const rows = market === "fno" ? FNO : STOCKS;
   const active = GROUPS.some((g) => picks[g.key].length > 0) || sort !== "newest";
   const filtered = rows.filter((r) => matches(r, picks));
-  const count = (t: Tab) => filtered.filter((r) => STATUS[r.status].tab === t).length;
   const shown = filtered
     .filter((r) => STATUS[r.status].tab === tab)
     .sort((a, b) =>
@@ -232,8 +231,13 @@ export function MarketOrders({ market }: { market: "stocks" | "fno" }) {
       <div className="tabs-row mf-orders-bar">
         <div className="tabs-list" role="tablist" aria-label="Order status">
           {TABS.map((t) => (
-            <DlsTab key={t.key} active={tab === t.key} onClick={() => setTab(t.key)}>
-              {`${t.label} · ${count(t.key)}`}
+            <DlsTab
+              key={t.key}
+              active={tab === t.key}
+              onClick={() => setTab(t.key)}
+              trailing={t.key === "open" ? <Icon name="dots-three-vertical" size={16} /> : undefined}
+            >
+              {t.label}
             </DlsTab>
           ))}
         </div>

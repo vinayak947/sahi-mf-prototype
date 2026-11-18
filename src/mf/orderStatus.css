@@ -84,6 +84,15 @@ em.amo.st-initiated {
   line-height: 20px;
 }
 
+/* Gain line under a holding's current value, same 12/14 as the order list's status badge row. */
+.os-gain {
+  display: flex;
+  height: 24px; /* the badge's height, so a holding row is as tall as an order row (84) */
+  align-items: center;
+  font-size: 12px;
+  line-height: 14.4px;
+}
+
 /* ---- Order detail ------------------------------------------------------------------------------------------------ */
 
 /* Redemption page: blocks 16 apart, as the Bottom sheet content is. */

@@ -91,7 +91,7 @@ export function OrderStatusDetail({
   basket?: { id: string; amount: number; orderIds: string[] };
 }) {
   const { pop, push, orders, sips } = useMf();
-  const [info, setInfo] = useState<string[] | null>(null);
+  const [info, setInfo] = useState<WhyStory | null>(null);
   const order = orders.find((o) => o.id === orderId);
   if (!order) return null;
   const fund = fundById(order.fundId);
@@ -128,7 +128,7 @@ export function OrderStatusDetail({
       extras={
         info && (
           <Sheet title="How is the allotment date decided?" onClose={() => setInfo(null)}>
-            <Bullets items={info} />
+            <WhyStoryView story={info} />
           </Sheet>
         )
       }
@@ -187,9 +187,9 @@ export function OrderStatusDetail({
   );
 }
 
-// "Order status": the one timeline card every order detail page uses (purchase, SIP, redemption), always open.
-function StatusCard({ steps, order, onInfo }: { steps: StepView[]; order: MfOrder; onInfo: (info: string[] | null) => void }) {
-  const [open, setOpen] = useState(true);
+// "Order status": the one timeline card every order detail page uses (purchase, SIP, redemption), collapsed by default; tap the header to expand.
+function StatusCard({ steps, order, onInfo }: { steps: StepView[]; order: MfOrder; onInfo: (info: WhyStory | null) => void }) {
+  const [open, setOpen] = useState(false);
   return (
     <DlsCard padding="inset">
       <button className="mkt-details-head" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
@@ -200,16 +200,6 @@ function StatusCard({ steps, order, onInfo }: { steps: StepView[]; order: MfOrde
       </button>
       {open && <DlsTimeline items={timelineItems(steps, order, { timeAsNote: true, onInfo: (st) => onInfo(st.info ?? null) })} />}
     </DlsCard>
-  );
-}
-
-function Bullets({ items }: { items: string[] }) {
-  return (
-    <ul className="os-bullets">
-      {items.map((t) => (
-        <li key={t}>{t}</li>
-      ))}
-    </ul>
   );
 }
 
@@ -232,6 +222,7 @@ function WhyStoryView({ story }: { story: WhyStory }) {
           </li>
         ))}
       </ol>
+      {story.outcomes.length > 0 && (
       <div className={`os-story-outcomes n${story.outcomes.length}`}>
         {story.outcomes.map((o, i) => (
           <div key={o.title} className={`os-story-outcome ${o.tone}`} style={{ "--i": story.steps.length + i } as React.CSSProperties}>
@@ -243,6 +234,7 @@ function WhyStoryView({ story }: { story: WhyStory }) {
           </div>
         ))}
       </div>
+      )}
       <p className="os-story-note">
         <Icon name={story.note.icon} size={16} />
         {story.note.text}
@@ -300,7 +292,7 @@ export function Facts({ children }: { children: ReactNode }) {
 function RedeemPage({ ctx, onBack }: { ctx: Parameters<typeof redeemView>[0]; onBack: () => void }) {
   const { order, fund } = ctx;
   const [why, setWhy] = useState(false);
-  const [info, setInfo] = useState<string[] | null>(null);
+  const [info, setInfo] = useState<WhyStory | null>(null);
   const v = redeemView(ctx);
   return (
     <OrderSheetFrame
@@ -314,7 +306,7 @@ function RedeemPage({ ctx, onBack }: { ctx: Parameters<typeof redeemView>[0]; on
           )}
           {info && (
             <Sheet title="How is the allotment date decided?" onClose={() => setInfo(null)}>
-              <Bullets items={info} />
+              <WhyStoryView story={info} />
             </Sheet>
           )}
         </>

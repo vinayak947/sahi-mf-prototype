@@ -84,8 +84,6 @@ export type Done = {
 export type Route =
   | { name: "list"; spec: ListSpec }
   | { name: "search" }
-  | { name: "ordersearch" }
-  | { name: "holdingsearch" }
   | { name: "fund"; fundId: string }
   | { name: "amount"; fundId: string; mode: "lump" | "sip"; preset?: number }
   | { name: "checkout"; fundId: string; amount: number; day?: number; payFirst?: boolean; fail?: boolean; back?: Route }
@@ -107,6 +105,8 @@ export type Route =
   | { name: "sipdetail"; fundId: string }
   | { name: "sipcancelled"; fundId: string; amount: number; day: number; reason: string; inProgress: number }
   | { name: "redeem"; fundId: string }
+  | { name: "ordersearch" }
+  | { name: "holdingsearch" }
   | { name: "orderdetail"; orderId: string; basket?: { id: string; amount: number; orderIds: string[] } } // basket: one sheet for every fund order placed together
   // Researcher backed baskets (Order 2.0 home); see Baskets.tsx
   | { name: "baskets" }
@@ -177,7 +177,7 @@ export function MfProvider({
 }) {
   const [stack, setStack] = useState<Route[]>([]);
   const [orderPad2, setOrderPad2] = useState(true); // Order Pad 2.0 is the default; the dev switch turns it off
-  const invested = true; // the prototype opens in the invested flow; the dev panel switches it off for the visit
+  const invested = false; // the prototype always opens in the non-invested flow; the dev panel switches it for the visit
   const [segment, setSegmentState] = useState<Segment>(invested ? "holdings" : "new");
   const [holdings, setHoldings] = useState<Holding[]>(invested ? sampleHoldings : []);
   const [basketPositions, setBasketPositions] = useState<BasketPosition[]>(invested ? sampleBasketPositions : []);

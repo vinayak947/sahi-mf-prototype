@@ -8,6 +8,8 @@ import {
   SearchScreen,
 } from "./screens";
 import { FundScreen } from "./fundidp/FundScreen";
+import { OrderSearchScreen } from "./OrderSearch";
+import { HoldingsSearchScreen } from "./HoldingsSearch";
 import { AddBankScreen, PayModeScreen, UpiAppsScreen, VerifyBankScreen } from "./PayMode";
 import { CheckoutScreen } from "./Checkout";
 import { SipDetail2 } from "./SipDetail2";
@@ -15,8 +17,6 @@ import { OrderStatusDetail } from "./OrderStatusDetail";
 import { BasketHoldingScreen } from "./BasketHoldings";
 import { BasketDoneScreen, DoneScreen, FailedScreen, SipCancelledScreen } from "./Status";
 import { BasketsScreen } from "./Baskets";
-import { OrderSearchScreen } from "./OrderSearch";
-import { HoldingsSearchScreen } from "./HoldingsSearch";
 import { BasketScreen } from "./basketidp/BasketScreen";
 
 function renderRoute(route: Route) {

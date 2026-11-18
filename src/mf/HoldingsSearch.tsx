@@ -1,3 +1,4 @@
+import { Masked } from "./privacy";
 import { useEffect, useRef, useState } from "react";
 import { holdings as stockHoldings } from "../data";
 import { Icon } from "../ui/Icon";
@@ -71,25 +72,28 @@ export function HoldingsSearchScreen() {
         {funds.length > 0 && (
           <>
             <p className="mf-ordersearch-label">Mutual funds</p>
-            <ul className="holding-list">
+            <ul className="os-list">
               {funds.map((h) => {
                 const fund = fundById(h.fundId);
                 const g = h.current - h.invested;
                 return (
                   <li key={h.fundId}>
-                    <button className="holding-row" onClick={() => push({ name: "holding", fundId: h.fundId })}>
-                      <span className="holding-top">
-                        <b>
-                          <FundMark fund={fund} size={32} />
-                          <span className="mf-pf-name">{fund.name}</span>
-                        </b>
-                        <span className="mf-pf-value">
-                          <b>{inr(h.current)}</b>
-                          <small className={g >= 0 ? "up" : "down"}>
+                    <button className="os-row" onClick={() => push({ name: "holding", fundId: h.fundId })}>
+                      <FundMark fund={fund} size={40} />
+                      <span className="os-mid">
+                        <b>{fund.name}</b>
+                        <small>{fund.catLabel}</small>
+                      </span>
+                      <span className="os-end">
+                        <span className="os-amt">
+                          <Masked>{inr(h.current)}</Masked>
+                        </span>
+                        <small className={`os-gain ${g >= 0 ? "up" : "down"}`}>
+                          <Masked>
                             {g >= 0 ? "+" : ""}
                             {inr(g)} ({pct((g / h.invested) * 100, 2)})
-                          </small>
-                        </span>
+                          </Masked>
+                        </small>
                       </span>
                     </button>
                   </li>

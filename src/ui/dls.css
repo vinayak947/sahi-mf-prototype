@@ -221,6 +221,12 @@
   overflow-wrap: anywhere;
 }
 
+/* An action beside a note (copy, info) keeps its 24 tap target but must not make the row taller than its 14.4 text,
+   or the gaps between notes, steps and the card edge stop following the 4 / 16 spacing rules. */
+.dls-tl-note .dls-icon-btn {
+  margin: -5px 0;
+}
+
 /* Icon button, small, tertiary: 24 square around a 16 glyph. */
 .dls-icon-btn {
   display: inline-grid;
@@ -308,6 +314,17 @@ button.dls-kv {
 
 .dls-kv-text b.positive {
   color: var(--positive-text);
+}
+
+.dls-kv-text b.negative {
+  color: var(--negative-text);
+}
+
+.dls-kv-text b em {
+  font-family: "SAHI Sans:Regular", sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
 }
 
 .dls-kv .icon {
@@ -658,4 +675,10 @@ button.dls-kv {
 
 @media (prefers-reduced-motion: reduce) {
   .dls-btn { transition: none; }
+}
+
+/* An action beside a note (copy, info) keeps its 24 tap target but must not make the row taller than its 14.4 text,
+   or the gaps between notes, steps and the card edge stop following the 4 / 16 spacing rules. */
+.dls-tl-note .dls-icon-btn {
+  margin: -5px 0;
 }

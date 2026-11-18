@@ -275,7 +275,7 @@ export function Scanners() {
             <button className="list-row">
               <span className="row-main">
                 <b>
-                  {row.name} <SparkleBadge />
+                  {row.name}
                 </b>
                 <small>{row.exchange}</small>
               </span>

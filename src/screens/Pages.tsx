@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { asset } from "../assets";
+import { Masked } from "../mf/privacy";
 import { holdings, indexScalper, orders } from "../data";
 import { Icon, type IconName } from "../ui/Icon";
 import { MfOrdersPage, MfPortfolio, PfDelta, PfSummary, SegmentChips } from "../mf/MfPages";
@@ -11,7 +12,6 @@ import {
   Block,
   CardGrid,
   DlsTab,
-  SparkleBadge,
   Tabs,
   toneOf,
 } from "../ui/widgets";
@@ -188,15 +188,6 @@ const HOLDING_SORTS: { key: HoldingSort; label: string }[] = [
 // never change with the chip: every holding (stocks and funds) and every open position (mutual funds have none).
 const STOCK_POSITIONS = 6;
 
-// The button at the right of the controls row switches what each holding shows: its total P&L or today's. Day figures
-// add up to the card's -₹511.
-type PlMode = "total" | "day";
-const DAY_PL: Record<string, { pl: string; pct: string }> = {
-  "Vodafone Idea": { pl: "+₹0.10", pct: "(0.19%)" },
-  "Yes Bank": { pl: "-₹3.10", pct: "(-4.80%)" },
-  "Titan Company": { pl: "-₹479", pct: "(-2.13%)" },
-  "Lemon Tree Hotels": { pl: "-₹29", pct: "(-4.19%)" },
-};
 
 export function PortfolioPage({ mfOnly = false }: { mfOnly?: boolean }) {
   const [seg, setSeg] = useState<"stocks" | "mf">("mf");
@@ -204,7 +195,6 @@ export function PortfolioPage({ mfOnly = false }: { mfOnly?: boolean }) {
   const [sort, setSort] = useState<HoldingSort>("cur_hi");
   const [filtering, setFiltering] = useState(false);
   const [viewMore, setViewMore] = useState(false);
-  const [plMode, setPlMode] = useState<PlMode>("total");
   const shownHoldings = useMemo(() => {
     const list = holdings;
     const by: Record<HoldingSort, (a: HoldingRow, b: HoldingRow) => number> = {
@@ -272,27 +262,18 @@ export function PortfolioPage({ mfOnly = false }: { mfOnly?: boolean }) {
 
       <div className="pf-sheet">
       <div className="portfolio-controls">
-        <div className="portfolio-controls-left">
-          <button
-            className={`dls-chip mf-orders-typechip${sort !== "cur_hi" ? " on" : ""}`}
-            onClick={() => setFiltering(true)}
-            aria-label="Filter and sort holdings"
-          >
-            <Icon name="funnel-simple" size={16} />
-          </button>
-          <button className="switch-row" role="switch" aria-checked={viewMore} onClick={() => setViewMore((v) => !v)}>
-            View more
-            <span className={`switch${viewMore ? " on" : ""}`} aria-hidden="true">
-              <i />
-            </span>
-          </button>
-        </div>
+        <button className="switch-row" role="switch" aria-checked={viewMore} onClick={() => setViewMore((v) => !v)}>
+          View more
+          <span className={`switch${viewMore ? " on" : ""}`} aria-hidden="true">
+            <i>{viewMore && <Icon name="check" size={12} />}</i>
+          </span>
+        </button>
         <button
-          className="sort-button"
-          aria-label={`Showing ${plMode === "total" ? "total" : "today’s"} P&L. Switch`}
-          onClick={() => setPlMode((m) => (m === "total" ? "day" : "total"))}
+          className={`dls-chip mf-orders-typechip${sort !== "cur_hi" ? " on" : ""}`}
+          onClick={() => setFiltering(true)}
+          aria-label="Filter and sort holdings"
         >
-          {plMode === "total" ? "Total P&L" : "Day’s P&L"} <Icon name="caret-up-down" size={16} />
+          <Icon name="funnel-simple" size={16} />
         </button>
       </div>
       <ul className="holding-list">
@@ -302,27 +283,31 @@ export function PortfolioPage({ mfOnly = false }: { mfOnly?: boolean }) {
               <span className="holding-top">
                 <b>
                   {holding.name}
-                  {holding.tag && <em className="tag-chip">{holding.tag}</em>}
-                  {holding.ai && <SparkleBadge />}
                 </b>
-                {(() => {
-                  const pl = plMode === "total" ? holding.pl : DAY_PL[holding.name].pl;
-                  const pctText = plMode === "total" ? holding.plPct : DAY_PL[holding.name].pct;
-                  return (
-                    <span className={`holding-pl ${toneOf(pl)}`}>
-                      {pl} <em>{pctText}</em>
-                    </span>
-                  );
-                })()}
+                <span className={`holding-pl ${toneOf(holding.pl)}`}>
+                  <Masked>
+                    {holding.pl} <em>{holding.plPct}</em>
+                  </Masked>
+                </span>
               </span>
               <span className="holding-bot">
                 <small>
-                  Invested: <b>{holding.invested}</b>
+                  Invested: <b><Masked>{holding.invested}</Masked></b>
                 </small>
                 <small>
-                  Current: <b>{holding.current}</b>
+                  Current: <b><Masked>{holding.current}</Masked></b>
                 </small>
               </span>
+              {viewMore && (
+                <span className="holding-bot">
+                  <small>
+                    Qty: <b>{holding.qty}</b> • Avg: <b>{holding.avg}</b>
+                  </small>
+                  <small>
+                    LTP: <b>{holding.ltp}</b>
+                  </small>
+                </span>
+              )}
             </button>
           </li>
         ))}

@@ -173,8 +173,8 @@ export const orders = [
 ];
 
 export const holdings = [
-  { name: "Vodafone Idea", ai: false, tag: "", pl: "+₹24.00", plPct: "(85.71%)", invested: "₹28.00", current: "₹52.00" },
-  { name: "Yes Bank", ai: true, tag: "", pl: "-₹3.00", plPct: "(-4.65%)", invested: "₹64.50", current: "₹61.50" },
-  { name: "Titan Company", ai: true, tag: "SL & TP set", pl: "+₹7,050", plPct: "(47.00%)", invested: "₹15,000", current: "₹22,050" },
-  { name: "Lemon Tree Hotels", ai: true, tag: "", pl: "-₹141", plPct: "(-17.60%)", invested: "₹804", current: "₹663" },
+  { name: "Vodafone Idea", ai: false, tag: "", pl: "+₹24.00", plPct: "(85.71%)", invested: "₹28.00", current: "₹52.00", qty: 4, avg: "7.00", ltp: "13.00" },
+  { name: "Yes Bank", ai: true, tag: "", pl: "-₹3.00", plPct: "(-4.65%)", invested: "₹64.50", current: "₹61.50", qty: 3, avg: "21.50", ltp: "20.50" },
+  { name: "Titan Company", ai: true, tag: "SL & TP set", pl: "+₹7,050", plPct: "(47.00%)", invested: "₹15,000", current: "₹22,050", qty: 5, avg: "3000.00", ltp: "4410.00" },
+  { name: "Lemon Tree Hotels", ai: true, tag: "", pl: "-₹141", plPct: "(-17.60%)", invested: "₹804", current: "₹663", qty: 6, avg: "134.00", ltp: "110.50" },
 ];

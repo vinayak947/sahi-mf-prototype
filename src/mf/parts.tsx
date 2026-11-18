@@ -488,12 +488,12 @@ export function Notice({
 // title, body, one primary button. Slides down before unmounting.
 export function Sheet({
   title,
+  heading,
   action = "Got it",
   onClose,
   onAction,
   disabled = false,
   className,
-  heading,
   children,
 }: {
   title: string;
