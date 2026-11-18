@@ -2587,58 +2587,75 @@ em.amo.st-failed {
   list-style: none;
 }
 
+/* Alert card: outlined like the other Home cards (Top performing, baskets): Border L1, 16 corners, 16 inside, no fill.
+   Logo + fund name with a 12px status line under it; one line of copy; actions at the bottom. */
 .mf-alert {
   display: flex;
   width: 100%;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 14px 16px;
-  border: 0;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 16px;
+  border: 1px solid var(--border-L1);
   border-radius: 16px;
   color: var(--ink);
-  background: var(--surface-L2, var(--surface));
+  background: transparent;
   text-align: left;
 }
 
-.mf-alert > .icon {
+.mf-alert-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mf-alert-head > .icon {
   flex: none;
-  margin-top: 1px;
+  color: var(--ink-3);
 }
 
-.mf-alert.bad {
-  background: var(--negative-subtle);
-  box-shadow: inset 0 0 0 1px var(--negative-transparent-L2);
-}
-
-.mf-alert.bad > .icon {
-  color: var(--negative-text);
-}
-
-.mf-alert-main {
+.mf-alert-who {
   display: flex;
   min-width: 0;
   flex: 1;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
-.mf-alert-main b {
+.mf-alert-who b {
+  overflow: hidden;
   font-family: "SAHI Sans:Medium", sans-serif;
   font-size: 14px;
   font-weight: 500;
+  line-height: 17px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.mf-alert-main small {
+.mf-alert-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   color: var(--ink-2);
   font-size: 12px;
-  line-height: 17px;
+  line-height: 16px;
+}
+
+.mf-alert-tag.bad {
+  color: var(--negative-text);
+}
+
+.mf-alert-text {
+  margin: 12px 0 0;
+  color: var(--ink-2);
+  font-size: 12px;
+  line-height: 16px;
 }
 
 .mf-alert-actions {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-top: 8px;
+  margin-top: 16px;
 }
 
 .mf-btn.sm {
@@ -4182,13 +4199,9 @@ em.amo.st-failed {
   scroll-snap-align: start;
 }
 
-.mf-alerts.carousel .mf-alert-main {
-  height: 100%;
-}
-
 .mf-alerts.carousel .mf-alert-actions {
   margin-top: auto;
-  padding-top: 8px;
+  padding-top: 16px;
 }
 
 .mf-alert-dots {

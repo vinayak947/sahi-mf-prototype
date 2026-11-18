@@ -2,6 +2,7 @@ import { useState, type ReactNode } from "react";
 import { Icon } from "../ui/Icon";
 import { Block, HScroll } from "../ui/widgets";
 import { fundById } from "./data";
+import { FundMark } from "./parts";
 import { fmtDay, inr, nextSipDate } from "./format";
 import { MfHomeNext } from "./MfHomeNext";
 import { useMf } from "./store";
@@ -19,33 +20,39 @@ export function Alerts() {
     .sort((a, b) => a.next.getTime() - b.next.getTime());
   if (missed.length === 0 && dueSoon.length === 0) return null;
 
+  // Each card is built like the other Home cards (outlined, 16 inside): the fund's logo and name with a small status
+  // line under it, one line of what happened, then what to do. Red is kept to the status line, not the whole card.
   const cards = [
     ...missed.map((o) => {
       const fund = fundById(o.fundId);
       return (
-        <div key={o.id} role="listitem" className="mf-alert bad">
-          <Icon name="warning-circle" size={20} />
-          <span className="mf-alert-main">
-            <b>Missed SIP · {fund.name}</b>
-            <small>
-              Your {inr(o.amount)} instalment on {o.navDate} didn&rsquo;t go through. Not enough balance in the bank.
-            </small>
-            <span className="mf-alert-actions">
-              {/* Paid as a one-time buy, so the fund's one-time minimum applies (SBI Large Cap: ₹1,000). */}
-              {!fund.buy && (
-                <button
-                  className="mf-btn solid sm"
-                  onClick={() =>
-                    push({ name: "amount", fundId: o.fundId, mode: "lump", preset: Math.max(o.amount, fund.minAdd) })
-                  }
-                >
-                  Invest {inr(Math.max(o.amount, fund.minAdd))} now
-                </button>
-              )}
-              <button className="text-link" onClick={() => push({ name: "orderdetail", orderId: o.id })}>
-                Details
-              </button>
+        <div key={o.id} role="listitem" className="mf-alert">
+          <span className="mf-alert-head">
+            <FundMark fund={fund} size={32} />
+            <span className="mf-alert-who">
+              <b>{fund.name}</b>
+              <span className="mf-alert-tag bad">
+                <Icon name="warning-circle" size={14} />
+                Missed SIP
+              </span>
             </span>
+          </span>
+          <p className="mf-alert-text">
+            Your {inr(o.amount)} instalment on {o.navDate} didn&rsquo;t go through, as the bank balance was low.
+          </p>
+          <span className="mf-alert-actions">
+            {/* Paid as a one-time buy, so the fund's one-time minimum applies (SBI Large Cap: ₹1,000). */}
+            {!fund.buy && (
+              <button
+                className="mf-btn solid sm"
+                onClick={() => push({ name: "amount", fundId: o.fundId, mode: "lump", preset: Math.max(o.amount, fund.minAdd) })}
+              >
+                Invest {inr(Math.max(o.amount, fund.minAdd))} now
+              </button>
+            )}
+            <button className="text-link" onClick={() => push({ name: "orderdetail", orderId: o.id })}>
+              Details
+            </button>
           </span>
         </div>
       );
@@ -55,14 +62,21 @@ export function Alerts() {
       return (
         <div key={s.fundId} role="listitem">
           <button className="mf-alert" onClick={() => push({ name: "sipdetail", fundId: s.fundId })}>
-            <Icon name="calendar" size={20} />
-            <span className="mf-alert-main">
-              <b>
-                SIP on {fmtDay(s.next)} · {inr(s.amount)}
-              </b>
-              <small>{fund.name}. Keep the money in your bank so it goes through.</small>
+            <span className="mf-alert-head">
+              <FundMark fund={fund} size={32} />
+              <span className="mf-alert-who">
+                <b>{fund.name}</b>
+                <span className="mf-alert-tag">
+                  <Icon name="calendar" size={14} />
+                  SIP on {fmtDay(s.next)} · {inr(s.amount)}
+                </span>
+              </span>
             </span>
-            <Icon name="caret-right" size={16} />
+            <p className="mf-alert-text">Keep {inr(s.amount)} in your bank so the SIP goes through.</p>
+            {/* The whole card opens the SIP; this row only names where it goes, and keeps the card's bottom in line with the others. */}
+            <span className="mf-alert-actions">
+              <span className="text-link">View SIP</span>
+            </span>
           </button>
         </div>
       );
