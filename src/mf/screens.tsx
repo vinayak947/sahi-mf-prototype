@@ -1,6 +1,6 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "../ui/Icon";
-import { DlsNumberField } from "../ui/dls";
+import { DlsButton, DlsNumberField } from "../ui/dls";
 import { asset } from "../assets";
 import {
   categories,
@@ -61,14 +61,13 @@ import {
   sortFunds,
   Stars,
   useFundView,
-  Segmented,
 } from "./parts";
 import { Screen as ListChrome } from "./fundidp/parts";
 import { FundRow as ListFundRow } from "./fundidp/FundScreen";
 import { DotField } from "./DotField";
 import { GoalHero } from "./GoalArt";
 import { nextFunds, sectors, themeOf } from "./sectors";
-import { accountLabel, mandateAccount, methodView } from "./payData";
+import { accountLabel, BANKS, mandateAccount, methodView } from "./payData";
 import { UI_STATUS_LABEL, uiStatus } from "./orderStatus";
 import { useMf, type ListSpec } from "./store";
 
@@ -498,10 +497,10 @@ function PadHeading({ fund }: { fund: Fund }) {
   if (basket) return <BasketLine basket={basket} note="Direct · Growth" />;
   return (
     <div className="mf-fundline">
-      <FundMark fund={fund} size={32} />
+      <FundMark fund={fund} size={40} />
       <span>
         <b>{fund.name}</b>
-        <small>Direct · Growth</small>
+        <small>Direct • {fundCategory(fund)}</small>
       </span>
     </div>
   );
@@ -566,7 +565,9 @@ function AmountPad({ fundId, initialMode, preset }: { fundId: string; initialMod
       ? "This fund isn’t taking new SIPs"
       : amount > UPI_AUTOPAY_MAX && max === UPI_AUTOPAY_MAX
         ? `UPI AutoPay allows up to ${inr(UPI_AUTOPAY_MAX)} a month`
-        : amountProblem(amount, min, fund.multiple, max, " a month")
+        : amount < min
+          ? `Minimum SIP amount is ${inr(min)}/month.`
+          : amountProblem(amount, min, fund.multiple, max, " a month")
     : fund.buy
       ? "This fund isn’t taking one-time investments"
       : amountProblem(amount, min, fund.multiple);
@@ -577,6 +578,24 @@ function AmountPad({ fundId, initialMode, preset }: { fundId: string; initialMod
   const amountRef = useRef<HTMLDivElement>(null);
   const quickRef = useRef<HTMLDivElement>(null);
   const before = useRef<{ amount: number; quick: number } | null>(null);
+
+  // Order Pad 2.0: the amount field is being edited (focused, keypad up) until the person taps anywhere else on the
+  // pad; then the field goes back to its resting look and the keypad goes away. Tapping the field brings both back.
+  // The quick-add chips keep it open, since they edit the amount too.
+  const [editing, setEditing] = useState(true);
+  useEffect(() => {
+    if (!orderPad2 || !editing) return;
+    const onDown = (e: PointerEvent) => {
+      const target = e.target as Element | null;
+      const field = amountRef.current;
+      const screen = field?.closest(".mf-screen");
+      if (!target || !field || !screen?.contains(target)) return; // another screen on top, or gone
+      if (field.contains(target) || target.closest(".mf-keypad, .mf-quick")) return;
+      setEditing(false);
+    };
+    document.addEventListener("pointerdown", onDown);
+    return () => document.removeEventListener("pointerdown", onDown);
+  }, [orderPad2, editing]);
 
   function switchMode() {
     const next = sip ? "lump" : "sip";
@@ -649,6 +668,48 @@ function AmountPad({ fundId, initialMode, preset }: { fundId: string; initialMod
       )}
     </div>
   );
+  // Order Pad 2.0: the payment method as a card (Figma MethodCard · pre-chosen, node 114:781). The whole card opens the
+  // payment mode picker; from a SIP the pick only sets the mandate's account and comes back, nothing is charged.
+  const changeLink = (
+    <span className="mf-paycard-change">
+      <Icon name="chevron-right" size={16} />
+    </span>
+  );
+  const payCardBody = sip ? (
+    <>
+      {/* The mandate's bank: the HDFC mandate mark for HDFC, the bank's own logo for the rest. */}
+      <span className={`mf-paycard-logo${account.bank === "hdfc" ? " mandate" : ""}`}>
+        <img src={asset(account.bank === "hdfc" ? "mandate-hdfc.png" : BANKS[account.bank].logo)} alt="" />
+      </span>
+      <span className="mf-paycard-text">
+        <b>Pay via Mandate</b>
+        <small>{accountLabel(account)}</small>
+      </span>
+      {changeLink}
+    </>
+  ) : (
+    <>
+      <span className={`mf-paycard-logo${method.filled ? " filled" : ""}`}>
+        <img src={asset(method.logo)} alt="" />
+      </span>
+      <span className="mf-paycard-text">
+        <b>{method.title}</b>
+        <small>{method.sub}</small>
+      </span>
+      {changeLink}
+    </>
+  );
+  const payCard = (
+    <button
+      className={`mf-paycard${swap}`}
+      key={mode}
+      onClick={() => !low && push({ name: "paymode", fundId, amount, sip: sip || undefined })}
+      disabled={low}
+      aria-label={`Pay ${sip ? `via mandate from ${accountLabel(account)}` : `with ${method.title}`}, change payment method`}
+    >
+      {payCardBody}
+    </button>
+  );
   const investBtn = (
     <button className="mf-btn solid wide" disabled={low} onClick={go}>
       Invest
@@ -693,6 +754,30 @@ function AmountPad({ fundId, initialMode, preset }: { fundId: string; initialMod
       <Icon name="calendar" size={20} />
       <span className="mf-sip-date-label">Monthly SIP on {ordinal(day)}</span>
       <Icon name="chevron-down-solid" size={16} />
+    </button>
+  );
+  // Order Pad 2.0: the SIP date as a card laid out exactly like the payment card under it (same padding, a 32 icon slot
+  // where the bank logo sits, the text on the same indent), with the day at the right next to a forward arrow.
+  const dateCard = sip && (
+    <button
+      className="mf-paycard mf-datecard"
+      onClick={() => {
+        setDraft(day);
+        setPicking(true);
+      }}
+      aria-haspopup="dialog"
+      aria-label={`Monthly SIP on ${ordinal(day)}, change date`}
+    >
+      <span className="mf-datecard-icon">
+        <Icon name="calendar" size={24} />
+      </span>
+      <span className="mf-paycard-text">
+        <b>Monthly SIP on</b>
+      </span>
+      <span className="mf-datecard-day">{ordinal(day)}</span>
+      <span className="mf-paycard-change">
+        <Icon name="chevron-right" size={16} />
+      </span>
     </button>
   );
   const sheets = (
@@ -741,41 +826,61 @@ function AmountPad({ fundId, initialMode, preset }: { fundId: string; initialMod
   };
 
   // Order Pad 2.0 (dev switch): the amount is a DLS Number field, the way the Figma order pad draws it, with the
-  // payment row and Invest above the keypad.
+  // payment row and Invest above the keypad. No Lumpsum/SIP switch: the person already chose on the fund page
+  // ("Invest one-time" or "Start SIP"), so the pad opens in that mode and SIP shows its monthly date.
   if (orderPad2)
     return (
-      <Screen onBack={pop} className="pad v2" heading={<PadHeading fund={fund} />}>
+      <Screen
+        onBack={pop}
+        className={`pad v2${editing ? "" : " kb-off"}`}
+        heading={
+          <>
+            <h1 className="mf-pad2-title">{sip ? "Start SIP" : "Invest One-time"}</h1>
+            <PadHeading fund={fund} />
+          </>
+        }
+      >
         <div className="mf-pad2-center">
-        <div ref={amountRef} className="mf-pad2-amount">
-          <Segmented
-            label="Order type"
-            value={mode}
-            onChange={(next) => next !== mode && switchMode()}
-            options={[
-              ["lump", "Lumpsum", sip && fund.buy !== undefined],
-              ["sip", "SIP", !sip && fund.buy === "halted"],
-            ]}
-          />
+        <div ref={amountRef} className="mf-pad2-amount" onClick={() => setEditing(true)}>
           <DlsNumberField
             size="xxLarge"
+            align="start"
             label={sip ? "Monthly SIP amount" : "One time amount"}
             prefix="₹"
             value={digits}
             hint="0"
-            focused
+            focused={editing}
             caretKey={digits}
+            animated
+            trailing={
+              // Clear: once the amount runs past 3 digits, one tap empties it back to the "0" hint.
+              digits.split(".")[0].length > 3 ? (
+                <button
+                  className="mf-pad2-clear"
+                  aria-label="Clear amount"
+                  onClick={() => {
+                    setTyped(true);
+                    setDigits("");
+                  }}
+                >
+                  <Icon name="base-x" size={24} />
+                </button>
+              ) : null
+            }
             error={low && amount > 0 ? problem : null}
-            message={rupeesInWords(amount) || "Enter an amount"}
           />
         </div>
         {quickRow}
-        {dateBtn}
         </div>
         <div className="mf-pad2-pay">
-          {payRow}
-          {investBtn}
+          {/* SIP date sits right over the payment card, same width, 16 apart. */}
+          <div className="mf-pad2-how">
+            {dateCard}
+            {payCard}
+          </div>
+          <DlsButton label={sip ? "Start SIP" : "Invest One-time"} disabled={low} onClick={go} />
         </div>
-        <Keypad decimal onKey={onKey} />
+        {editing && <Keypad decimal onKey={onKey} />}
         {sheets}
       </Screen>
     );

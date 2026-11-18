@@ -89,10 +89,18 @@ export type Route =
   | { name: "fund"; fundId: string }
   | { name: "amount"; fundId: string; mode: "lump" | "sip"; preset?: number }
   | { name: "checkout"; fundId: string; amount: number; day?: number; payFirst?: boolean; fail?: boolean; back?: Route }
-  | { name: "paymode"; fundId: string; amount: number }
-  | { name: "upiapps"; fundId: string; amount: number }
-  | { name: "addbank"; fundId: string; amount: number }
-  | { name: "verifybank"; fundId: string; amount: number; method: PayMethod & { account: Account }; added?: boolean }
+  // sip: picked from the SIP order pad. Choosing a method only sets it and returns to the pad; nothing is charged.
+  | { name: "paymode"; fundId: string; amount: number; sip?: boolean }
+  | { name: "upiapps"; fundId: string; amount: number; sip?: boolean }
+  | { name: "addbank"; fundId: string; amount: number; sip?: boolean }
+  | {
+      name: "verifybank";
+      fundId: string;
+      amount: number;
+      method: PayMethod & { account: Account };
+      added?: boolean;
+      sip?: boolean;
+    }
   | { name: "done"; done: Done }
   | { name: "failed"; kind: "payment" | "mandate"; fundId: string; amount: number; back: Route }
   | { name: "holding"; fundId: string }
@@ -111,6 +119,7 @@ type Store = {
   push: (route: Route) => void;
   replace: (route: Route) => void;
   pop: () => void;
+  popTo: (name: Route["name"]) => void; // back to the nearest screen of that name; no-op if none
   closeAll: () => void;
   segment: Segment;
   setSegment: (segment: Segment) => void;
@@ -192,6 +201,14 @@ export function MfProvider({
     [],
   );
   const pop = useCallback(() => setStack((s) => s.slice(0, -1)), []);
+  const popTo = useCallback(
+    (name: Route["name"]) =>
+      setStack((s) => {
+        const i = s.map((r) => r.name).lastIndexOf(name);
+        return i < 0 ? s : s.slice(0, i + 1);
+      }),
+    [],
+  );
   const closeAll = useCallback(() => setStack([]), []);
 
   const setSegment = useCallback((next: Segment) => {
@@ -462,6 +479,7 @@ export function MfProvider({
       push,
       replace,
       pop,
+      popTo,
       closeAll,
       segment,
       setSegment,
@@ -501,6 +519,7 @@ export function MfProvider({
       push,
       replace,
       pop,
+      popTo,
       closeAll,
       segment,
       setSegment,

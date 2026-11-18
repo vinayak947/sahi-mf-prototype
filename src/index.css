@@ -8,6 +8,13 @@
 }
 
 @font-face {
+  font-family: "SAHI Sans:Bold";
+  src: url("/fonts/SAHI_Sans-Bold.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 700;
+}
+
+@font-face {
   font-family: "SAHI Sans:Regular";
   src: url("/fonts/SAHI_Sans-Regular.woff2") format("woff2");
   font-style: normal;
