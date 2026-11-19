@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { createPortal, flushSync } from "react-dom";
 import { Icon } from "../ui/Icon";
-import { PeekBanner } from "./PeekBanner";
+import { MfStrip, PeekBanner, type BannerVariant } from "./PeekBanner";
 import { haptic } from "../ui/haptics";
 import "../ui/dls.css";
 import "./mfconsent.css";
@@ -28,6 +28,12 @@ import "./mfconsent.css";
    good. (It used to be saved in localStorage, which hid the banner on every later visit.) */
 
 let consentedThisLoad = false;
+// The banner lands (rises in) the first time the Stocks tab is opened in a page load; after that, coming back to the tab
+// shows it in place. In the real app this would be "first time ever", kept with the consent.
+let landedThisLoad = false;
+// "Not now" folds the banner into a slim strip; it stays a strip on later visits to the tab (this page load, like the
+// consent; in the real app it would be remembered with it) until the person opens it again or activates.
+const minimisedThisLoad: Record<BannerVariant, boolean> = { hold: false, listed: false, tiles: false }; // each version on its own
 
 // clear what the earlier localStorage version saved, so older visits don't keep the banner hidden
 try {
@@ -54,16 +60,62 @@ const TERMS = [
   "Investments from residents in the United States of America and Canada are not permitted for certain mutual funds. Aaritya shall not be liable for rejections of such applications by Mutual Funds, where investor is an US and Canada resident, all such US/Canada residents are required to do their own diligence with respect to eligibility in investing into such mutual funds/instruments.",
 ];
 
+const MORPH_EASE = "cubic-bezier(0.4, 0, 0.2, 1)"; // card ↔ strip; keep in step with .mfc-shape in mfconsent.css
 const RECORD_MS = 700; // the short "Giving consent…" while it is recorded
 
-export function MfConsentBanner() {
+export function MfConsentBanner({ variant = "hold", label }: { variant?: BannerVariant; label?: string }) {
   const [consented] = useState(readConsent);
   const [gone, setGone] = useState(consented); // unmounted for good
   const [folding, setFolding] = useState(false);
   const [open, setOpen] = useState(false);
   const done = useRef(false);
+  const [landing] = useState(() => !landedThisLoad); // read only: the flag is set in an effect, so Strict Mode's double call agrees
+  useEffect(() => {
+    landedThisLoad = true;
+  }, []);
+  const [mini, setMini] = useState(() => minimisedThisLoad[variant]);
+  const [swapped, setSwapped] = useState(false); // after the first change of size, the new content fades in
+  const [leaving, setLeaving] = useState<"card" | "strip" | null>(null); // the view fading out during a morph
+  const box = useRef<HTMLDivElement>(null);
+  const morph = useRef<Animation | null>(null);
+  const settle = useRef(0);
+  useEffect(() => () => window.clearTimeout(settle.current), []);
 
   if (gone) return null;
+
+  /* Card ↔ strip, as ONE shape changing (Emil: morph, don't swap). The outline, corners and fill belong to the box
+     (.mfc-shape), so it is the card's own border that shrinks into the strip, instead of a new strip appearing while an
+     empty box collapses under it. Inside, the old view stays where it was, pinned to the top, and fades out fast (it
+     isn't remounted, so the fund belt doesn't jump); the new view fades in a beat later. The height eases in and out
+     (Emil: a shape changing on screen is ease-in-out), 440ms: it starts gently and settles softly, where the old strong
+     ease-out dropped half the height in the first 60ms and read as a snap. Height is animated on purpose (it is what moves the page below) and it
+     happens rarely. A second tap mid-way restarts from where the box is. Reduced motion: an instant swap. */
+  const resize = (next: boolean) => {
+    minimisedThisLoad[variant] = next;
+    const el = box.current;
+    if (!el || matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setMini(next);
+      return;
+    }
+    const from = el.getBoundingClientRect().height;
+    morph.current?.cancel();
+    window.clearTimeout(settle.current);
+    flushSync(() => {
+      setMini(next);
+      setLeaving(next ? "card" : "strip");
+      setSwapped(true);
+    });
+    const to = el.getBoundingClientRect().height;
+    morph.current = el.animate([{ height: `${from}px` }, { height: `${to}px` }], { duration: 440, easing: MORPH_EASE });
+    settle.current = window.setTimeout(() => setLeaving(null), 440);
+  };
+  const view = (which: "card" | "strip") =>
+    which === "strip" ? (
+      <MfStrip onActivate={() => setOpen(true)} onExpand={() => resize(false)} />
+    ) : (
+      <PeekBanner variant={variant} onActivate={() => setOpen(true)} onMinimise={() => resize(true)} />
+    );
+  const current = mini ? "strip" : "card";
 
   const closeSheet = () => {
     setOpen(false);
@@ -76,9 +128,23 @@ export function MfConsentBanner() {
 
   return (
     <>
-      <div className={`mfc-fold${folding ? " folding" : ""}`}>
+      <div className={`mfc-fold${folding ? " folding" : ""}${landing ? " landing" : ""}`}>
         <div className="mfc-fold-inner">
-          <PeekBanner onActivate={() => setOpen(true)} />
+          {label && <p className="mfc-option">{label}</p>}
+          <div className={`mfc-shape ${current}`} ref={box}>
+            {/* stable keys and a fixed order: the leaving view keeps its DOM (and its belt position) while it fades */}
+            {(["card", "strip"] as const).map((which) =>
+              which === current ? (
+                <div key={which} className={swapped ? "mfc-swap-in" : undefined}>
+                  {view(which)}
+                </div>
+              ) : which === leaving ? (
+                <div key={which} className="mfc-swap-out" aria-hidden="true" inert>
+                  {view(which)}
+                </div>
+              ) : null,
+            )}
+          </div>
         </div>
       </div>
       {open && (

@@ -140,8 +140,8 @@ export function OrderStatusDetail({
             <h2>{basket ? basket.name : fund.name}</h2>
             <p>
               {basket
-                ? `${kindLabel(order.kind)} • Basket • ${basket.funds.length} funds`
-                : `${kindLabel(order.kind)} • ${fund.catLabel.replace(" · ", " • ")}`}
+                ? `Basket • ${basket.funds.length} funds`
+                : fund.catLabel.replace(" · ", " • ")}
             </p>
           </div>
         </div>
@@ -156,7 +156,6 @@ export function OrderStatusDetail({
               key={f.label}
               label={f.label}
               value={basket && f.label === "Amount" ? `${inr(group!.amount, 2)}${sip ? " / month" : ""}` : f.value}
-              tone={f.hi ? "positive" : undefined}
             />
           ))}
           </Facts>
@@ -317,18 +316,22 @@ function RedeemPage({ ctx, onBack }: { ctx: Parameters<typeof redeemView>[0]; on
           <FundMark fund={fund} size={40} />
           <div className="dls-sheet-head">
             <h2>{fund.name}</h2>
-            <p>{fund.catLabel}</p>
+            <p>{fund.catLabel.replace(" · ", " • ")}</p>
           </div>
         </div>
         <StatusBadge order={order} />
 
         <DlsCard>
           <Facts>
-            <DlsKvStacked label="Order type" value={kindLabel(order.kind)} />
-            <DlsKvStacked label="Order ID" value={exchangeOrderId(order)} />
+            {/* Amount is the hero: requested figures lead, then what is credited, then the details. */}
+            {v.rows.slice(0, 2).map((r) => (
+              <DlsKvStacked key={r.label} label={r.label} value={r.value} />
+            ))}
             <DlsKvStacked label={v.head.label} value={v.head.value} />
             <DlsKvStacked label="Credit to" value={BANK} />
-            {v.rows.map((r) => (
+            <DlsKvStacked label="Order type" value={kindLabel(order.kind)} />
+            <DlsKvStacked label="Order ID" value={exchangeOrderId(order)} />
+            {v.rows.slice(2).map((r) => (
               <DlsKvStacked key={r.label} label={r.label} value={r.value} />
             ))}
           </Facts>

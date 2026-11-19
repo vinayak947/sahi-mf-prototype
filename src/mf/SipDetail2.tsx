@@ -75,7 +75,7 @@ export function SipDetail2({ fundId }: { fundId: string }) {
         <FundMark fund={fund} size={40} />
         <span>
           <b>{fund.name}</b>
-          <small>{fund.catLabel} · Direct</small>
+          <small>{fund.catLabel.replace(" · ", " • ")}</small>
         </span>
         <Icon name="caret-right" size={16} />
       </button>

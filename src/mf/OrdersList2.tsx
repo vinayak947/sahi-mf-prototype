@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { fundById, type MfOrder } from "./data";
 import { inr } from "./format";
 import { FundMark, Sheet } from "./parts";
-import { kindLabel } from "./screens";
 import { StatusBadge } from "./OrderStatusDetail";
 import { useMf } from "./store";
 import { DlsTab } from "../ui/widgets";
@@ -153,7 +152,7 @@ export function OrdersList2({
                   <FundMark fund={fund} size={40} />
                   <span className="os-mid">
                     <b>{fund.name}</b>
-                    <small>{kindLabel(order.kind)}</small>
+                    <small>{fund.catLabel.replace(" · ", " • ")}</small>
                   </span>
                   <span className="os-end">
                     <span className="os-amt">{inr(order.amount)}</span>

@@ -791,7 +791,13 @@ function Shell({ page, setPage }: { page: Page; setPage: (page: Page) => void })
           {/* Stocks is switched on but has no content yet: every tab of it shows an empty page. */}
           {market === "stocks" ? (
             <main className="dashboard stocks-empty" aria-label="Stocks">
-              {page === "home" && <MfConsentBanner />}
+              {page === "home" && (
+                <>
+                  <MfConsentBanner variant="hold" label="Option A · hold to see what’s coming" />
+                  <MfConsentBanner variant="listed" label="Option B · features written in" />
+                  <MfConsentBanner variant="tiles" label="Option C · feature tiles, no belt" />
+                </>
+              )}
             </main>
           ) : (
             <>

@@ -15,6 +15,90 @@
   opacity: 0;
 }
 
+/* Landing: the first time the Stocks tab opens in a visit, the banner settles into place instead of just being there.
+   A rare, first-time moment, so it may take a little longer than UI feedback, but it stays quiet: a 16px rise, a fade,
+   0.98 → 1 scale and a 4px blur that clears (the blur hides the cross-fade of the busy belt). 520ms on the strong
+   ease-out, starting 160ms after the tab change so the header and tab pill settle first and the eye is free.
+   Transform, opacity and filter only. One-shot on mount, so a keyframe is fine (nothing to interrupt). */
+@keyframes mfc-land {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+.mfc-fold.landing {
+  transform-origin: 50% 0;
+  animation: mfc-land 520ms cubic-bezier(0.23, 1, 0.32, 1) 160ms both;
+}
+
+/* Review only: the "Option A / Option B" caption over each version, and room between the two. */
+.mfc-option {
+  margin: 0 0 8px;
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 16px;
+}
+.mfc-fold + .mfc-fold {
+  margin-top: 24px;
+}
+
+/* Card ↔ strip is one shape: the outline, corners and fill live on this box, so the card's own border shrinks into the
+   strip (MfConsent.tsx animates the height; the corners follow on the same curve, 20 → 16). The card and strip inside
+   drop their own outline. */
+.mfc-shape {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border-L1);
+  border-radius: 20px;
+  background: var(--surface-L1);
+  transition: border-radius 440ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.mfc-shape.strip {
+  border-radius: 16px;
+}
+.mfc-shape .pk-flow,
+.mfc-shape .pk-strip {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.mfc-shape .pk-strip {
+  height: 54px; /* + the box's 1px border = 56 */
+}
+
+/* The two views cross over a beat apart: the old one fades (and softens) fast where it stands, 160ms; the new one comes
+   in from 100ms over 300ms, so there is never a moment with both fully visible, nor one with neither. Opacity and a 2px
+   blur only: the box's height does the moving. */
+@keyframes mfc-swap-out {
+  to {
+    opacity: 0;
+    filter: blur(2px);
+  }
+}
+.mfc-swap-out {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  pointer-events: none;
+  animation: mfc-swap-out 160ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+@keyframes mfc-swap-in {
+  from {
+    opacity: 0;
+    filter: blur(2px);
+  }
+}
+.mfc-swap-in {
+  animation: mfc-swap-in 300ms cubic-bezier(0.23, 1, 0.32, 1) 100ms both;
+}
+
 /* clip only while folding, so an edge-to-edge banner (Flow) can reach past the page's padding */
 .mfc-fold-inner {
   min-height: 0;
@@ -379,5 +463,24 @@
 
   .mfc-fold {
     transition: none;
+  }
+
+  /* no movement: the banner just fades in */
+  .mfc-fold.landing {
+    animation: mfc-land-fade 240ms ease-out 160ms both;
+  }
+
+  .mfc-swap-in,
+  .mfc-swap-out {
+    animation: none;
+  }
+
+  .mfc-shape {
+    transition: none;
+  }
+}
+@keyframes mfc-land-fade {
+  from {
+    opacity: 0;
   }
 }

@@ -430,10 +430,10 @@
 .pk-flow-copy h3 {
   margin: 0;
   font-family: "SAHI Season Display Mix:Medium", serif;
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 580;
-  letter-spacing: -0.26px;
-  line-height: 30px;
+  letter-spacing: -0.22px;
+  line-height: 26px;
 }
 
 .pk-flow-copy p {
@@ -447,8 +447,342 @@
   padding-bottom: 16px;
 }
 
+/* "Not now": a quiet text button under Activate, so saying no is easy but Activate stays the obvious choice. 36 px
+   tall to be tappable; the card's bottom padding shrinks to 4 px so the pair adds only 28 px. */
+.pk-flow .pk-flow-copy:has(.pk-notnow) {
+  padding-bottom: 4px;
+}
+.pk-notnow {
+  display: block;
+  width: 100%;
+  height: 36px;
+  margin-top: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  color: var(--ink-2);
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  line-height: 20px;
+  cursor: pointer;
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.pk-notnow:active {
+  transform: scale(0.97);
+}
+
+/* ---- Option B: features written in ----
+   The belt is only the picture here: shorter (120 vs 168) since it hides nothing, and it ignores touches. The body is cut
+   to one line and the three facts are small soft pills under it (24px, L2 fill, 12px text, value in medium weight): a
+   shape of their own, so they read as tags and don't run into the sentence above. */
+.pk-belt-still {
+  height: 120px;
+  pointer-events: none;
+}
+.pk-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.pk-facts li {
+  display: inline-flex;
+  height: 24px;
+  align-items: center;
+  gap: 3px;
+  padding: 0 9px;
+  border-radius: 999px;
+  color: var(--ink-2);
+  background: var(--surface-L2);
+  font-size: 12px;
+  line-height: 16px;
+  white-space: nowrap;
+}
+.pk-facts b {
+  color: var(--ink);
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-weight: 500;
+}
+
+/* ---- Minimised strip: one line, 56 px, same outline as the card ---- */
+.pk-strip {
+  display: flex;
+  height: 56px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px 0 12px;
+  border: 1px solid var(--border-L1);
+  border-radius: 16px;
+  background: var(--surface-L1);
+}
+.pk-strip-open {
+  display: flex;
+  min-width: 0;
+  height: 100%;
+  flex: 1;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  color: var(--ink);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.pk-strip-open > .icon {
+  flex: none;
+  margin-left: -4px;
+  color: var(--ink-3);
+}
+.pk-strip-logos {
+  display: flex;
+  flex: none;
+}
+.pk-strip-logos > * {
+  border-radius: 7px;
+  box-shadow:
+    inset 0 0 0 1px var(--line),
+    0 0 0 2px var(--surface-L1); /* a ring of the card colour so the overlapping logos separate */
+}
+.pk-strip-logos > * + * {
+  margin-left: -8px;
+}
+.pk-strip-text {
+  overflow: hidden;
+  min-width: 0;
+  font-family: "SAHI Sans:Medium", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pk-strip-cta {
+  flex: none;
+  height: 32px;
+  margin: 0;
+  padding: 0 14px;
+  font-size: 14px;
+}
+
 /* headlines that run to two lines break evenly ("Mutual Funds are / coming to SAHI"), never leaving one word alone */
 .pk-card h3,
 .pk-flow-copy h3 {
   text-wrap: balance;
+}
+
+/* ---- Option C: feature tiles, no belt -------------------------------------------------------------------------------
+   No belt, so the copy starts at the top (16 px in). A quiet eyebrow (logos + "Coming soon to SAHI"), the headline, the
+   three tiles, one line of body, then Activate. Tiles: three equal columns, 8 apart, 92 tall, L2 fill (no border,
+   so they read as one set inside the outlined card), the value in the display serif at 20. */
+.pk-flow.tiles .pk-tiles-copy {
+  margin-top: 0;
+  padding-top: 16px;
+}
+.pk-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px !important;
+  color: var(--ink-3) !important;
+  font-size: 12px !important;
+  line-height: 16px !important;
+}
+.pk-eyebrow .pk-strip-logos > * {
+  border-radius: 6px;
+}
+.pk-eyebrow .pk-strip-logos > * + * {
+  margin-left: -6px;
+}
+
+.pk-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.pk-tile {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 92px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  perspective: 600px;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.pk-tile:active {
+  transform: scale(0.97);
+}
+
+/* The turn: a card turning over is a physical thing, so it gets a physical pace (480ms on the iOS drawer curve: quick
+   off the mark, a long settle), not UI-snappy. Only one tile is over at a time. */
+.pk-tile-inner {
+  position: relative;
+  display: block;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 480ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.pk-tile.flipped .pk-tile-inner {
+  transform: rotateY(180deg);
+}
+.pk-tile-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 10px 10px 10px 12px;
+  border-radius: 14px;
+  background: var(--surface-L2);
+  text-align: left;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+/* the back is the same light grey as the front (L3 read as too dark), with no outline: the turn itself and the
+   different content say it's the other side */
+.pk-tile-face.back {
+  justify-content: center;
+  color: var(--ink);
+  background: var(--surface-L2);
+  transform: rotateY(180deg);
+}
+.pk-tile-face.back small {
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 16px;
+}
+.pk-tile-icon {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  display: inline-flex;
+  color: var(--ink);
+}
+.pk-tile-face b {
+  color: var(--ink);
+  font-family: "SAHI Season Display Mix:Medium", serif;
+  font-size: 20px;
+  font-weight: 580;
+  letter-spacing: -0.2px;
+  line-height: 24px;
+}
+.pk-tile-face.front small {
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 16px;
+}
+/* The turn-over cue: a folded corner (dog-ear) at the top right of both faces, the real-world sign that a card has
+   another side. A triangle of the card's own colour "cuts" the corner and a slightly darker one is the fold. It grows a
+   touch while pressed, as if the finger lifted it. */
+.pk-tile-face::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 14px;
+  height: 14px;
+  border-bottom-left-radius: 4px;
+  background: linear-gradient(225deg, var(--surface-L1) 50%, var(--surface-L4) 50%);
+  transform-origin: 100% 0;
+  transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.pk-tile-face.back::after {
+  background: linear-gradient(225deg, var(--surface-L1) 50%, var(--surface-L4) 50%);
+}
+.pk-tile:active .pk-tile-face::after {
+  transform: scale(1.35);
+}
+
+/* ---- C, first sight: the tiles rise one after another (80ms apart) as the card settles, then each icon makes one small
+   gesture as its tile lands. Transform, opacity and a 3px blur only; nothing repeats. */
+@keyframes pk-tile-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+    filter: blur(3px);
+  }
+}
+.pk-flow.tiles.intro .pk-tiles li {
+  animation: pk-tile-rise 460ms cubic-bezier(0.23, 1, 0.32, 1) calc(420ms + var(--i) * 80ms) both;
+}
+@keyframes pk-swing {
+  0% { transform: rotate(0); }
+  35% { transform: rotate(-16deg); }
+  65% { transform: rotate(8deg); }
+  100% { transform: rotate(0); }
+}
+@keyframes pk-turn {
+  to { transform: rotate(180deg); }
+}
+@keyframes pk-hop {
+  0%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-4px); }
+  70% { transform: translateY(1px); }
+}
+.pk-flow.tiles.intro .pk-tile-icon.tag {
+  transform-origin: 30% 30%;
+  animation: pk-swing 700ms cubic-bezier(0.37, 0, 0.63, 1) 820ms both;
+}
+.pk-flow.tiles.intro .pk-tile-icon.repeat {
+  animation: pk-turn 600ms cubic-bezier(0.77, 0, 0.175, 1) 900ms both;
+}
+.pk-flow.tiles.intro .pk-tile-icon.wallet {
+  animation: pk-hop 520ms cubic-bezier(0.37, 0, 0.63, 1) 980ms both;
+}
+/* then, once, the first tile's corner lifts and settles: "this one turns" */
+@keyframes pk-corner-lift {
+  0%, 100% { transform: scale(1); }
+  45% { transform: scale(1.6); }
+}
+.pk-flow.tiles.intro .pk-tiles li:first-child .pk-tile-face.front::after {
+  animation: pk-corner-lift 700ms cubic-bezier(0.37, 0, 0.63, 1) 1600ms both;
+}
+
+.pk-flow.tiles .pk-tiles + p {
+  margin-top: 14px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pk-flow.tiles.intro .pk-tiles li {
+    animation: pk-tile-fade 240ms ease-out 200ms both;
+  }
+  .pk-flow.tiles.intro .pk-tile-icon,
+  .pk-flow.tiles.intro .pk-tile-face::after {
+    animation: none !important;
+  }
+  /* no turning in space: the back simply fades in over the front */
+  .pk-tile-inner {
+    transition: none;
+  }
+  .pk-tile.flipped .pk-tile-inner {
+    transform: none;
+  }
+  .pk-tile-face {
+    transition: opacity 200ms ease;
+  }
+  .pk-tile-face.back {
+    opacity: 0;
+    transform: none;
+  }
+  .pk-tile.flipped .pk-tile-face.back {
+    opacity: 1;
+  }
+}
+@keyframes pk-tile-fade {
+  from {
+    opacity: 0;
+  }
 }

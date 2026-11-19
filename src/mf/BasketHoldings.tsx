@@ -38,7 +38,7 @@ export function BasketHoldingsTab() {
     return (
       <div className="mf-empty-card tall">
         <b>No baskets yet</b>
-        <p>Pick a researcher backed basket and invest in all its funds at once. It will show up here.</p>
+        <p>Pick a ready-made basket and invest in all its funds at once. It will show up here.</p>
         <button className="mf-btn solid" onClick={() => push({ name: "baskets" })}>
           Browse baskets
         </button>

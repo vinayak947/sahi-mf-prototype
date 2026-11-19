@@ -385,7 +385,7 @@ function HoldingsDashboard({ current, invested, gain }: { current: number; inves
               <FundMark fund={fund} size={40} />
               <span className="os-mid">
                 <b>{fund.name}</b>
-                <small>{h.pending ?? fund.catLabel}</small>
+                <small>{h.pending ?? fund.catLabel.replace(" · ", " • ")}</small>
               </span>
               <span className="os-end">
                 <span className="os-amt">
