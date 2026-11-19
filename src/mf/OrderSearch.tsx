@@ -3,7 +3,6 @@ import { Icon } from "../ui/Icon";
 import { fundById } from "./data";
 import { inr } from "./format";
 import { FundMark } from "./parts";
-import { kindLabel } from "./screens";
 import { StatusBadge } from "./OrderStatusDetail";
 import { FNO, STOCKS, type Row } from "./MarketOrders";
 import { useMf } from "./store";
@@ -76,7 +75,7 @@ export function OrderSearchScreen() {
                       <FundMark fund={fund} size={40} />
                       <span className="os-mid">
                         <b>{fund.name}</b>
-                        <small>{kindLabel(order.kind)}</small>
+                        <small>{fund.catLabel.replace(" · ", " • ")}</small>
                       </span>
                       <span className="os-end">
                         <span className="os-amt">{inr(order.amount)}</span>

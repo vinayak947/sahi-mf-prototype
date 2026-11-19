@@ -87,7 +87,7 @@ export type StepView = {
 
 export type DetailView = {
   banner?: { tone: "info" | "ok" | "err"; text: string };
-  facts: { label: string; value: string; hi?: boolean }[];
+  facts: { label: string; value: string }[];
   steps: StepView[];
   action?: "viewSip" | "investMore" | "retry";
   nav: number;
@@ -117,14 +117,15 @@ export function purchaseView({ order: o, fund, sipDay }: Ctx): DetailView {
   let facts: DetailView["facts"];
   if (ui === "completed" && a) {
     facts = [
-      { label: "Units allotted", value: a.units.toFixed(3), hi: true },
+      { label: "Amount invested", value: amount },
+      { label: "Units allotted", value: a.units.toFixed(3) },
       { label: "NAV", value: inr(a.nav, 4) },
       { label: "NAV date", value: fmtFull(parseDay(a.navDate, o.on)) },
-      { label: "Amount invested", value: amount },
     ];
   } else if (sip) {
     facts = [
-      { label: "Amount", value: amount },
+      // Scheduled instalment (1st on a reused mandate, or recurring) shows its debit date; mandate-approval stage has none.
+      { label: "Amount", value: o.status === "scheduled" && o.debitOn ? `${amount} will be debited on ${o.debitOn}` : amount },
       { label: "Order type", value: "SIP transaction" },
       { label: "Payment", value: `${method} · ${BANK}` },
     ];
@@ -264,20 +265,21 @@ export function redeemView({ order: o, fund }: Ctx): RedeemView {
     const diff = Math.abs(credited - o.amount);
     const higher = credited >= o.amount;
     why = {
-      title: `Why you received ${inr(credited, 2)}`,
+      title: `Why the amount can differ from ${byUnits ? "about " : ""}${inr(o.amount, 0)}`,
       bullets: [
         l1,
-        `${cutText}redeemed at ${when}, ${inr(a.nav, 4)}. As this NAV was ${higher ? "higher" : "lower"}, you received ${inr(credited, 2)}, which is ${inr(diff, 2)} ${higher ? "more" : "less"} than ${than}.`,
+        `${cutText}redeemed at ${when}, ${inr(a.nav, 4)}. The amount you received is based on this NAV.`,
         exit,
       ],
+      // Order is done, so past tense and no "if the NAV rises": generic, no amount promised.
       story: {
         steps: [
-          { glyph: byUnits ? "#" : "₹", title: askedTitle, sub: askedSub },
-          { icon: "clock", title: `Placed ${before ? "before" : "after"} ${cut}`, sub: before ? `Priced on ${o.navDate}` : `Priced on the next trading day, ${o.navDate}` },
-          { icon: "chart-line", title: `${a.navDate} closing NAV: ${inr(a.nav, 4)}`, sub: `${higher ? "Higher" : "Lower"} than ${inr(latestNav, 4)}` },
+          { glyph: byUnits ? "#" : "₹", title: byUnits ? `You asked to redeem ${unitsText} units` : `You asked to redeem ${inr(o.amount, 2)}`, sub: `Order placed on ${o.placedAt}` },
+          { icon: "clock", title: `The NAV of ${o.navDate} was used`, sub: before ? `Your order was placed before the ${cut} cut-off, so that day’s NAV applied.` : `Your order was placed after the ${cut} cut-off, so the next working day’s NAV applied.` },
+          { icon: "chart-line", title: "The amount you got depends on the NAV", sub: `So it can differ from ${byUnits ? "about " : ""}${inr(o.amount, 0)}.` },
         ],
-        outcomes: [{ icon: higher ? "chart-line" : "trend-down", tone: higher ? "up" : "down", title: `You received ${inr(credited, 2)}`, sub: `${inr(diff, 2)} ${higher ? "more" : "less"} than ${than}` }],
-        note: { icon: "info", text: exitNote },
+        outcomes: [],
+        note: { icon: "info", text: "Exit load and STT may have been deducted, depending on your holdings." },
       },
     };
   } else {
@@ -288,13 +290,12 @@ export function redeemView({ order: o, fund }: Ctx): RedeemView {
         `${cutText}redeems at ${when}${before ? ". That NAV is published only in the evening" : ""}. If it’s higher or lower, the amount you receive changes too.`,
         exit,
       ],
+      // Pending (placed or exchange-confirmed): one plain story, no promises about the final amount.
       story: {
         steps: [
-          { glyph: byUnits ? "#" : "₹", title: askedTitle, sub: askedSub },
-          { icon: "clock", title: `Placed ${before ? "before" : "after"} ${cut}`, sub: before ? `Priced on ${o.navDate}` : `Priced on the next trading day, ${o.navDate}` },
-          o.exchangeConfirmed
-            ? { icon: "chart-line", title: `${o.navDate} closing NAV is out`, sub: "Your units are priced at it" }
-            : { icon: "chart-line", title: "NAV is declared after market close", sub: `Your units are priced at the ${o.navDate} closing NAV` },
+          { glyph: byUnits ? "#" : "₹", title: byUnits ? `You asked to redeem ${unitsText} units` : `You asked to redeem ${inr(o.amount, 2)}`, sub: `Order placed on ${o.placedAt}` },
+          { icon: "clock", title: `The NAV of ${o.navDate} applies`, sub: before ? `Your order was placed before the ${cut} cut-off, so that day’s NAV is used.` : `Your order was placed after the ${cut} cut-off, so the next working day’s NAV is used.` },
+          { icon: "chart-line", title: "The amount you get can change", sub: `It depends on the NAV, so it may be more or less than ${byUnits ? "about " : ""}${inr(o.amount, 0)}.` },
         ],
         outcomes: [
           { icon: "chart-line", tone: "up", title: "If the NAV rises", sub: "You get more" },
@@ -307,7 +308,7 @@ export function redeemView({ order: o, fund }: Ctx): RedeemView {
 
   // What the user asked for leads; the other figure is the estimate.
   const requested = byUnits
-    ? [{ label: "Units requested", value: unitsText }, { label: "Estimated amount", value: inr(o.amount, 2) }]
+    ? [{ label: "Estimated amount", value: inr(o.amount, 2) }, { label: "Units requested", value: unitsText }]
     : [{ label: "Amount requested", value: inr(o.amount, 2) }, { label: "Units", value: unitsText }];
 
   const confirmed = !!o.exchangeConfirmed || done;
@@ -350,7 +351,7 @@ export function redeemFailedView({ order: o, fund }: Ctx): DetailView {
     },
     facts: [
       ...(o.redeemBy === "units"
-        ? [{ label: "Units requested", value: units }, { label: "Estimated amount", value: inr(o.amount, 2) }]
+        ? [{ label: "Estimated amount", value: inr(o.amount, 2) }, { label: "Units requested", value: units }]
         : [{ label: "Amount requested", value: inr(o.amount, 2) }, { label: "Units", value: units }]),
       { label: "Credit to", value: BANK },
     ],

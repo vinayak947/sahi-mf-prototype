@@ -82,7 +82,7 @@ export function HoldingsSearchScreen() {
                       <FundMark fund={fund} size={40} />
                       <span className="os-mid">
                         <b>{fund.name}</b>
-                        <small>{fund.catLabel}</small>
+                        <small>{fund.catLabel.replace(" · ", " • ")}</small>
                       </span>
                       <span className="os-end">
                         <span className="os-amt">
