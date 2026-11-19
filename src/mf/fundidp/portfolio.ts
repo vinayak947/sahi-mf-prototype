@@ -10,7 +10,7 @@ export type Group = { name: string; weight: number };
 
 export type Portfolio = {
   asOf: string;
-  /** The tiles under the heading, e.g. Shares / Bonds / Cash. Values are % of the fund and add up to 100. */
+  /** The tiles under the heading, Equity / Debt / Others (cash and the like), the usual mutual fund words. Values are % of the fund and add up to 100. */
   tiles: { label: string; value: number }[];
   /** "Sectors" or "Types"; null when a fund has no useful grouping (the metal funds). */
   groupLabel: string | null;
@@ -174,9 +174,9 @@ export function portfolioOf(fund: Fund): Portfolio {
     return {
       asOf,
       tiles: [
-        { label: "Shares", value: equity },
-        { label: "Bonds", value: 0 },
-        { label: "Cash", value: cash },
+        { label: "Equity", value: equity },
+        { label: "Debt", value: 0 },
+        { label: "Others", value: cash },
       ],
       groupLabel: "Sectors",
       itemLabel: "Companies",
@@ -202,9 +202,9 @@ export function portfolioOf(fund: Fund): Portfolio {
     return {
       asOf,
       tiles: [
-        { label: "Shares", value: equity },
-        { label: "Bonds", value: debt },
-        { label: "Cash", value: cash },
+        { label: "Equity", value: equity },
+        { label: "Debt", value: debt },
+        { label: "Others", value: cash },
       ],
       groupLabel: "Sectors",
       itemLabel: "Companies",
@@ -228,9 +228,9 @@ export function portfolioOf(fund: Fund): Portfolio {
     return {
       asOf,
       tiles: [
-        { label: "Shares", value: 0 },
-        { label: "Bonds", value: debt },
-        { label: "Cash", value: cash },
+        { label: "Equity", value: 0 },
+        { label: "Debt", value: debt },
+        { label: "Others", value: cash },
       ],
       groupLabel: "Types",
       itemLabel: "Holdings",
@@ -251,7 +251,7 @@ export function portfolioOf(fund: Fund): Portfolio {
     asOf,
     tiles: [
       { label: `${metal} ETFs`, value: pct(100 - cash) },
-      { label: "Cash", value: cash },
+      { label: "Others", value: cash },
     ],
     groupLabel: null,
     itemLabel: "Holdings",

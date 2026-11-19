@@ -19,6 +19,7 @@ import {
   parseDay,
   pct,
   ranges,
+  sinceLaunch,
   smoothPath,
   type Range,
 } from "./format";
@@ -89,7 +90,10 @@ function NavChart({ fund, range, onRange, navOn }: { fund: Fund; range: Range; o
     return () => ro.disconnect();
   }, []);
 
-  const { pts, values, change } = useMemo(() => navSeries(fund.id, range, fund.r1, fund.r3, fund.r5), [fund, range]);
+  const { pts, values, change } = useMemo(
+    () => navSeries(fund.id, range, fund.r1, fund.r3, fund.r5, sinceLaunch(fund, navOn).total),
+    [fund, range, navOn],
+  );
   const tone = change >= 0 ? "up" : "down";
   const { w, h } = size;
   const line = useMemo(() => (w ? smoothPath(pts, w, h) : ""), [pts, w, h]);
@@ -202,11 +206,11 @@ function NavChart({ fund, range, onRange, navOn }: { fund: Fund; range: Range; o
   );
 }
 
-type PfRow = { name: string; weight: number; sub?: string; change?: number | null };
+type PfRow = { name: string; weight: number; sub?: string };
 
-/* A list of holdings: name (and sector) on the left, share of the fund on the right. With `showChange`, the change since last month
-   sits under the share as a coloured percentage, like the returns elsewhere (green up, red down, no arrows). */
-function PfList({ rows, showChange }: { rows: PfRow[]; showChange?: boolean }) {
+/* A list of holdings: name (and sector) on the left, its % of the fund on the right. One number per row: the change since
+   last month was dropped (2026-11-19), since there is nothing an investor can do with it. */
+function PfList({ rows }: { rows: PfRow[] }) {
   return (
     <ul className="pf-list">
       {rows.map((r, i) => (
@@ -217,7 +221,6 @@ function PfList({ rows, showChange }: { rows: PfRow[]; showChange?: boolean }) {
           </span>
           <span className="pf-num">
             <b>{weightText(r.weight)}</b>
-            {showChange && r.change !== undefined && <PfChange change={r.change} />}
           </span>
         </li>
       ))}
@@ -225,25 +228,18 @@ function PfList({ rows, showChange }: { rows: PfRow[]; showChange?: boolean }) {
   );
 }
 
-function PfChange({ change }: { change: number | null }) {
-  if (change === null) return <small className="pf-chg new">New</small>;
-  if (Math.abs(change) < 0.005) return <small className="pf-chg">No change</small>;
-  return <small className={`pf-chg ${change > 0 ? "up" : "down"}`}>{pct(change, 2)}</small>;
-}
-
 /* What the fund is made of, in one bar: equity, debt, cash. Colours are the DLS palette (see .pf-mixbar in mf.css). */
-function PfMix({ tiles, palette = ["pfc0", "pfc1", "pfc2"], padTo }: { tiles: { label: string; value: number }[]; palette?: string[]; padTo?: number }) {
+function PfMix({ tiles }: { tiles: { label: string; value: number }[] }) {
   const parts = tiles.filter((t) => t.value > 0);
-  // `padTo`: the bar stands for this many % (100 = the whole fund); anything the parts do not cover stays an empty track
-  const left = padTo ? Math.max(0, padTo - parts.reduce((a, t) => a + t.value, 0)) : 0;
-  const tone = (i: number) => palette[i] ?? "pfc3";
+  // Ranked slices step down the pink ramp (pfc0 = biggest); "Others" / "Other sectors" is always the neutral, whatever its position.
+  const named = parts.filter((t) => !/^Other/.test(t.label));
+  const tone = (i: number) => (/^Other/.test(parts[i].label) ? "pfo" : `pfc${Math.min(2, named.indexOf(parts[i]))}`);
   return (
     <div className="pf-mix">
       <div className="pf-mixbar" role="img" aria-label={parts.map((t) => `${t.label} ${t.value.toFixed(1)}%`).join(", ")}>
         {parts.map((t, i) => (
           <i key={t.label} className={tone(i)} style={{ flexGrow: t.value }} />
         ))}
-        {left > 0 && <i className="pad" style={{ flexGrow: left }} />}
       </div>
       <ul className="pf-legend">
         {parts.map((t, i) => (
@@ -260,9 +256,7 @@ function PfMix({ tiles, palette = ["pfc0", "pfc1", "pfc2"], padTo }: { tiles: { 
 
 /* Kyro's read of the holdings, the SAME shape for every view and every kind of fund: a short headline and one sentence of numbers.
    A new view only has to return these two strings.
-   Companies: how spread out the fund is. Our rule of thumb from the share held by the ten biggest (Morningstar treats over 45% as
-   concentrated): under 30% well spread, 30 to 45% fairly concentrated, over 45% concentrated. Index funds are concentrated by
-   design, so they say what they do; debt funds hold a few dozen short-term instruments by design, so they get the count, no label.
+   Companies: how many, and how much the ten biggest hold.
    Sectors / types: who leads, and how much the three biggest take. Metal funds: they hold a few ETFs, so say that. */
 function pfInsightFor(fund: Fund, p: ReturnType<typeof portfolioOf>, view: "groups" | "items"): { headline: string; detail: string } {
   const n = p.items.length;
@@ -278,14 +272,12 @@ function pfInsightFor(fund: Fund, p: ReturnType<typeof portfolioOf>, view: "grou
       detail: `${p.groups.length} ${p.groupLabel.toLowerCase()}, and the ${k} biggest make up ${sum(p.groups.slice(0, k).map((g) => g.weight))}% of the fund.`,
     };
   }
+  // Companies: the count and how much the ten biggest hold, for every kind of fund. No "well spread" / "concentrated"
+  // label: there is no agreed rule for where one ends and the other starts, so the numbers speak for themselves.
   const k = Math.min(10, n);
   const top = p.items.slice(0, k).reduce((a, i) => a + i.weight, 0);
   const noun = p.itemLabel.toLowerCase();
-  if (fund.cat === "debt" || fund.cat === "liquid") {
-    return { headline: `${n} ${noun}`, detail: n <= 10 ? `Together they make up ${top.toFixed(1)}% of the fund.` : `The ${k} biggest make up ${top.toFixed(1)}% of the fund.` };
-  }
-  const headline = fund.cat === "index" ? "Tracks an index" : top < 30 ? "Well spread" : top < 45 ? "Fairly concentrated" : "Concentrated";
-  return { headline, detail: n <= 10 ? `${n} ${noun}.` : `${n} ${noun}, and the ${k} biggest make up ${top.toFixed(1)}% of the fund.` };
+  return { headline: `${n} ${noun}`, detail: n <= 10 ? `Together they make up ${top.toFixed(1)}% of the fund.` : `The ${k} biggest make up ${top.toFixed(1)}% of the fund.` };
 }
 
 /* The six levels in a sheet: only the levels and what each one means, no dial. This fund's row is tinted and tagged. Motion: the rows
@@ -442,6 +434,18 @@ function PfInsight({ headline, detail, stage }: { headline: string; detail: stri
   );
 }
 
+/* Sectors view: the three biggest sectors as one bar plus "Other", so the main sector stands out before the list does.
+   Used on the fund page and on View all. Null when there are three sectors or fewer (the list already says it all). */
+function sectorMixOf(p: ReturnType<typeof portfolioOf>) {
+  if (!p.groupLabel || p.groups.length <= 3) return null;
+  const top = p.groups.slice(0, 3);
+  const total = p.groups.reduce((a, g) => a + g.weight, 0);
+  return [
+    ...top.map((g) => ({ label: g.name, value: g.weight })),
+    { label: `Other ${p.groupLabel.toLowerCase()}`, value: total - top.reduce((a, g) => a + g.weight, 0) },
+  ];
+}
+
 /* Fund page widget: what the fund is made of. First the kind of assets (one bar), then the two views people ask for: which
    sectors, or which exact companies, with one line on how spread out each is, five rows and the link to everything. */
 function PortfolioWidget({ fund }: { fund: Fund }) {
@@ -452,6 +456,11 @@ function PortfolioWidget({ fund }: { fund: Fund }) {
   const showGroups = view === "groups" && !!p.groupLabel;
   const rows: PfRow[] = (showGroups ? p.groups.map((g) => ({ name: g.name, weight: g.weight })) : p.items.map((i) => ({ name: i.name, weight: i.weight, sub: p.groupLabel ? i.group : undefined }))).slice(0, 5);
   const insight = pfInsightFor(fund, p, view);
+  const sectorMix = sectorMixOf(p);
+  // The closed fold names the biggest part of the asset mix, "93.9% equity" ("97.7% Gold ETFs" for metal funds).
+  // It stays put when the Sectors / Companies switch changes.
+  const major = p.tiles.reduce((a, t) => (t.value > a.value ? t : a), p.tiles[0]);
+  const mixSummary = `${major.value.toFixed(1)}% ${/^(Equity|Debt|Others)$/.test(major.label) ? major.label.toLowerCase() : major.label}`;
   // Kyro reads once, the first time the widget opens; after that a view change is only a quick fade.
   const [stage, setStage] = useState<PfStage>("think");
   const opened = useRef(false);
@@ -468,9 +477,7 @@ function PortfolioWidget({ fund }: { fund: Fund }) {
     setStage((s) => (s === "think" ? s : "swap"));
   };
   return (
-    <Fold title="Portfolio" summary={insight.headline} defaultOpen={false} onOpenChange={onOpen}>
-      <p className="pf-asof">as of {p.asOf}</p>
-
+    <Fold title="Portfolio" summary={mixSummary} defaultOpen={false} onOpenChange={onOpen}>
       {/* two sections of their own: what kind of assets, then what exactly it holds */}
       <section className="pf-sec">
         <h4 className="pf-sub">Asset mix</h4>
@@ -495,11 +502,16 @@ function PortfolioWidget({ fund }: { fund: Fund }) {
         {/* One bordered panel, laid out like "Invest in a sector": the one-line read, a count row, the rows, then the link to all. */}
         <div className="pf-panel" key={view}>
           <PfInsight headline={insight.headline} detail={insight.detail} stage={stage} />
+          {showGroups && sectorMix && (
+            <div className="pf-panel-mix">
+              <PfMix tiles={sectorMix} />
+            </div>
+          )}
           <div className="mf-allhead pf-allhead">
             <span>
               {showGroups ? `${p.groups.length} ${(p.groupLabel ?? "").toLowerCase()}` : `${p.items.length} ${p.itemLabel.toLowerCase()}`}
             </span>
-            <span>Share of fund</span>
+            <span>% of fund</span>
           </div>
           <PfList rows={rows} />
           <button className="pf-all" onClick={() => setHoldingsOpen(true)}>
@@ -513,27 +525,16 @@ function PortfolioWidget({ fund }: { fund: Fund }) {
   );
 }
 
-/* Every holding of the fund, on its own page: search, sectors or companies, the share of each and how it moved since last month. */
-/* The holdings list (search, group by, the list), shown in the tall sheet (HoldingsSheet). */
+/* Every holding of the fund (shown in the tall sheet, HoldingsSheet): sectors or companies, and each one's % of the fund.
+   No search (removed 2026-11-19): the list is a few dozen rows, sorted by size, so scrolling finds anything. */
 function HoldingsBody({ fund, showHead }: { fund: Fund; showHead?: boolean }) {
   const p = useMemo(() => portfolioOf(fund), [fund]);
   const [view, setView] = useState<"groups" | "items">("items");
-  const [q, setQ] = useState("");
-  const needle = q.trim().toLowerCase();
   const showGroups = view === "groups" && !!p.groupLabel;
-  const all: PfRow[] = showGroups
+  const rows: PfRow[] = showGroups
     ? p.groups.map((g) => ({ name: g.name, weight: g.weight }))
-    : p.items.map((i) => ({ name: i.name, weight: i.weight, sub: p.groupLabel ? i.group : undefined, change: i.change }));
-  const rows = needle ? all.filter((r) => `${r.name} ${r.sub ?? ""}`.toLowerCase().includes(needle)) : all;
-  // Sectors view: the three biggest sectors as one bar, so the main sector stands out before the list does
-  const sectorMix =
-    showGroups && !needle && p.groups.length > 3
-      ? (() => {
-          const top = p.groups.slice(0, 3);
-          const total = p.groups.reduce((a, g) => a + g.weight, 0);
-          return [...top.map((g) => ({ label: g.name, value: g.weight })), { label: `Other ${(p.groupLabel ?? "sectors").toLowerCase()}`, value: total - top.reduce((a, g) => a + g.weight, 0) }];
-        })()
-      : null;
+    : p.items.map((i) => ({ name: i.name, weight: i.weight, sub: p.groupLabel ? i.group : undefined }));
+  const sectorMix = showGroups ? sectorMixOf(p) : null;
   return (
     <>
       {showHead && (
@@ -547,10 +548,6 @@ function HoldingsBody({ fund, showHead }: { fund: Fund; showHead?: boolean }) {
         </div>
       </div>
       )}
-      <label className="mf-search-input pf-search">
-        <Icon name="magnifying-glass" size={20} />
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={`Search ${p.itemLabel.toLowerCase()}${p.groupLabel ? ` or ${p.groupLabel.toLowerCase()}` : ""}`} autoComplete="off" />
-      </label>
       {p.groupLabel && (
         <SegmentSwitcher
           wide
@@ -564,23 +561,19 @@ function HoldingsBody({ fund, showHead }: { fund: Fund; showHead?: boolean }) {
           ]}
         />
       )}
-      {rows.length > 0 ? (
-        <div className="pf-screen" key={`${view}-${needle ? "q" : "all"}`}>
+      <div className="pf-screen" key={view}>
           {sectorMix && (
             <section className="pf-sec pf-card">
               <h4 className="pf-sub">Biggest {(p.groupLabel ?? "sectors").toLowerCase()}</h4>
-              <PfMix tiles={sectorMix} palette={["pfc0", "pfc1", "pfc2", "pfc3"]} padTo={100} />
+              <PfMix tiles={sectorMix} />
             </section>
           )}
           <p className="pf-cap">
             <span>{showGroups ? p.groupLabel : p.itemLabel}</span>
-            <span className="pf-cap-r">{showGroups ? "Share of fund" : "Share of fund · change since last month"}</span>
+            <span className="pf-cap-r">% of fund</span>
           </p>
-          <PfList rows={rows} showChange={!showGroups} />
-        </div>
-      ) : (
-        <p className="mf-empty">Nothing matches &ldquo;{q.trim()}&rdquo;.</p>
-      )}
+          <PfList rows={rows} />
+      </div>
     </>
   );
 }
@@ -683,12 +676,15 @@ export function FundScreen({ fundId }: { fundId: string }) {
     return () => cancelAnimationFrame(id);
   }, []);
   // Over 1 year and up the figure is a yearly rate (annualised), as on the Returns fold: 3Y +84.3% in total is +22.6% a year.
-  const totalChange = navSeries(fund.id, range, fund.r1, fund.r3, fund.r5).change;
-  const rangeYears = range === "3Y" ? 3 : range === "5Y" ? 5 : 0;
-  const rangeChange = rangeYears ? (Math.pow(1 + totalChange / 100, 1 / rangeYears) - 1) * 100 : totalChange;
+  // All is annualised too: the since-launch gain as a yearly rate, so every figure from 1Y up reads the same way.
   const now = new Date();
   const lastNav = navDay(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1));
   const navOn = afterCutoff(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1)) ? nextBusinessDay(lastNav) : lastNav;
+  const launch = sinceLaunch(fund, navOn);
+  const totalChange = navSeries(fund.id, range, fund.r1, fund.r3, fund.r5, launch.total).change;
+  const rangeYears = range === "3Y" ? 3 : range === "5Y" ? 5 : 0;
+  const rangeChange =
+    range === "ALL" ? launch.perYear : rangeYears ? (Math.pow(1 + totalChange / 100, 1 / rangeYears) - 1) * 100 : totalChange;
   const navDate = fmtDay(navOn);
   const riskText = `${fund.risk.charAt(0)}${fund.risk.slice(1).toLowerCase()} risk`;
   // Returns widget: what a lumpsum earned, or what a monthly SIP earned (worked out from the same published numbers, see ./sip).
@@ -762,7 +758,7 @@ export function FundScreen({ fundId }: { fundId: string }) {
           <strong className={rangeChange >= 0 ? "up" : "down"}>
             <Ticker value={rangeChange} format={(v) => pct(v, 1)} armed={counting} ms={700} />
           </strong>
-          <small>{range === "ALL" ? "Since inception" : rangeYears ? `${range} annualised` : `${range} change`}</small>
+          <small>{range === "ALL" ? (launch.years >= 1 ? "Since launch, annualised" : "Since launch") : rangeYears ? `${range} annualised` : `${range} change`}</small>
         </div>
         {/* today's change in the NAV; it does not follow the chart range */}
         <div className="fund-day">
@@ -904,7 +900,7 @@ export function FundScreen({ fundId }: { fundId: string }) {
         </button>
       </Fold>
 
-      <Fold title="Charges and tax" summary={`${fund.expense}% a year`} defaultOpen={false} boxed>
+      <Fold title="Charges and tax" summary={`${fund.expense}% expense ratio`} defaultOpen={false} boxed>
         <ChargesAndTax fund={fund} />
       </Fold>
 

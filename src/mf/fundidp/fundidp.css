@@ -1708,15 +1708,6 @@
 :root:has(.idp) .mf-filterbar .chip:has(.icon) {
   padding-right: 12px;
 }
-.pf-asof {
-  margin: 0 0 16px;
-  color: var(--ink-3);
-  font-size: 12px;
-  line-height: 16px;
-}
-:root:has(.idp) .mf-body:has(.fund-hero) .fold.open h3:has(+ .fold-body .pf-asof) {
-  margin-bottom: 8px;
-}
 .pf-sec + .pf-sec {
   margin-top: 24px;
 }
@@ -1738,7 +1729,7 @@
   gap: 2px;
   overflow: hidden;
   border-radius: 6px;
-  background: var(--surface-L2);
+  background: transparent; /* the 2px gaps show the surface itself */
   clip-path: inset(0 0 0 0 round 6px);
   transition: clip-path 700ms cubic-bezier(0.23, 1, 0.32, 1);
 }
@@ -1758,12 +1749,9 @@
 .pf-legend i.pfc2 {
   background: var(--mix-2);
 }
-.pf-mixbar i.pfc3,
-.pf-legend i.pfc3 {
-  background: var(--mix-3);
-}
-:root:has(.idp) .pf-mixbar i.pad {
-  background: transparent;
+.pf-mixbar i.pfo,
+.pf-legend i.pfo {
+  background: var(--mix-other);
 }
 .pf-legend {
   display: flex;
@@ -1923,23 +1911,6 @@
   font-family: "SAHI Sans:Medium", sans-serif;
   font-weight: 500;
 }
-.pf-chg {
-  margin-top: 2px;
-  color: var(--ink-3);
-  font-size: 12px;
-  line-height: 16px;
-  font-variant-numeric: tabular-nums;
-}
-:root:has(.idp) .pf-chg.up {
-  color: var(--up);
-}
-:root:has(.idp) .pf-chg.down {
-  color: var(--down);
-}
-:root:has(.idp) .pf-chg.new {
-  color: var(--accent-text);
-  font-family: "SAHI Sans:Medium", sans-serif;
-}
 :root:has(.idp) .fold:not(.open) .pf-mixbar {
   clip-path: inset(0 100% 0 0 round 6px);
   transition: clip-path 0s linear 260ms;
@@ -1985,9 +1956,6 @@
   color: var(--ink-3);
   font-size: 12px;
   line-height: 16px;
-}
-.pf-search {
-  margin-bottom: 12px;
 }
 .pf-screen .pf-card {
   margin: 16px 0 0;
@@ -2275,8 +2243,9 @@
     transition: none;
   }
 }
+/* Inside the phone (the .mf-layer, like .sheet-root), not over the whole browser window. */
 .msheet-root {
-  position: fixed;
+  position: absolute;
   z-index: 60;
   inset: 0;
   display: flex;
@@ -2302,8 +2271,7 @@
   display: flex;
   width: 100%;
   max-width: 600px;
-  
-  height: min(82dvh, 720px);
+  height: min(82%, 720px);
   flex-direction: column;
   border-radius: 24px 24px 0 0;
   background: var(--surface-L1);
@@ -3752,9 +3720,6 @@
 .mf-screen:has(.fund-hero) .rc-rows-idp .rc-total-idp {
   padding-top: 8px;
 }
-.mf-screen:has(.fund-hero) .pf-asof {
-  line-height: 14px;
-}
 .mf-screen:has(.fund-hero) .pf-sub {
   line-height: 17px;
 }
@@ -3897,9 +3862,6 @@
 .sheet-root:has(.pf-list) .pf-name small {
   line-height: 14px;
 }
-.sheet-root:has(.pf-list) .pf-chg {
-  line-height: 14px;
-}
 .sheet-root:has(.pf-list) .pf-sub {
   line-height: 17px;
 }
@@ -3981,6 +3943,17 @@
 }
 .pf-panel .pf-allhead {
   margin-top: 16px;
+}
+/* Sectors view: the top-3 bar from View all, between the read and the list, in a box of its own so it reads as one picture
+   apart from the text above and the list below. Border only, no fill, like the other IDP cards; 12 radius inside the 16 panel. */
+.pf-panel-mix {
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid var(--border-L1);
+  border-radius: 12px;
+}
+.pf-panel-mix .pf-mix {
+  margin: 0;
 }
 .pf-panel .pf-list {
   margin: 0;
