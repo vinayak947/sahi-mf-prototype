@@ -11,7 +11,6 @@ import { inr } from "../fundidp/format";
 import { basketBuyState, basketCost, basketFunds, basketMin, basketRisk, blended3Y, NIFTY50, riskLabel, type Basket } from "./data";
 
 const one = (n: number) => n.toFixed(1);
-const short = (name: string) => name.replace(/ Fund$/, "");
 
 // Share of the basket in each kind of holding, from each fund's category.
 function mix(basket: Basket) {
@@ -63,7 +62,7 @@ function buyLine(b: Basket): string {
 // give it. The funds and their shares are listed right below in "What's inside", so they aren't repeated here.
 export function basketRead(b: Basket): string {
   const buy = basketBuyState(b);
-  const name = buy.fund ? short(buy.fund.name) : "One of its funds";
+  const name = buy.fund ? buy.fund.name : "One of its funds";
   if (buy.state === "paused") return `Can't be started right now: ${name} isn't taking new money. Give it ${b.years === 1 ? "a year" : `${b.years} years`} or more once it reopens.`;
   const l = lead(b);
   const vs = Math.abs(l) < 0.5 ? `in line with the ${NIFTY50.name}` : `${one(Math.abs(l))} points ${l > 0 ? "ahead of" : "behind"} the ${NIFTY50.name}`;

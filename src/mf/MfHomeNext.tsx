@@ -74,7 +74,7 @@ function TopPerforming() {
           <button className="top-card" key={fund.id} onClick={() => push({ name: "fund", fundId: fund.id })}>
             <FundMark fund={fund} size={40} />
             <Stars n={fund.stars} />
-            <b>{fund.name.replace(/ Fund$/, "")}</b>
+            <b>{fund.name}</b>
             <strong className={fund.r3 >= 0 ? "up" : "down"}>{pct(fund.r3, 1).replace("+", "")}</strong>
             <em>3Y</em>
           </button>

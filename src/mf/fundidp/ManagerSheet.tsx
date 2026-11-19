@@ -240,6 +240,6 @@ export function ManagerSheet({
         </div>
       </div>
     </div>,
-    document.body,
+    document.querySelector(".mf-layer") ?? document.body,
   );
 }

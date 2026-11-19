@@ -155,6 +155,7 @@ export function navSeries(
   r1: number,
   r3: number,
   r5: number,
+  allTotal?: number, // the real since-launch gain when the caller has it (see sinceLaunch); otherwise 6 years at the 5Y rate
 ): { pts: [number, number][]; values: number[]; change: number } {
   const total: Record<Range, number> = {
     "1M": r1 / 12 + 0.6,
@@ -162,7 +163,7 @@ export function navSeries(
     "1Y": r1,
     "3Y": ((1 + r3 / 100) ** 3 - 1) * 100,
     "5Y": ((1 + r5 / 100) ** 5 - 1) * 100,
-    ALL: ((1 + r5 / 100) ** 6 - 1) * 100,
+    ALL: allTotal ?? ((1 + r5 / 100) ** 6 - 1) * 100,
   };
   const n = 48;
   const rand = rng([...id].reduce((a, c) => a + c.charCodeAt(0) * 31, 7) + range.length * 97 + range.charCodeAt(0));
@@ -182,6 +183,20 @@ export function navSeries(
     pts: raw.map((v, i) => [i / (n - 1), 0.08 + ((v - min) / span) * 0.84] as [number, number]),
     values: raw, // % gained since the start of the range at each point; the last one is `change`
     change: target,
+  };
+}
+
+// Return since launch, from the NAV itself: a scheme opens at its face value (₹10; ₹1,000 for liquid funds), so today's NAV
+// over that is the whole gain. `perYear` is the same gain as a yearly rate (annualised), like 1Y / 3Y / 5Y; under a year
+// old it stays the plain change, as SEBI asks.
+export function sinceLaunch(fund: { cat: string; nav: number; launched: string }, navOn: Date) {
+  const face = fund.cat === "liquid" ? 1000 : 10;
+  const years = (navOn.getTime() - parseDay(fund.launched).getTime()) / (365.25 * 864e5);
+  const growth = fund.nav / face;
+  return {
+    total: (growth - 1) * 100,
+    years,
+    perYear: years >= 1 ? (Math.pow(growth, 1 / years) - 1) * 100 : (growth - 1) * 100,
   };
 }
 

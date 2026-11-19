@@ -13,16 +13,20 @@ export function ReturnCalculator({ fund, subject = "fund" }: { fund: Fund; subje
   const [open, setOpen] = useState(false);
   const m = useCalcModel(fund, open, subject);
 
-  // Closed, the row already gives the answer for the default plan (₹5,000 a month for 3 years), so it earns the tap.
+  // Closed, the row is the whole answer in one line, four facts in reading order: what went in, how (SIP = every month,
+  // "once" = one-time), what it became, over how long. "₹5K SIP → ₹2.4L in 3 yrs" / "₹1L once → ₹1.6L in 3 yrs".
+  // Earlier tries each dropped one: "₹2.4L from ₹5K/mo" (how long?), "₹2.4L in 3 yrs" (from what?). "SIP" is the word on
+  // the page's own button, so it carries "a month" in three letters. Screen readers get the full sentence.
+  const span = `${m.years} ${m.years === 1 ? "yr" : "yrs"}`;
   return (
     <Fold
       title="Return calculator"
       defaultOpen={false}
       onOpenChange={setOpen}
       summary={
-        <>
-          <b className={m.tone}>{short(m.value)}</b> from {m.mode === "sip" ? `${short(m.amount)}/mo` : short(m.amount)}
-        </>
+        <span aria-label={`${m.mode === "sip" ? `${short(m.amount)} a month` : `${short(m.amount)} one-time`} for ${span} would have become ${short(m.value)}`}>
+          {short(m.amount)} {m.mode === "sip" ? "SIP" : "once"} &rarr; <b className={m.tone}>{short(m.value)}</b> in {span}
+        </span>
       }
     >
       <Original m={m} />

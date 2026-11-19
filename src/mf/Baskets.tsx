@@ -130,7 +130,7 @@ function ReviewedLine({ className = "bk-sub", action }: { className?: string; ac
   return (
     <div className={className}>
       <Icon name="shield-check" size={14} />
-      <span>{REVIEWED}</span>
+      <span>Picked by SAHI Research &middot; Reviewed {REVIEWED}</span>
       {action}
     </div>
   );
@@ -144,7 +144,7 @@ export function BasketsSection() {
   return (
     <Block>
       <div className="block-head">
-        <h2>Researcher backed baskets</h2>
+        <h2>Ready-made baskets</h2>
         <button className="text-link" onClick={() => push({ name: "baskets" })}>
           View all
         </button>
@@ -165,7 +165,7 @@ const BASKET_LIMITS =
 export function BasketsScreen() {
   const { pop } = useMf();
   return (
-    <Screen title="Researcher backed baskets" onBack={pop} className="bk-page">
+    <Screen title="Ready-made baskets" onBack={pop} className="bk-page">
       <ReviewedLine className="bk-sub bk-sub-page" />
       <div className="bk-list">
         {baskets.map((basket, i) => (

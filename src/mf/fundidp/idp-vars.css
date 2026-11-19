@@ -1,23 +1,23 @@
 /* Custom properties the fund and basket pages use that the rest of the prototype does not define (from the same source). */
-/* Breakup colours (asset mix, sector mix, basket weights): SAHI's own scales only, the pink ramp and the warm neutral
-   (sand → espresso). Picked and checked with the dataviz validator: light on #FFFFFF, wine #A50F66 · tan #AC7C54 · pink
-   #E61C9A, all 3:1+ on the surface, colour-blind ΔE 9.6+ and normal-vision ΔE 15+ across every pair; dark on #171717,
-   pink #C80E7D · tan #AC7C54 · light pink #FC6AD0, ΔE 11+ / 19+. The tan is low-chroma by nature (a warm neutral), so
-   identity never rests on colour alone: every segment has a labelled row or legend. A 4th, "Other" slot is the
-   recessive end of the warm neutral: sand #D9C9AE (light), espresso #573730 (dark). */
+/* Breakup colours (asset mix, sector mix). The slices are ranked (biggest first), so they are ONE hue in steps: the DLS
+   warm neutral ramp (sand → espresso), strongest = biggest. No pink: the page already uses the brand pink for the accent,
+   and a pink chart read as too much of it. "Others" / "Other sectors" is always the DLS grey, so it sits back and the
+   named slices lead. Checked with the dataviz validator as an ordinal ramp: light on #FFFFFF #835241 → #AC7C54 → #C5AA84,
+   dark on #171717 #EDE5D8 → #C5AA84 → #976448, both pass (monotone lightness, visible steps, one hue, light end clears
+   the surface). Every slice also has a legend label and a 2px gap, so colour is never the only cue. */
 :root {
-  --mix-0: #a50f66;
+  --mix-0: #835241;
   --mix-1: #ac7c54;
-  --mix-2: #e61c9a;
-  --mix-3: #d9c9ae;
+  --mix-2: #c5aa84;
+  --mix-other: #e6e6e6;
   --vb-fill: var(--accent-text);
   --vb-check: #ffffff;
 }
 :root[data-theme="dark"] {
-  --mix-0: #c80e7d;
-  --mix-1: #ac7c54;
-  --mix-2: #fc6ad0;
-  --mix-3: #573730;
+  --mix-0: #ede5d8;
+  --mix-1: #c5aa84;
+  --mix-2: #976448;
+  --mix-other: #404040;
   --vb-fill: var(--accent-text);
   --vb-check: var(--accent-subtle);
 }
