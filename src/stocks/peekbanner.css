@@ -651,13 +651,12 @@
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
 }
-/* the back is the same light grey as the front (L3 read as too dark): the turn itself and the different content say
-   it's the other side, and a hairline inside keeps it from looking like a blank front */
+/* the back is the same light grey as the front (L3 read as too dark), with no outline: the turn itself and the
+   different content say it's the other side */
 .pk-tile-face.back {
   justify-content: center;
   color: var(--ink);
   background: var(--surface-L2);
-  box-shadow: inset 0 0 0 1px var(--border-L1);
   transform: rotateY(180deg);
 }
 .pk-tile-face.back small {
