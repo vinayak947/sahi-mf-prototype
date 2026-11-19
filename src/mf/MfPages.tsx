@@ -11,6 +11,7 @@ import { FundMark } from "./parts";
 import { BasketHoldingsTab } from "./BasketHoldings";
 import { OrdersList2, type TypeFilter } from "./OrdersList2";
 import { SIP_FROM_100 } from "./listSpecs";
+import { FundListBody } from "./screens";
 import { SipCalendarCard } from "./SipCalendar";
 import { useMf } from "./store";
 import { FilterSortSheet } from "./FilterSortSheet";
@@ -46,14 +47,13 @@ export function SegmentChips({
 }
 
 // The Orders page seen from inside Mutual Funds: the order-type filter sits at the right of the header.
-type OrderMarket = "mf" | "stocks" | "fno";
+type OrderMarket = "mf" | "both";
 
 // Chips under the Orders title: one orders view per market; the picked one carries a check.
 export function OrderMarketPills({ value, onChange }: { value: OrderMarket; onChange: (next: OrderMarket) => void }) {
   const items: { key: OrderMarket; label: string }[] = [
     { key: "mf", label: "Mutual funds" },
-    { key: "stocks", label: "Stocks" },
-    { key: "fno", label: "F&O" },
+    { key: "both", label: "Stocks/F&O" },
   ];
   return (
     <div className="chip-row page-chips order-pills" role="tablist" aria-label="Order type">
@@ -217,14 +217,17 @@ function FundsPortfolio({ hideSips = false }: { hideSips?: boolean }) {
 
   if (holdings.length === 0) {
     return (
-      <div className="mf-sip-zero">
-        <small>Current value</small>
-        <strong>{inr(0)}</strong>
-        <button onClick={() => push({ name: "list", spec: { title: "All mutual funds" } })}>
-          Browse funds
-          <Icon name="chevron-right" size={20} />
-        </button>
-      </div>
+      <>
+        <div className="mf-sip-zero">
+          <small>Current value</small>
+          <strong>{inr(0)}</strong>
+        </div>
+
+        <div className="block-head mf-sip-head mf-sip-start">
+          <h2>Top funds to start a SIP</h2>
+        </div>
+        <FundListBody spec={SIP_FROM_100} bare limit={10} />
+      </>
     );
   }
 
@@ -375,7 +378,7 @@ function HoldingsDashboard({ current, invested, gain }: { current: number; inves
         </button>
       </div>
 
-      <ul className="os-list">
+      <ul className="os-list pf-holdings">
         {shown.map(({ h, fund, g, gPct }) => (
           <li key={h.fundId}>
             <button className="os-row" onClick={() => push({ name: "holding", fundId: h.fundId })}>
@@ -525,12 +528,22 @@ export function SipPage() {
       {/* Same calendar card with or without SIPs: with none it shows ₹0, an empty month and a way in. */}
       <SipCalendarCard sips={sips} upcoming={upcoming} today={today} onStart={startList} />
 
+      {/* No SIPs yet: the first 10 funds under a small heading, no filter or count. */}
+      {sips.length === 0 && (
+        <>
+          <div className="block-head mf-sip-head mf-sip-start">
+            <h2>Top funds to start a SIP</h2>
+          </div>
+          <FundListBody spec={SIP_FROM_100} bare limit={10} />
+        </>
+      )}
+
       {sips.length > 0 && (
         <>
           <div className="block-head mf-sip-head">
             <h2>Active SIPs ({sips.length})</h2>
           </div>
-          <ul className="os-list">
+          <ul className="os-list pf-holdings">
             {upcoming.map((s) => {
               const fund = fundById(s.fundId);
               return (

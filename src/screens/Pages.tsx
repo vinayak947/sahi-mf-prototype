@@ -169,6 +169,26 @@ export function OrdersPage({ mfOnly = false }: { mfOnly?: boolean }) {
 }
 
 type HoldingRow = (typeof holdings)[number];
+
+// Stocks carry the same mark tile as funds, so the two holdings lists read alike: the company's logo on the soft tile,
+// the two-letter monogram only when no logo is on file. Logos live in public/assets (stock-*.png).
+const STOCK_LOGO: Record<string, string> = {
+  "Titan Company": "stock-titan.png",
+  "Lemon Tree Hotels": "stock-lemon-tree.png",
+  "Yes Bank": "stock-yes-bank.png",
+  "Vodafone Idea": "stock-vodafone-idea.png",
+};
+
+function StockMark({ name, size }: { name: string; size: number }) {
+  const words = name.split(" ");
+  const mono = (words.length > 1 ? words[0][0] + words[1][0] : name.slice(0, 2)).toUpperCase();
+  const logo = STOCK_LOGO[name];
+  return (
+    <span className="fund-mark" style={{ width: size, height: size, fontSize: size * 0.3 }}>
+      {logo ? <img src={asset(logo)} alt={name} draggable={false} /> : mono}
+    </span>
+  );
+}
 type HoldingSort = "cur_hi" | "cur_lo" | "inv_hi" | "inv_lo" | "pl_hi" | "pl_lo" | "pct_hi" | "pct_lo" | "az" | "za";
 const num = (text: string) => Number(text.replace(/[^0-9.\-]/g, ""));
 // The app's own holdings sort options; there is nothing else to filter, so the sheet is sort only.
@@ -282,6 +302,7 @@ export function PortfolioPage({ mfOnly = false }: { mfOnly?: boolean }) {
             <button className="holding-row">
               <span className="holding-top">
                 <b>
+                  <StockMark name={holding.name} size={32} />
                   {holding.name}
                 </b>
                 <span className={`holding-pl ${toneOf(holding.pl)}`}>

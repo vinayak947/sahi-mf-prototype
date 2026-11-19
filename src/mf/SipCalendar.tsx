@@ -1,4 +1,3 @@
-import { Icon } from "../ui/Icon";
 import { fundById } from "./data";
 import { fmtDay, inr } from "./format";
 import { FundMark } from "./parts";
@@ -18,42 +17,48 @@ export function SipCalendarCard({ sips, upcoming, today, onStart }: { sips: Sip[
   const empty = sips.length === 0;
 
   return (
-    <section className="sc-card" aria-label={empty ? "SIP calendar, no SIPs running" : `SIP calendar, ${sips.length} SIPs, ${inr(monthly)} a month`}>
+    <section className={`sc-card${empty ? " empty" : ""}`} aria-label={empty ? "SIP calendar, no SIPs running" : `SIP calendar, ${sips.length} SIPs, ${inr(monthly)} a month`}>
       <i className="sc-ring" style={{ left: "20%" }} aria-hidden="true" />
       <i className="sc-ring" style={{ left: "80%" }} aria-hidden="true" />
 
+      {/* Empty state only: bare date squares (no numbers) in the background, fading away down the page. */}
+      {empty && (
+        <div className="sc-grid" aria-hidden="true">
+          {Array.from({ length: 28 }, (_, i) => (
+            <i key={i} />
+          ))}
+        </div>
+      )}
+
       <div className="sc-head">
-        <span className="sc-top">
-          <span className="bk-stack" aria-hidden="true">
-            {funds.length ? funds.map((f) => <FundMark key={f.id} fund={f} size={28} />) : <span className="sc-cal-glyph"><Icon name="calendar" size={20} /></span>}
+        {!empty && (
+          <span className="sc-top">
+            <span className="bk-stack" aria-hidden="true">
+              {funds.map((f) => <FundMark key={f.id} fund={f} size={28} />)}
+            </span>
           </span>
-          <span className="sc-count">{empty ? "No SIPs yet" : `${sips.length} ${sips.length === 1 ? "SIP" : "SIPs"}`}</span>
-        </span>
+        )}
         <small>Monthly SIP amount</small>
         <strong>{inr(monthly)}</strong>
       </div>
 
-      {empty ? (
-        <button className="sc-cta" onClick={onStart}>
-          Start a new SIP
-          <Icon name="chevron-right" size={20} />
-        </button>
-      ) : (
+      {empty ? null : (
         <div className="sc-due">
-          <Icon name="clock" size={24} />
           <span>
             {dueSoon.length > 0 ? (
               <>
                 <b>{inr(dueAmount)} due in the next 2 days</b>
-                <small>
-                  {dueSoon.length === 1 ? fundById(dueSoon[0].fundId).name : `${dueSoon.length} SIPs`} · debits on {fmtDay(dueSoon[0].next)}
+                <small className="sc-sub">
+                  <span className="sc-sub-name">{dueSoon.length === 1 ? fundById(dueSoon[0].fundId).name : `${dueSoon.length} SIPs`}</span>
+                  <span className="sc-sub-rest">· debits on {fmtDay(dueSoon[0].next)}</span>
                 </small>
               </>
             ) : (
               <>
                 <b>Next debit on {fmtDay(first.next)}</b>
-                <small>
-                  {fundById(first.fundId).name} · {inr(first.amount)}
+                <small className="sc-sub">
+                  <span className="sc-sub-name">{fundById(first.fundId).name}</span>
+                  <span className="sc-sub-rest">· {inr(first.amount)}</span>
                 </small>
               </>
             )}

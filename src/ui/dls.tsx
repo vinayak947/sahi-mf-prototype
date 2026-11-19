@@ -184,14 +184,16 @@ export function DlsButton({
   onClick,
   disabled = false,
   fillWidth = true,
+  size = "large",
 }: {
   label: ReactNode;
   onClick?: () => void;
   disabled?: boolean;
   fillWidth?: boolean;
+  size?: "large" | "small"; // small is the 32 high pill the Watchlist empty state uses
 }) {
   return (
-    <button className={`dls-btn primary large${fillWidth ? " fill" : ""}`} disabled={disabled} onClick={onClick}>
+    <button className={`dls-btn primary ${size}${fillWidth ? " fill" : ""}`} disabled={disabled} onClick={onClick}>
       <span className="dls-btn-label">{label}</span>
     </button>
   );

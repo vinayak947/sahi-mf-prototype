@@ -3,6 +3,7 @@ import { Icon } from "../ui/Icon";
 import { DlsButton, DlsCard, DlsKvStacked, DlsNumberField } from "../ui/dls";
 import { Facts } from "./OrderStatusDetail";
 import { asset } from "../assets";
+import { holdingDetails } from "./holdingDetail";
 import {
   categories,
   cutoffKind,
@@ -208,7 +209,8 @@ function useListPool(spec: ListSpec, sector: string) {
 
 // Filter chips, count and fund rows for a list spec. Shared by the list screen and the SIP tab's empty state,
 // so a change here shows up everywhere a list is shown. The filter chip opens the Filters sheet (category, AMC, rating, risk, sort).
-export function FundListBody({ spec, docked = false }: { spec: ListSpec; docked?: boolean }) {
+// `bare` is the stripped version: no filter chips, no count row, just the first `limit` funds.
+export function FundListBody({ spec, docked = false, bare = false, limit }: { spec: ListSpec; docked?: boolean; bare?: boolean; limit?: number }) {
   const { basis, sort, setBasis, setSort } = useFundView();
   const [cat, setCat] = useState<CategoryKey | "all">(spec.cat ?? "all");
   const [sector, setSector] = useState<string>(spec.theme ?? "all"); // Order 2.0 sector pages only
@@ -218,7 +220,7 @@ export function FundListBody({ spec, docked = false }: { spec: ListSpec; docked?
   const pool = useListPool(spec, sector);
   const inCat = (c: CategoryKey | "all", f: FundFilters) =>
     applyFilters(c === "all" ? pool.base : pool.base.filter((fund) => fund.cat === c), f);
-  const list = sortFunds(inCat(cat, filters), sort, basis);
+  const list = sortFunds(inCat(cat, filters), sort, basis).slice(0, limit);
   const filterBadge = filterCount(filters) + (sort !== "returns" ? 1 : 0);
 
   // On a list page the chip row and the count stay stuck under the top bar while the funds scroll.
@@ -263,7 +265,7 @@ export function FundListBody({ spec, docked = false }: { spec: ListSpec; docked?
   // On a list page the screen carries the page marker; embedded (the SIP tab) the list brings its own, so it looks the same.
   const content = (
     <>
-      {docked ? <div className="mf-dock" data-sector={spec.theme ? "" : undefined}>{bar}</div> : bar}
+      {bare ? null : docked ? <div className="mf-dock" data-sector={spec.theme ? "" : undefined}>{bar}</div> : bar}
       <ul className="row-list-idp">
         {list.map((fund) => (
           <li key={fund.id}>
@@ -977,11 +979,11 @@ const firstDebit = (day: number, withYear = false) => {
 // ---- Holding and redeem -----------------------------------------------------------------
 
 export function HoldingScreen({ fundId }: { fundId: string }) {
-  const { pop, push, holdings, sips, orders } = useMf();
+  const { pop, push, holdings, orders } = useMf();
   const fund = fundById(fundId);
   const holding = holdings.find((h) => h.fundId === fundId);
-  const sip = sips.find((s) => s.fundId === fundId);
-  const mine = orders.filter((o) => o.fundId === fundId);
+  // Only orders that went through, with units and a NAV, belong to a holding: no failed, initiated or in-progress ones.
+  const mine = orders.filter((o) => o.fundId === fundId && o.allotment);
   if (!holding) {
     return (
       <Screen onBack={pop} title={fund.name}>
@@ -991,69 +993,69 @@ export function HoldingScreen({ fundId }: { fundId: string }) {
   }
   const gain = holding.current - holding.invested;
   const gainPct = (gain / holding.invested) * 100;
+  // Funds with a spelled-out holding (folio, XIRR, NAVs, transactions) show them; paise too, as the board does.
+  const detail = holdingDetails[fundId];
+  const dp = detail ? 2 : 0;
   return (
     <Screen
       onBack={pop}
-      title="Your investment"
       right={
         <button className="mf-head-link" onClick={() => push({ name: "redeem", fundId })}>
           Redeem
         </button>
       }
       footer={
-        // Starting a SIP leads; with one already running, investing more is all that's left.
-        sip ? (
+        // Every holding: Start SIP is the primary action, One-time the secondary.
+        <div className="mf-actions">
           <button
-            className="mf-btn solid wide"
+            className="mf-btn ghost"
             disabled={!!fund.buy}
             onClick={() => push({ name: "amount", fundId, mode: "lump" })}
           >
-            Invest more
+            One-time
           </button>
-        ) : (
-          <div className="mf-actions">
-            <button
-              className="mf-btn ghost"
-              disabled={!!fund.buy}
-              onClick={() => push({ name: "amount", fundId, mode: "lump" })}
-            >
-              Invest more
-            </button>
-            <button
-              className="mf-btn solid"
-              disabled={fund.buy === "halted"}
-              onClick={() => push({ name: "amount", fundId, mode: "sip" })}
-            >
-              Start a SIP
-            </button>
-          </div>
-        )
+          <button
+            className="mf-btn solid"
+            disabled={fund.buy === "halted"}
+            onClick={() => push({ name: "amount", fundId, mode: "sip" })}
+          >
+            Start SIP
+          </button>
+        </div>
       }
     >
       <button className="mf-fundline link" onClick={() => push({ name: "fund", fundId })}>
         <FundMark fund={fund} size={40} />
         <span>
           <b>{fund.name}</b>
-          <small>{fund.catLabel} · Direct plan</small>
+          <small>{fund.catLabel}</small>
         </span>
         <Icon name="caret-right" size={16} />
       </button>
 
       <DlsCard>
         <Facts>
-          <DlsKvStacked label="Current value" value={inr(holding.current)} />
+          <DlsKvStacked label="Current value" value={inr(holding.current, dp)} />
           <DlsKvStacked
             label="Total returns"
             tone={gain >= 0 ? "positive" : "negative"}
             value={
               <>
                 {gain >= 0 ? "+" : ""}
-                {inr(gain)} <em>({pct(gainPct, 2)})</em>
+                {inr(gain, dp)} <em>({pct(gainPct, 2)})</em>
               </>
             }
           />
-          <DlsKvStacked label="Invested" value={inr(holding.invested)} />
+          <DlsKvStacked label="Invested" value={inr(holding.invested, dp)} />
           <DlsKvStacked label="Units" value={holding.units.toFixed(3)} />
+          {detail && (
+            <>
+              <DlsKvStacked label="XIRR" tone={detail.xirr >= 0 ? "positive" : "negative"} value={`${detail.xirr.toFixed(2)}%`} />
+              <DlsKvStacked label="Avg. NAV" value={inr(detail.avgNav, 2)} />
+              <DlsKvStacked label="Latest NAV" value={`${inr(detail.latestNav, 2)} · ${detail.latestNavDate}`} />
+              <DlsKvStacked label="Folio" value={detail.folio} />
+            </>
+          )}
         </Facts>
       </DlsCard>
 
@@ -1063,25 +1065,31 @@ export function HoldingScreen({ fundId }: { fundId: string }) {
         </Notice>
       )}
 
-      {sip && (
+      {detail && (
         <section className="mf-section">
-          <h3>SIP</h3>
-          <DlsCard>
-            <Facts>
-              <DlsKvStacked label="SIP amount" value={`${inr(sip.amount)} a month`} />
-              <DlsKvStacked label="SIP date" value={`${ordinal(sip.day)} of every month`} />
-            </Facts>
-            <button className="dls-kv tap" onClick={() => push({ name: "sipdetail", fundId })}>
-              <span className="dls-kv-text">
-                <b>View SIP details</b>
-              </span>
-              <Icon name="chevron-right" size={16} />
-            </button>
-          </DlsCard>
+          <h3>Transactions</h3>
+          <ul className="row-list">
+            {detail.transactions.map((t, i) => (
+              <li key={i}>
+                <div className="list-row">
+                  <span className="row-main">
+                    <b>{t.kind}</b>
+                    <small>{t.date}</small>
+                  </span>
+                  <span className="row-side">
+                    <b>{inr(t.amount, 2)}</b>
+                    <small>
+                      {t.units.toLocaleString("en-IN", { minimumFractionDigits: 3, maximumFractionDigits: 3 })} units · NAV {inr(t.nav, 2)}
+                    </small>
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 
-      {mine.length > 0 && (
+      {!detail && mine.length > 0 && (
         <section className="mf-section">
           <h3>Orders</h3>
           <ul className="row-list">
@@ -1094,7 +1102,15 @@ export function HoldingScreen({ fundId }: { fundId: string }) {
                   </span>
                   <span className="row-side">
                     <b>{inr(order.amount)}</b>
-                    <small className={statusClass(order)}>{statusLabel(order)}</small>
+                    {/* Allotted orders show what they bought: units and the NAV; the rest show their status. */}
+                    {order.allotment ? (
+                      <small>
+                        {order.allotment.units.toLocaleString("en-IN", { minimumFractionDigits: 3, maximumFractionDigits: 3 })} units ·
+                        NAV {inr(order.allotment.nav, 2)}
+                      </small>
+                    ) : (
+                      <small className={statusClass(order)}>{statusLabel(order)}</small>
+                    )}
                   </span>
                 </button>
               </li>
@@ -1192,6 +1208,22 @@ export function RedeemScreen({ fundId }: { fundId: string }) {
   const [typed, setTyped] = useState(false); // dots drift until the first edit, as on the invest pad
   const [sheet, setSheet] = useState<RedeemSheet>(null);
   const [navFromSummary, setNavFromSummary] = useState(false);
+  // Same as the order pad: the field is focused with the keypad up until a tap elsewhere; tapping the field brings both back.
+  const amountRef = useRef<HTMLDivElement>(null);
+  const [editing, setEditing] = useState(true);
+  useEffect(() => {
+    if (!orderPad2 || !editing) return;
+    const onDown = (e: PointerEvent) => {
+      const target = e.target as Element | null;
+      const field = amountRef.current;
+      const screen = field?.closest(".mf-screen");
+      if (!target || !field || !screen?.contains(target)) return;
+      if (field.contains(target) || target.closest(".mf-keypad, .mf-redeem-all")) return;
+      setEditing(false);
+    };
+    document.addEventListener("pointerdown", onDown);
+    return () => document.removeEventListener("pointerdown", onDown);
+  }, [orderPad2, editing]);
   if (!holding) return null;
 
   const now = istNow();
@@ -1268,24 +1300,71 @@ export function RedeemScreen({ fundId }: { fundId: string }) {
       ? <>You are redeeming <b>{unitsText(sellUnits)} units</b></>
       : <>Worth about <b>{inr(value)}</b></>;
 
+  const allRow = (
+  <label className={`mf-redeem-all${all ? " on" : ""}`}>
+    <input type="checkbox" checked={all} onChange={toggleAll} />
+    <span className="box" aria-hidden="true">
+      <Icon name="check" size={14} />
+    </span>
+    Redeem all · {by === "amount" ? inr(freeValue) : `${unitsText(maxUnits)} units`}
+    <button
+      type="button"
+      className="mf-redeem-info"
+      aria-label="About the redeemable value"
+      aria-haspopup="dialog"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setSheet("value");
+      }}
+    >
+      <Icon name="info" size={16} />
+    </button>
+  </label>
+  );
+  const navStrip = (
+  <button
+    className="mf-strip"
+    onClick={() => {
+      setNavFromSummary(false);
+      setSheet("nav");
+    }}
+    aria-haspopup="dialog"
+  >
+    <span>
+      Amount is approximate, at the {lastNav} NAV. Applicable NAV date {nav}.
+    </span>
+    <Icon name="chevron-right" size={16} />
+  </button>
+  );
+
   return (
     <Screen
       onBack={pop}
-      className="pad redeem"
-      backdrop={<DotField active={!typed} />}
+      className={orderPad2 ? `pad v2 redeem${editing && !nothing ? "" : " kb-off"}` : "pad redeem"}
+      backdrop={orderPad2 ? undefined : <DotField active={!typed} />}
       heading={
-        <div className="mf-fundline">
-          <FundMark fund={fund} size={32} />
-          <span>
-            <b>{fund.name}</b>
-            <small>Direct · Growth</small>
-          </span>
-        </div>
+        orderPad2 ? (
+          <>
+            <h1 className="mf-pad2-title">Redeem</h1>
+            <PadHeading fund={fund} />
+          </>
+        ) : (
+          <div className="mf-fundline">
+            <FundMark fund={fund} size={32} />
+            <span>
+              <b>{fund.name}</b>
+              <small>Direct · Growth</small>
+            </span>
+          </div>
+        )
       }
       footer={
-        <button className="mf-btn solid wide" disabled={!ok} onClick={() => setSheet("summary")}>
-          Continue
-        </button>
+        orderPad2 ? undefined : (
+          <button className="mf-btn solid wide" disabled={!ok} onClick={() => setSheet("summary")}>
+            Continue
+          </button>
+        )
       }
     >
       {nothing ? (
@@ -1305,18 +1384,32 @@ export function RedeemScreen({ fundId }: { fundId: string }) {
       ) : (
         <>
           {orderPad2 ? (
-            <div className="mf-pad2-amount">
-              <div className="mf-pad-label">
-                <p>{by === "amount" ? "Redemption amount" : "Units to redeem"}</p>
-              </div>
+            <div className="mf-pad2-center">
+            <div ref={amountRef} className="mf-pad2-amount" onClick={() => setEditing(true)}>
               <DlsNumberField
                 size="xxLarge"
+                align="start"
                 label={by === "amount" ? "Redemption amount" : "Units to redeem"}
                 prefix={by === "amount" ? "₹" : undefined}
                 value={digits}
                 hint="0"
-                focused
+                focused={editing}
                 caretKey={digits}
+                animated
+                trailing={
+                  digits.split(".")[0].length > 3 ? (
+                    <button
+                      className="mf-pad2-clear"
+                      aria-label="Clear amount"
+                      onClick={() => {
+                        setTyped(true);
+                        setDigits("");
+                      }}
+                    >
+                      <Icon name="base-x" size={24} />
+                    </button>
+                  ) : null
+                }
                 error={problem ?? null}
                 message={
                   by === "amount" && n > 0 ? (
@@ -1328,6 +1421,7 @@ export function RedeemScreen({ fundId }: { fundId: string }) {
                   )
                 }
               />
+            </div>
             </div>
           ) : (
           <div className={`mf-pad-amount${problem ? " error" : ""}`}>
@@ -1346,41 +1440,22 @@ export function RedeemScreen({ fundId }: { fundId: string }) {
 
           )}
 
-          <label className={`mf-redeem-all${all ? " on" : ""}`}>
-            <input type="checkbox" checked={all} onChange={toggleAll} />
-            <span className="box" aria-hidden="true">
-              <Icon name="check" size={14} />
-            </span>
-            Redeem all · {by === "amount" ? inr(freeValue) : `${unitsText(maxUnits)} units`}
-            <button
-              type="button"
-              className="mf-redeem-info"
-              aria-label="About the redeemable value"
-              aria-haspopup="dialog"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setSheet("value");
-              }}
-            >
-              <Icon name="info" size={16} />
-            </button>
-          </label>
-
-          <button
-            className="mf-strip"
-            onClick={() => {
-              setNavFromSummary(false);
-              setSheet("nav");
-            }}
-            aria-haspopup="dialog"
-          >
-            <span>
-              Amount is approximate, at the {lastNav} NAV. Applicable NAV date {nav}.
-            </span>
-            <Icon name="chevron-right" size={16} />
-          </button>
-          <Keypad decimal onKey={edit} />
+          {orderPad2 ? (
+            <>
+              <div className="mf-pad2-pay">
+                {/* Redeem all sits where the order pad's SIP date card does: full width, right over the button. */}
+                <div className="mf-pad2-how">{allRow}</div>
+                <DlsButton label="Continue" disabled={!ok} onClick={() => setSheet("summary")} />
+              </div>
+              {editing && <Keypad decimal onKey={edit} />}
+            </>
+          ) : (
+            <>
+              {allRow}
+              {navStrip}
+              <Keypad decimal onKey={edit} />
+            </>
+          )}
         </>
       )}
 

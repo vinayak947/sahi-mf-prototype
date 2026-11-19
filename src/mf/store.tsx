@@ -1,3 +1,4 @@
+import { GENERATED_PREFIX, generateOrders } from "./manyOrders";
 import { sampleBasketPositions, type BasketPosition } from "./baskets-data";
 import {
   createContext,
@@ -125,6 +126,8 @@ type Store = {
   setSegment: (segment: Segment) => void;
   orderPad2: boolean; // dev switch: the order pads use the DLS Number field
   setOrderPad2: (on: boolean) => void;
+  manyOrders: boolean; // dev switch: a 300-order history to show the Orders list lazy-loading
+  setManyOrders: (on: boolean) => void;
   holdings: Holding[];
   basketPositions: BasketPosition[]; // Order 2.0: what is held through baskets
   addBasketPosition: (basketId: string, amount: number, sip?: { amount: number; day: number }) => void;
@@ -182,6 +185,11 @@ export function MfProvider({
   const [holdings, setHoldings] = useState<Holding[]>(invested ? sampleHoldings : []);
   const [basketPositions, setBasketPositions] = useState<BasketPosition[]>(invested ? sampleBasketPositions : []);
   const [orders, setOrders] = useState<MfOrder[]>(invested ? sampleOrders : []);
+  const [manyOrders, setManyOrdersState] = useState(false);
+  const setManyOrders = useCallback((on: boolean) => {
+    setManyOrdersState(on);
+    setOrders((list) => (on ? [...list.filter((o) => !o.id.startsWith(GENERATED_PREFIX)), ...generateOrders()] : list.filter((o) => !o.id.startsWith(GENERATED_PREFIX))));
+  }, []);
   const [sips, setSips] = useState<Sip[]>(invested ? sampleSips : []);
   const [mandateLimit, setMandateLimit] = useState(invested ? 10000 : 0);
   const [payMethod, setPayMethod] = useState<PayMethod>(DEFAULT_METHOD);
@@ -213,6 +221,7 @@ export function MfProvider({
 
   const setSegment = useCallback((next: Segment) => {
     setSegmentState(next);
+    setManyOrdersState(false);
     setStack([]);
     if (next === "holdings") {
       setHoldings(sampleHoldings);
@@ -497,6 +506,8 @@ export function MfProvider({
       mfSeen,
       orderPad2,
       setOrderPad2,
+      manyOrders,
+      setManyOrders,
       markSeen: () => setMfSeen(true),
       placeLump,
       placeSip,
@@ -535,6 +546,8 @@ export function MfProvider({
       verifyBank,
       mfSeen,
       orderPad2,
+      manyOrders,
+      setManyOrders,
       jump,
       placeLump,
       placeSip,
